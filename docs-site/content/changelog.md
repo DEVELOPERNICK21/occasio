@@ -6,6 +6,12 @@ status: Living
 updated: 2026-08-27
 ---
 
+## 2026-08-31 (night)
+
+- [UI design principles](/docs/ui-design-principles) — mobile + web consistency for agents
+- [Data flow & network](/docs/data-flow) — API, layers, sequences
+- Cursor rules: `ui-design.mdc`, `data-network.mdc`; AGENTS.md decision tree
+
 ## 2026-08-31 (evening)
 
 - Added `AGENTS.md` + `.cursor/rules/` for solo AI IDE workflow

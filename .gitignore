@@ -83,3 +83,6 @@ yarn-error.log
 docs-site/.next/
 docs-site/out/
 docs-site/.vercel/
+
+# Firebase Functions build output
+functions/lib/

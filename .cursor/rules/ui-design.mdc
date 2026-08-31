@@ -1,0 +1,34 @@
+---
+description: Occasio UI design principles — tokens, shared components, consistency
+globs: src/**/*.tsx,src/shared/ui/**/*
+alwaysApply: false
+---
+
+# UI design (mandatory)
+
+Read `docs-site/content/ui-design-principles.md` before building or changing screens.
+
+## Must
+
+- Use `src/shared/theme/tokens.ts` — no random hex in feature styles
+- Wrap screens in `Screen`; actions via `Button` (primary/secondary/ghost)
+- One primary CTA per screen (accent `Button`)
+- Padding: `spacing.lg` horizontal; min tap height 48pt
+- Handle loading (spinner/disabled), error (inline text), empty (CTA)
+
+## Components
+
+Add reusable UI only to `src/shared/ui/`. Feature screens compose — don't copy-paste card/button styles.
+
+## Mobile vs web
+
+- Mobile product: `src/features/*/ui/`
+- Recipient web: same tokens, max-width ~480px — not in docs-site product flows
+- docs-site: docs shell only
+
+## Don't
+
+- Invent new color palette or generic purple AI aesthetic
+- Raw `TextInput` without plan to move to shared `Input`
+- Full-screen blocking loader for quick ops
+- Multiple competing primary buttons on one screen

@@ -1,4 +1,6 @@
-import { env } from '../../../shared/config/env';
+import { env, getApiBaseUrl } from '../../../shared/config/env';
+import { httpClient } from '../../../shared/api/httpClient';
+import { HttpError } from '../../../shared/api/errors';
 import type { PresignUploadResponse } from './types';
 import { CreationApiError } from './types';
 
@@ -15,17 +17,21 @@ export async function requestPresignedUpload(
     };
   }
 
-  const res = await fetch(`${env.apiBaseUrl}/v1/uploads/presign`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentType }),
-  });
-
-  if (!res.ok) {
+  try {
+    return await httpClient.post<PresignUploadResponse>(
+      getApiBaseUrl(),
+      '/v1/uploads/presign',
+      { contentType },
+    );
+  } catch (error) {
+    if (error instanceof HttpError && error.code === 'NOT_IMPLEMENTED') {
+      throw new CreationApiError(
+        'INTERNAL',
+        'Photo upload is not available yet — use mock mode for local dev.',
+      );
+    }
     throw new CreationApiError('INTERNAL', 'Failed to get upload URL');
   }
-
-  return res.json() as Promise<PresignUploadResponse>;
 }
 
 /**

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DocBreadcrumb } from "@/components/DocBreadcrumb";
 import { DocContent } from "@/components/DocContent";
+import { DocPager } from "@/components/DocPager";
 import { getDocBySlug, getDocSlugs } from "@/lib/docs";
+import { getNavItem } from "@/lib/navigation";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -26,32 +29,27 @@ export default async function DocPage({ params }: Props) {
   const doc = await getDocBySlug(slug);
   if (!doc) notFound();
 
+  const pathname = `/docs/${slug}`;
+  const navItem = getNavItem(pathname);
+
   return (
     <article>
-      <header className="mb-8">
-        <div className="mb-3 flex flex-wrap gap-2 text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
-          {doc.meta.phase && (
-            <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[var(--accent)]">
-              {doc.meta.phase}
-            </span>
-          )}
-          {doc.meta.status && (
-            <span className="rounded-full border border-[var(--border)] px-2.5 py-1">
-              {doc.meta.status}
-            </span>
-          )}
-          {doc.meta.updated && <span>Updated {doc.meta.updated}</span>}
-        </div>
-        <h1 className="font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--ink)] md:text-4xl">
-          {doc.meta.title}
-        </h1>
-        {doc.meta.description && (
-          <p className="mt-3 text-lg text-[var(--ink-soft)]">
-            {doc.meta.description}
+      <DocBreadcrumb pathname={pathname} />
+
+      <header className="doc-header">
+        <h1>{navItem?.title ?? doc.meta.title}</h1>
+        {(navItem?.description ?? doc.meta.description) && (
+          <p className="doc-lead">{navItem?.description ?? doc.meta.description}</p>
+        )}
+        {doc.meta.updated && (
+          <p className="mt-3 text-xs text-[var(--docs-muted)]">
+            Last updated {doc.meta.updated}
           </p>
         )}
       </header>
+
       <DocContent html={doc.contentHtml} mermaidBlocks={doc.mermaidBlocks} />
+      <DocPager />
     </article>
   );
 }

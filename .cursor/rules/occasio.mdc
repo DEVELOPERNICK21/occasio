@@ -26,6 +26,10 @@ src/features/<name>/{ui,application,domain,data}
 
 Use `src/shared/theme/tokens.ts` (mirrors `design-tokens.json`). No hardcoded random colors.
 
+**UI:** Read `docs-site/content/ui-design-principles.md` before any screen work.
+
+**Data/API:** Read `docs-site/content/data-flow.md` before any `data/` or hook work.
+
 ## Scope
 
 - Minimize diff; match existing patterns in `src/features/create/`

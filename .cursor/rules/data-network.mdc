@@ -1,0 +1,42 @@
+---
+description: Data flow, API calls, network — layer boundaries for Occasio
+globs: src/**/data/**/*,src/**/application/**/*,src/**/domain/**/*
+alwaysApply: false
+---
+
+# Data flow & network (mandatory)
+
+Read `docs-site/content/data-flow.md` and `docs-site/content/api-contracts.md`.
+
+## Flow
+
+```
+ui → application (hooks) → domain (rules) + data (IO)
+```
+
+## Rules
+
+- **No `fetch` in `ui/`** — only in `data/`
+- **No React in `data/` or `domain/`**
+- Domain: pure functions + types; unit test without mocks
+- Map HTTP errors to typed `*ApiError` with `code` in `data/`
+- Hooks own `isLoading`, `error`, orchestration
+- Check domain rules before network (`quota`, `canPreviewDraft`, etc.)
+
+## Config
+
+- `src/shared/config/env.ts` for base URLs and mock flag
+- Never commit secrets; server keys stay in Functions
+
+## New endpoints
+
+1. Implement in `features/<name>/data/`
+2. Document in `docs-site/content/api-contracts.md`
+3. Add `__DEV__` mock if backend not deployed
+
+## Don't
+
+- Firestore/Firebase imports in screens
+- Base64 images in Firestore
+- Return raw `Response` to UI
+- Skip error/loading states in hooks

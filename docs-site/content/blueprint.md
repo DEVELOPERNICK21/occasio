@@ -42,6 +42,7 @@ See [Solo dev playbook](/docs/playbook) for the full phase map.
 ## Phase 2.5 — UI Design in Stitch
 
 - [x] Design tokens defined — [`design-tokens.json`](/docs/design-tokens) + RN mirror
+- [x] UI design principles — [UI design principles](/docs/ui-design-principles)
 - [ ] Screen-by-screen from wireframes (Stitch — you)
 - [ ] Multi-screen consistency pass
 - [ ] Export → Figma polish
@@ -61,6 +62,7 @@ See [Solo dev playbook](/docs/playbook) for the full phase map.
 - [x] ESLint layer boundaries — `.eslintrc.js`
 - [x] AI IDE rules — `AGENTS.md` + `.cursor/rules/`
 - [x] `.env.example` — secrets pattern
+- [x] Data flow & network guide — [Data flow](/docs/data-flow)
 
 ## Phase 4 — Feature-by-feature build
 
@@ -70,11 +72,14 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 
 - [x] Mini-PRD — [Create blueprint](/docs/create-blueprint)
 - [x] Screens scaffold + domain draft hook
-- [x] `data/` — `creationRepository`, `uploadService` (mock in `__DEV__`)
+- [x] `data/` — `creationRepository`, `uploadService` via `httpClient`
+- [x] `shared/api/httpClient` + `shared/firebase` + emulator-aware `env`
+- [x] Cloud Functions source (`functions/` — `POST /v1/creations`, `GET /v1/cards/:slug`)
+- [x] Firebase RN init (`@react-native-firebase/app`, google-services / plist)
 - [x] `domain/quota.ts`, `creationRules.ts` + unit tests
 - [x] `useCreateShareLink` → Preview → ShareSuccess with real URL shape
 - [ ] Image picker + upload bytes to storage
-- [ ] Firebase Functions live (`POST /v1/creations`)
+- [ ] Firebase Functions **deployed** to `occasio-app-dev` (source ready; run `npm run firebase:deploy`)
 - [ ] Analytics events wired
 - [ ] Paywall modal UI
 - [ ] All acceptance criteria met

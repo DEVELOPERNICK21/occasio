@@ -15,9 +15,9 @@
 | Surface | Role | Priority |
 |---|---|---|
 | **Mobile app** (`src/`, `App.tsx`, `android/`, `ios/`) | **The product** — create, vault, billing, push, auto-send UX | **Primary** |
-| **Backend** (Firebase + Cloud Functions, not in repo yet) | Auth, Firestore, share links, auto-send engine | **Primary** (server) |
+| **Backend** (`functions/`, `firebase.json`, `firestore.rules`) | Auth, Firestore, Cloud Functions API (`api` export) | **Primary** (server) |
 | **docs-site** (`docs-site/`) | Landing, PRD/TRD, blueprint, IA — **documentation only** | Secondary |
-| **Recipient web** (future) | Public card view at share URL — minimal Next.js route or separate deploy | Phase 4 slice |
+| **Recipient web** (`docs-site/src/app/c/[slug]`) | Public card view at share URL | Phase 4 slice |
 
 The Next.js docs site is **not** the creator app. Do not build product features there except a future marketing landing + optional public `/c/[slug]` recipient page.
 
@@ -34,9 +34,13 @@ Occasio/                          ← you are here (RN app = main)
 │   │       ├── data/             ← Firebase, upload APIs (next)
 │   │       └── ui/               ← screens
 │   └── shared/
+│       ├── api/                  ← httpClient (typed HTTP for all repositories)
+│       ├── config/               ← env, API base URL, emulator flags
+│       ├── firebase/             ← RN Firebase app helpers
 │       ├── navigation/
 │       ├── theme/                ← mirrors design-tokens.json
 │       └── ui/
+├── functions/                    ← Cloud Functions (Express `api` export)
 ├── design-tokens.json            ← Stitch + RN
 ├── android/  ios/
 │
@@ -45,6 +49,15 @@ Occasio/                          ← you are here (RN app = main)
 │
 └── docs/prd-trd.md               ← legacy export; edit docs-site/content/
 ```
+
+## Solo dev + AI IDE
+
+| File | Purpose |
+|---|---|
+| [`AGENTS.md`](./AGENTS.md) | **Start here for AI** — decision tree, mandatory reads |
+| [`.cursor/rules/`](./.cursor/rules/) | Auto-enforced: UI, data flow, layers |
+| [`docs-site/content/ui-design-principles.md`](./docs-site/content/ui-design-principles.md) | UI consistency (mobile + web) |
+| [`docs-site/content/data-flow.md`](./docs-site/content/data-flow.md) | API, network, layer flow |
 
 ## Architecture rules (mobile app)
 
@@ -74,6 +87,16 @@ npm start
 npm run android    # or npm run ios
 ```
 
+### Local API (Firebase emulators)
+
+```sh
+npm run functions:serve   # Functions + Firestore emulators (port 5001 / 8080)
+```
+
+In `__DEV__`, the app uses `useFunctionsEmulator: true` by default — API calls go to the emulator (`10.0.2.2` on Android, `127.0.0.1` on iOS simulator). Set `env.useMockApi = true` in `src/shared/config/env.ts` to skip network entirely.
+
+Deploy to cloud: `npm run firebase:deploy`
+
 ## Docs site (reference only)
 
 ```sh
@@ -86,10 +109,11 @@ Deploy docs when you want a public landing — not required to ship the mobile a
 
 | Done | Not yet |
 |---|---|
-| Feature folder structure | ESLint boundary enforcement |
-| Create UI scaffold (5 screens) | Firebase / Functions |
-| Tab navigation shell | Real image picker + upload |
-| Design tokens in RN | Auth, Vault, Billing |
-| Strict TS | Auto-send backend |
+| Feature folder structure + ESLint boundaries | Real image picker + R2 upload |
+| Create UI scaffold (5 screens) | Auth, Vault, Billing |
+| Tab navigation shell | Auto-send backend |
+| Design tokens in RN | Functions deployed to cloud |
+| `httpClient` + Firebase RN init | RevenueCat |
+| Cloud Functions source (`POST /v1/creations`, `GET /v1/cards/:slug`) | Presign upload (501 stub) |
 
-Next engineering slice: **foundation hardening + `create/data/` upload + share API.**
+Next engineering slice: **deploy Functions + image picker + presign upload.**

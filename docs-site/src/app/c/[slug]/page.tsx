@@ -6,6 +6,7 @@ import {
   templateLabel,
   type RecipientCard,
 } from "@/lib/recipientCard";
+import { fetchCardFromFirestore } from "@/lib/fetchCardFromFirestore";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,6 +15,9 @@ type Props = {
 async function fetchCard(slug: string): Promise<RecipientCard | null> {
   const demo = parseDemoSlug(slug);
   if (demo) return demo;
+
+  const spark = await fetchCardFromFirestore(slug);
+  if (spark) return spark;
 
   const apiBase = process.env.OCCASIO_API_BASE;
   if (!apiBase) return null;
@@ -63,21 +67,42 @@ export default async function RecipientCardPage({ params }: Props) {
           className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]"
           style={{ boxShadow: "0 4px 24px rgba(28, 25, 20, 0.08)" }}
         >
-          <div className="flex aspect-[3/4] items-center justify-center bg-[var(--accent-soft)] p-8">
-            <div className="text-center">
-              <p className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
+          <div className="relative flex aspect-[3/4] items-end justify-center overflow-hidden bg-[var(--accent-soft)]">
+            {card.mediaUrls && card.mediaUrls.length > 0 ? (
+              <img
+                src={card.mediaUrls[0]}
+                alt={`Wish for ${card.recipientName}`}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : null}
+            <div
+              className={`relative z-10 w-full p-6 text-center ${
+                card.mediaUrls?.length ? "bg-gradient-to-t from-black/60 to-transparent text-white" : ""
+              }`}
+            >
+              <p
+                className={`text-xs uppercase tracking-[0.12em] ${
+                  card.mediaUrls?.length ? "text-white/80" : "text-[var(--muted)]"
+                }`}
+              >
                 {templateLabel(card.templateType)}
               </p>
-              <h1 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--ink)]">
+              <h1
+                className={`mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight ${
+                  card.mediaUrls?.length ? "text-white" : "text-[var(--ink)]"
+                }`}
+              >
                 {card.recipientName}
               </h1>
               {card.message ? (
-                <p className="mt-4 text-[var(--ink-soft)]">{card.message}</p>
-              ) : (
+                <p className={`mt-4 ${card.mediaUrls?.length ? "text-white/90" : "text-[var(--ink-soft)]"}`}>
+                  {card.message}
+                </p>
+              ) : !card.mediaUrls?.length ? (
                 <p className="mt-4 text-[var(--muted)] italic">
                   A personalized wish is on its way.
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
 

@@ -5,7 +5,7 @@ export type CreateStackParamList = {
   AddPhotos: undefined;
   Details: undefined;
   Preview: undefined;
-  ShareSuccess: { shareUrl: string };
+  ShareSuccess: { shareUrl: string; expiresAt: string };
 };
 
 export type MainTabParamList = {

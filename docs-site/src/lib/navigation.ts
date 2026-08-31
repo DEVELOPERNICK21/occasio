@@ -1,6 +1,7 @@
 export type NavItem = {
   title: string;
   href: string;
+  description?: string;
 };
 
 export type NavSection = {
@@ -8,56 +9,115 @@ export type NavSection = {
   items: NavItem[];
 };
 
-/** Sidebar structure — add a content/*.md file for each href slug. */
+/**
+ * Lean developer nav — only pages needed to orient and ship.
+ * Other content/*.md files remain in the repo but are not linked here.
+ */
 export const navigation: NavSection[] = [
   {
     title: "Start here",
     items: [
-      { title: "Home", href: "/" },
-      { title: "Product surfaces (mobile-first)", href: "/docs/surfaces" },
-      { title: "Blueprint tracker", href: "/docs/blueprint" },
-      { title: "Solo dev playbook", href: "/docs/playbook" },
-      { title: "How to use this site", href: "/docs/how-to-use" },
+      {
+        title: "Overview",
+        href: "/docs",
+        description: "What Occasio is and how to read these docs.",
+      },
+      {
+        title: "Blueprint",
+        href: "/docs/blueprint",
+        description: "Current phase, checklist, and what to build next.",
+      },
+      {
+        title: "Architecture",
+        href: "/docs/architecture",
+        description: "Mobile layers, folder rules, and dependencies.",
+      },
+      {
+        title: "UI design principles",
+        href: "/docs/ui-design-principles",
+        description: "Tokens, components, mobile + web consistency — agents must read.",
+      },
+      {
+        title: "Data flow & network",
+        href: "/docs/data-flow",
+        description: "Layer flow, API patterns, upload/share sequences.",
+      },
+      {
+        title: "Product surfaces",
+        href: "/docs/surfaces",
+        description: "What lives in the app vs web vs backend.",
+      },
     ],
   },
   {
-    title: "Phase 0 — Discovery",
-    items: [{ title: "Discovery 1-pager", href: "/docs/discovery" }],
-  },
-  {
-    title: "Phase 1 — Product",
+    title: "Build",
     items: [
-      { title: "PRD", href: "/docs/prd" },
-      { title: "Personas & MoSCoW", href: "/docs/prd-personas-moscow" },
-      { title: "Product principles", href: "/docs/product-principles" },
+      {
+        title: "Create feature",
+        href: "/docs/create-blueprint",
+        description: "Active slice — screens, API, acceptance criteria.",
+      },
+      {
+        title: "API contracts",
+        href: "/docs/api-contracts",
+        description: "Endpoints the mobile app calls.",
+      },
+      {
+        title: "Environment & secrets",
+        href: "/docs/env-strategy",
+        description: "What goes in .env and what never ships to git.",
+      },
     ],
   },
   {
-    title: "Phase 2 — UX",
+    title: "Reference",
     items: [
-      { title: "Information architecture", href: "/docs/ia" },
-      { title: "User flows (Must-haves)", href: "/docs/user-flows" },
-      { title: "Low-fi wireframes", href: "/docs/wireframes" },
-      { title: "Usability test script", href: "/docs/usability" },
-      { title: "Design tokens & Stitch", href: "/docs/design-tokens" },
+      {
+        title: "Design tokens",
+        href: "/docs/design-tokens",
+        description: "Colors, type, spacing — mirror in src/shared/theme.",
+      },
+      {
+        title: "Wireframes",
+        href: "/docs/wireframes",
+        description: "Screen layouts when building UI.",
+      },
+      {
+        title: "Changelog",
+        href: "/docs/changelog",
+        description: "Decisions and spec updates over time.",
+      },
     ],
-  },
-  {
-    title: "Phase 3 — Technical",
-    items: [
-      { title: "TRD", href: "/docs/trd" },
-      { title: "Client architecture", href: "/docs/architecture" },
-      { title: "API contracts", href: "/docs/api-contracts" },
-      { title: "Environment strategy", href: "/docs/env-strategy" },
-      { title: "NFR targets", href: "/docs/nfr" },
-    ],
-  },
-  {
-    title: "Phase 4 — Build",
-    items: [{ title: "Create feature blueprint", href: "/docs/create-blueprint" }],
-  },
-  {
-    title: "Decisions",
-    items: [{ title: "Changelog", href: "/docs/changelog" }],
   },
 ];
+
+/** Flat list for prev / next navigation on doc pages. */
+export function flatNavigation(): NavItem[] {
+  return navigation.flatMap((section) => section.items);
+}
+
+export function getAdjacentDocs(pathname: string): {
+  prev: NavItem | null;
+  next: NavItem | null;
+} {
+  const items = flatNavigation();
+  const index = items.findIndex((item) => item.href === pathname);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? items[index - 1] : null,
+    next: index < items.length - 1 ? items[index + 1] : null,
+  };
+}
+
+export function getNavItem(pathname: string): NavItem | null {
+  return flatNavigation().find((item) => item.href === pathname) ?? null;
+}
+
+export function getSectionForPath(pathname: string): string | null {
+  for (const section of navigation) {
+    if (section.items.some((item) => item.href === pathname)) {
+      return section.title;
+    }
+  }
+  return null;
+}

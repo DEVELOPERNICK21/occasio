@@ -1,106 +1,102 @@
 # AGENTS.md — Occasio (solo dev + AI IDE)
 
-Instructions for AI agents (Cursor, etc.) working on this repository.
+**Read this file before any product work.** Do not guess architecture or UI.
 
 ## Product
 
-**Occasio** is a React Native mobile app (India-first): save people once, auto-send personalized digital wishes on the right day.
+**Occasio** = React Native mobile app (primary). `docs-site/` = specs only.
 
-| Surface | Path | Build here? |
+## Mandatory reads (in order)
+
+| # | File | Why |
 |---|---|---|
-| **Mobile app (product)** | `src/`, `App.tsx`, `android/`, `ios/` | **Yes — primary** |
-| **Backend** | Firebase + Cloud Functions (future `functions/`) | Server only |
-| **docs-site** | `docs-site/` | Specs + optional landing — **not** creator UI |
-| **Recipient web** | Thin `/c/[slug]` page later | Public card view only |
+| 1 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Repo map, layers, build order |
+| 2 | [`docs-site/content/ui-design-principles.md`](./docs-site/content/ui-design-principles.md) | **UI tokens, components, consistency** |
+| 3 | [`docs-site/content/data-flow.md`](./docs-site/content/data-flow.md) | **Data flow, API, network patterns** |
+| 4 | [`docs-site/content/blueprint.md`](./docs-site/content/blueprint.md) | Phase + current focus |
+| 5 | Active feature blueprint (e.g. [`create-blueprint.md`](./docs-site/content/create-blueprint.md)) | Acceptance criteria |
 
-## Read first (in order)
+Then consult as needed: `api-contracts.md`, `trd.md`, `prd.md`, `wireframes.md`, `design-tokens.json`.
 
-1. [`ARCHITECTURE.md`](./ARCHITECTURE.md) — repo map, layers, build order
-2. [`docs-site/content/blueprint.md`](./docs-site/content/blueprint.md) — phase checklist, current focus
-3. [`docs-site/content/create-blueprint.md`](./docs-site/content/create-blueprint.md) — active feature slice
-4. [`.cursor/rules/`](./.cursor/rules/) — enforced conventions (auto-loaded in Cursor)
+## Decision tree (don't work blindly)
 
-## Specs (reference — do not duplicate in code comments)
+```
+User asks for UI change?
+  → ui-design-principles.md + wireframes.md
+  → Use Screen, Button, tokens.ts only
+  → No fetch/Firebase in screens
 
-| Topic | File |
-|---|---|
-| Product requirements | `docs-site/content/prd.md` |
-| Technical / backend | `docs-site/content/trd.md` |
-| Client layers | `docs-site/content/architecture.md` |
-| Surfaces (mobile vs docs) | `docs-site/content/surfaces.md` |
-| API contracts | `docs-site/content/api-contracts.md` |
-| Env / secrets | `docs-site/content/env-strategy.md` |
-| NFRs | `docs-site/content/nfr.md` |
-| UX / wireframes | `docs-site/content/wireframes.md`, `ia.md`, `user-flows.md` |
-| Design tokens | `design-tokens.json` → `src/shared/theme/tokens.ts` |
-| Principles | `docs-site/content/product-principles.md` |
-| Phase pipeline (easy reference) | `docs-site/content/playbook.md` |
+User asks for API / data / Firebase?
+  → data-flow.md + api-contracts.md
+  → Code in features/<x>/data/
+  → Orchestrate via application/ hooks
+  → Domain rules in domain/ (pure, tested)
 
-Browse specs: `cd docs-site && npm run dev` → http://localhost:3000
+User asks for new feature?
+  → Check blueprint phase + create feature blueprint pattern
+  → New folder: src/features/<name>/{ui,application,domain,data}
+  → Update api-contracts.md if new endpoints
 
-## Mobile architecture (mandatory)
+User asks for docs-site change?
+  → Specs/landing only — NOT product UI (see surfaces.md)
+```
+
+## Architecture (summary)
 
 ```
 src/features/<feature>/
-  ui/            → screens, components (RN only)
-  application/   → hooks, orchestration
-  domain/        → types, pure rules (no React, no Firebase)
-  data/          → API, Firestore, upload adapters
+  ui/            → screens (RN only)
+  application/   → hooks — loading, errors, orchestration
+  domain/        → pure rules & types (no IO)
+  data/          → fetch, Firestore, upload (no React)
 ```
 
-**Dependency rules:**
-- `ui` → `application`, `domain` only (never Firebase/RevenueCat in screens)
-- `data` → `domain` only (never import React or `ui`)
-- No feature imports another feature's `ui`
-- Cross-feature: shared types in `domain` or `src/shared/`
+**Dependency rules:** ui ↛ data directly · data ↛ ui · domain ↛ everything external
 
-**TypeScript:** `strict: true` — no `any` in `domain/`.
+**TypeScript:** `strict: true` · no `any` in `domain/`
 
-## Current engineering focus
+## UI consistency
 
-**Phase 4 — Create feature** (in progress):
+- Tokens: `design-tokens.json` → `src/shared/theme/tokens.ts`
+- Shared components: `src/shared/ui/` (Screen, Button, …)
+- One primary CTA per screen · calm trust aesthetic
+- Mobile + recipient web share tokens; docs-site is separate
 
-- Done: UI scaffold, navigation, draft context, domain types
-- Next: `src/features/create/data/` — upload + `POST /v1/creations` + real share URL
-- Then: image picker, quota/paywall domain, share sheet
+Full rules: `ui-design-principles.md`
 
-Build order after create: recipient web → auth/vault/history → billing → auto-send.
+## Data & network
+
+- All HTTP in `data/` repositories · typed errors
+- Hooks in `application/` call domain then data
+- Mock via `env.useMockApi` when you need offline dev; otherwise Functions (emulator or cloud)
+- API base: `getApiBaseUrl()` → `...cloudfunctions.net/api` (note `/api` prefix from function export name)
+- No base64 images in Firestore
+
+Full patterns: `data-flow.md` · schemas: `api-contracts.md`
+
+## Current focus
+
+**Phase 4 — Create:** image picker, real upload, Functions, paywall modal.
+
+Build order: create → recipient web → auth/vault/history → billing → auto-send.
 
 ## What NOT to do
 
-- Do not build creator/vault/billing UI in `docs-site/`
-- Do not store images as base64 in Firestore
-- Do not skip store billing for digital subscriptions (Play / App Store)
-- Do not add Expo — project uses **React Native CLI**
-- Do not commit secrets (`.env*`, API keys, R2 credentials)
-- Do not create git commits unless the user asks
-- Do not over-engineer (no repository interfaces for every collection on day one)
+- Build product UI in `docs-site/`
+- `fetch` or Firebase in `ui/`
+- Hardcoded colors outside `tokens.ts`
+- Expo (RN CLI project)
+- Store billing bypass for digital goods
+- Commit secrets or create git commits unless asked
+- Over-engineer (no microservices, no repo-per-layer packages)
 
-## Run / verify
+## Verify
 
 ```sh
-# Mobile (primary)
-npm start
-npm run android   # or npm run ios
-
-# Typecheck
 npx tsc --noEmit
-
-# Docs site (secondary)
-cd docs-site && npm run dev
+npm start && npm run android
 ```
 
-## When starting a task
+## Cursor rules (auto-loaded)
 
-1. Check `blueprint.md` for phase
-2. Check feature blueprint (e.g. `create-blueprint.md`) for acceptance criteria
-3. Edit `src/features/` for product work
-4. Update `docs-site/content/` only when specs or contracts change
-5. Update `blueprint.md` checkbox when a slice ships
-
-## Solo dev workflow
-
-- Small focused PRs / commits per feature slice
-- One feature blueprint before coding
-- Mobile ships first; docs-site tracks decisions
-- Usability/Stitch can run in parallel — visuals don't block `data/` layer
+`.cursor/rules/occasio.mdc` · `ui-design.mdc` · `data-network.mdc` · `mobile-features.mdc` · `create-feature.mdc` · `docs-site.mdc`

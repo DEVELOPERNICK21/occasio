@@ -8,6 +8,8 @@ updated: 2026-08-31
 
 > **Scope:** This document describes the **React Native app** (`src/`). The [docs-site](/docs/surfaces) is documentation/landing only — not the product codebase.
 
+**Agents:** UI rules → [UI design principles](/docs/ui-design-principles). Data/API → [Data flow & network](/docs/data-flow).
+
 ## Approach
 
 **Feature-based + Clean Architecture principles + strict TypeScript + dependency boundaries + predictable state.**

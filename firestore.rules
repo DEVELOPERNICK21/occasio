@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /creations/{creationId} {
+      allow read: if true;
+      allow update, delete: if false;
+      allow create: if validCreationCreate();
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /relationships/{relationshipId} {
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+    }
+  }
+
+  function validCreationCreate() {
+    let data = request.resource.data;
+    return data.keys().hasAll([
+          'templateType',
+          'recipientName',
+          'message',
+          'photoRefs',
+          'mediaUrls',
+          'shareSlug',
+          'watermarked',
+          'viewCount',
+          'createdAt',
+          'expiresAt',
+          'userId',
+        ])
+      && data.templateType is string
+      && data.recipientName is string
+      && data.recipientName.size() > 0
+      && data.recipientName.size() <= 80
+      && data.message is string
+      && data.message.size() <= 500
+      && data.photoRefs is list
+      && data.photoRefs.size() >= 1
+      && data.photoRefs.size() <= 3
+      && data.mediaUrls is list
+      && data.shareSlug is string
+      && data.shareSlug.size() >= 6
+      && data.shareSlug.size() <= 32
+      && data.watermarked == true
+      && data.viewCount == 0
+      && data.userId == null
+      && data.createdAt is timestamp
+      && data.expiresAt is timestamp
+      && validMediaUrls(data.mediaUrls, data.photoRefs);
+  }
+
+  function isInlineBase64(refs) {
+    return refs.size() >= 1 && refs[0].matches('inline:[0-9]+');
+  }
+
+  function validMediaUrls(urls, refs) {
+    return urls.size() >= 1
+      && urls.size() <= 3
+      && (
+        !isInlineBase64(refs)
+        || (
+          urls.size() == 1
+          && urls[0].matches('data:image/.*')
+          && urls[0].size() <= 800000
+        )
+      );
+  }
+}

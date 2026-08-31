@@ -20,11 +20,10 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Occasio Docs",
-    template: "%s · Occasio Docs",
+    default: "Occasio",
+    template: "%s · Occasio",
   },
-  description:
-    "Living product documentation for Occasio — discovery, PRD, UX, TRD, and build blueprint.",
+  description: "Personalized digital wishes, sent on the right day.",
 };
 
 export default function RootLayout({

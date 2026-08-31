@@ -21,7 +21,10 @@ export function PreviewScreen({ navigation }: Props) {
       return;
     }
     if (result) {
-      navigation.navigate('ShareSuccess', { shareUrl: result.shareUrl });
+      navigation.navigate('ShareSuccess', {
+        shareUrl: result.shareUrl,
+        expiresAt: result.expiresAt,
+      });
     }
   };
 

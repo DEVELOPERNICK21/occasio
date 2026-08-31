@@ -4,6 +4,7 @@ export type RecipientCard = {
   templateType: string;
   fromName: string | null;
   isDemo: boolean;
+  mediaUrls?: string[];
 };
 
 /** Parse mock slugs from the mobile app (`demo-mom-abc123`). */

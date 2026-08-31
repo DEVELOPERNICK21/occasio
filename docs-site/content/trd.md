@@ -164,7 +164,7 @@ subscriptions/{subscriptionId}
 
 - Recipient-facing card pages: no login, but rate-limit view endpoints to prevent scraping of other users' photos.
 - Relationship data (other people's names/dates/numbers) is personal data about non-users — Play Store Data Safety form must disclose this; provide an easy in-app "delete this person's data" action.
-- Auto-expire and hard-delete media in R2 after a configurable window (e.g., 120 days) unless the sender pins it — controls storage cost and reduces data-retention liability.
+- Auto-expire share links per tier (30 days guest/free, 365 days paid); hard-delete media in R2 within ~7 days after `expiresAt` unless the sender pins the creation — controls storage cost and reduces data-retention liability.
 
 ## 7. Cost Estimate (early stage, <5K users)
 

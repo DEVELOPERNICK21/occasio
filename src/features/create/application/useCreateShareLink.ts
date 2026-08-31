@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { createShareLink } from '../data/creationRepository';
+import { resolveCreationMedia } from '../data/photoRefs';
 import { CreationApiError } from '../data/types';
 import { shouldShowPaywall } from '../domain/quota';
 import { canGenerateShareLink } from '../domain/creationRules';
@@ -47,12 +48,8 @@ export function useCreateShareLink(options: Options = {}) {
       setState({ isLoading: true, error: null, paywallRequired: false, result: null });
 
       try {
-        const photoRefs = draft.photoUris.map((uri, i) =>
-          uri.startsWith('placeholder://')
-            ? `uploads/tmp/placeholder-${i}.jpg`
-            : uri,
-        );
-        const result = await createShareLink(draft, photoRefs);
+        const { photoRefs, mediaUrls } = await resolveCreationMedia(draft.photoUris);
+        const result = await createShareLink(draft, photoRefs, mediaUrls);
         setState({ isLoading: false, error: null, paywallRequired: false, result });
         return result;
       } catch (e) {

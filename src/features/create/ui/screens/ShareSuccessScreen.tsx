@@ -11,7 +11,12 @@ type Props = NativeStackScreenProps<CreateStackParamList, 'ShareSuccess'>;
 
 export function ShareSuccessScreen({ navigation, route }: Props) {
   const { draft, reset } = useCreateDraftContext();
-  const shareUrl = route.params.shareUrl;
+  const { shareUrl, expiresAt } = route.params;
+  const expiryLabel = new Date(expiresAt).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
   const handleShare = async () => {
     try {
@@ -46,6 +51,7 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
         <Text style={styles.link} selectable>
           {shareUrl}
         </Text>
+        <Text style={styles.expiry}>Link works until {expiryLabel}</Text>
       </View>
       <View style={styles.nudge}>
         <Text style={styles.nudgeTitle}>Save to Vault?</Text>
@@ -70,6 +76,11 @@ const styles = StyleSheet.create({
   link: {
     fontSize: typography.sizeSm,
     color: colors.accent,
+  },
+  expiry: {
+    marginTop: spacing.sm,
+    fontSize: typography.sizeXs,
+    color: colors.muted,
   },
   nudge: {
     marginTop: spacing.lg,

@@ -10,6 +10,25 @@ Clients talk to **Firestore** for reads where rules allow; **Cloud Functions** f
 
 Base URL (prod): `https://asia-south1-<project>.cloudfunctions.net`
 
+## Share link lifecycle
+
+Public greeting links are **unlisted** (anyone with the URL can view) but **time-limited**.
+
+| Creator | Link TTL (`expiresAt`) | Notes |
+|---|---|---|
+| Guest | **30 days** | Default for anonymous create |
+| Free (signed in) | **30 days** | Manual cards |
+| Paid / pinned | **365 days** | Longer retention for subscribers |
+
+**Server rules**
+
+1. `POST /v1/creations` sets `expiresAt` from the table above (see `src/features/create/domain/shareLink.ts`).
+2. `GET /v1/cards/:slug` returns **410 `EXPIRED`** when `now > expiresAt`.
+3. Recipient web shows an expired state (not the card).
+4. **Media cleanup** (R2): delete files within ~7 days after `expiresAt` via scheduled job. Firestore guest rows may be purged later; signed-in users keep History metadata.
+
+**Slug security:** production slugs are cryptographically random (e.g. `x7k2m9`), not predictable `demo-name-*` strings.
+
 ## `POST /v1/creations`
 
 Create a shareable card (guest or authed).
@@ -31,7 +50,7 @@ Create a shareable card (guest or authed).
   "creationId": "c_123",
   "shareSlug": "x7k2m9",
   "shareUrl": "https://occasio.app/c/x7k2m9",
-  "expiresAt": "2026-12-01T00:00:00Z",
+  "expiresAt": "2026-09-30T00:00:00Z",
   "watermarked": true
 }
 ```
