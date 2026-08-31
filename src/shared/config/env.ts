@@ -25,9 +25,9 @@ export const env = {
 
   /**
    * When true, create/upload skip network and return mocks.
-   * Set false in dev to test Spark (Firestore direct from the app).
+   * Set true only for offline UI work — default uses real Firebase (Spark).
    */
-  useMockApi: __DEV__,
+  useMockApi: false,
 
   /**
    * Spark without Blaze: embed one compressed photo as base64 in Firestore.

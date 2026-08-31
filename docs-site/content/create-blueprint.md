@@ -15,10 +15,10 @@ Guest or signed-in user completes **Template → Photos → Details → Preview 
 | Screen | Route | Status |
 |---|---|---|
 | Template picker | `CreateTab` → `TemplatePicker` | ✅ UI scaffold |
-| Add photos | `AddPhotos` | ✅ placeholder slots |
+| Add photos | `AddPhotos` | ✅ gallery + camera (`react-native-image-picker`) |
 | Details | `Details` | ✅ |
-| Preview | `Preview` | ✅ static preview |
-| Share success | `ShareSuccess` | ✅ demo URL |
+| Preview | `Preview` | ✅ photo + message preview |
+| Share success | `ShareSuccess` | ✅ native share sheet |
 
 ## Domain
 
@@ -29,8 +29,10 @@ Guest or signed-in user completes **Template → Photos → Details → Preview 
 
 | Layer | File | Todo |
 |---|---|---|
-| `data` | `creationRepository.ts` | presign upload + `POST /v1/creations` |
-| `data` | `uploadService.ts` | image resize + storage |
+| `data` | `creationRepository.ts` | Spark Firestore + optional Functions |
+| `data` | `photoRefs.ts`, `sparkCreationRepository.ts` | base64 inline (Spark) or Storage (Blaze) |
+| `data` | `uploadService.ts` | presign when on Blaze + Functions |
+| `application` | `usePhotoPicker.ts` | gallery + camera orchestration |
 | `domain` | `quota.ts` | free tier 1 card/month |
 
 ## Analytics
@@ -46,10 +48,10 @@ Guest or signed-in user completes **Template → Photos → Details → Preview 
 
 ## Acceptance criteria
 
-- [ ] Guest can complete flow without sign-in
-- [ ] 1–3 photos, name required, message optional
-- [ ] Generate returns real `shareUrl` (not demo)
-- [ ] Share sheet opens (WhatsApp intent on Android)
+- [x] Guest can complete flow without sign-in
+- [x] 1 photo (Spark base64) or 1–3 (Storage path when `useBase64Media: false`)
+- [x] Generate saves to Firestore (Spark) — real `shareUrl`
+- [x] Share sheet opens (native `Share`)
 - [ ] Free quota shows paywall modal
 - [ ] Vault nudge visible on share success
 - [ ] Unit tests: `canPreview` rules, quota domain

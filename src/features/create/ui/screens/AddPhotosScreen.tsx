@@ -1,22 +1,17 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
 import {
-  Alert,
   Image,
   Pressable,
   StyleSheet,
   View,
 } from 'react-native';
-import {
-  launchImageLibrary,
-  type ImagePickerResponse,
-} from 'react-native-image-picker';
 import { env } from '../../../../shared/config/env';
 import {
   MAX_PHOTOS_BASE64,
   MAX_PHOTOS_STORAGE,
 } from '../../../../shared/config/media';
 import { Text } from '../../../../shared/ui/Text';
+import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
@@ -29,42 +24,15 @@ const maxPhotos = env.useBase64Media ? MAX_PHOTOS_BASE64 : MAX_PHOTOS_STORAGE;
 
 export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
-  const [picking, setPicking] = useState(false);
+  const { pickPhoto, picking } = usePhotoPicker();
 
-  const pickPhoto = async (slotIndex: number) => {
-    if (picking) return;
-    setPicking(true);
+  const handlePick = async (slotIndex: number) => {
+    const uri = await pickPhoto();
+    if (!uri) return;
 
-    try {
-      const result: ImagePickerResponse = await launchImageLibrary({
-        mediaType: 'photo',
-        selectionLimit: 1,
-        quality: env.useBase64Media ? 0.7 : 0.8,
-        maxWidth: env.useBase64Media ? 960 : undefined,
-        maxHeight: env.useBase64Media ? 960 : undefined,
-        includeBase64: env.useBase64Media,
-      });
-
-      if (result.didCancel) return;
-      if (result.errorCode) {
-        Alert.alert('Could not open photos', result.errorMessage ?? result.errorCode);
-        return;
-      }
-
-      const asset = result.assets?.[0];
-      if (!asset?.uri) return;
-
-      const uri =
-        env.useBase64Media && asset.base64
-          ? `data:image/jpeg;base64,${asset.base64}`
-          : asset.uri;
-
-      const next = [...draft.photoUris];
-      next[slotIndex] = uri;
-      setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
-    } finally {
-      setPicking(false);
-    }
+    const next = [...draft.photoUris];
+    next[slotIndex] = uri;
+    setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
   };
 
   const removePhoto = (slotIndex: number) => {
@@ -96,7 +64,7 @@ export function AddPhotosScreen({ navigation }: Props) {
               key={i}
               uri={uri}
               disabled={picking}
-              onPick={() => pickPhoto(i)}
+              onPick={() => handlePick(i)}
               onRemove={uri ? () => removePhoto(i) : undefined}
             />
           );
@@ -104,8 +72,8 @@ export function AddPhotosScreen({ navigation }: Props) {
       </View>
       <Text style={styles.hint}>
         {env.useBase64Media
-          ? 'One compressed photo is saved with your card until Storage is enabled.'
-          : 'Tap a slot to choose from your gallery. Photos upload when you share.'}
+          ? 'Pick from gallery or take a photo. One compressed image is saved with your card.'
+          : 'Pick from gallery or camera. Photos upload when you share.'}
       </Text>
     </Screen>
   );
@@ -123,19 +91,33 @@ function PhotoSlot({
   onRemove?: () => void;
 }) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPick}
-      onLongPress={onRemove}
-      style={[styles.slot, uri && styles.slotFilled]}
-    >
-      {uri ? (
-        <Image source={{ uri }} style={styles.image} resizeMode="cover" />
-      ) : (
-        <Text style={styles.plus}>+</Text>
-      )}
-    </Pressable>
+    <View style={styles.slotWrap}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={uri ? 'Change photo' : 'Add photo'}
+        disabled={disabled}
+        onPress={onPick}
+        style={[styles.slot, uri && styles.slotFilled]}
+      >
+        {uri ? (
+          <Image source={{ uri }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <Text style={styles.plus}>+</Text>
+        )}
+      </Pressable>
+      {uri && onRemove ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Remove photo"
+          disabled={disabled}
+          onPress={onRemove}
+          style={styles.removeBtn}
+          hitSlop={8}
+        >
+          <Text style={styles.removeLabel}>×</Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -145,8 +127,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginTop: spacing.md,
   },
-  slot: {
+  slotWrap: {
     flex: 1,
+    position: 'relative',
+  },
+  slot: {
     aspectRatio: 1,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -166,6 +151,23 @@ const styles = StyleSheet.create({
   plus: {
     fontSize: typography.sizeLg,
     color: colors.muted,
+  },
+  removeBtn: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeLabel: {
+    color: colors.surface,
+    fontSize: typography.sizeMd,
+    lineHeight: 20,
+    fontWeight: typography.weightSemibold,
   },
   hint: {
     marginTop: spacing.lg,
