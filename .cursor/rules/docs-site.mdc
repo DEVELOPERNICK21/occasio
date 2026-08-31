@@ -1,0 +1,34 @@
+---
+description: Occasio docs-site — specs only, not product UI
+globs: docs-site/**/*
+alwaysApply: false
+---
+
+# docs-site (documentation only)
+
+This Next.js app is **not** the Occasio product. Do not add creator, vault, or billing flows here.
+
+## Allowed
+
+- Edit `docs-site/content/*.md` (PRD, TRD, blueprint, wireframes)
+- Update `docs-site/src/lib/navigation.ts` when adding doc pages
+- Mermaid in markdown (` ```mermaid ` blocks)
+- Future: marketing landing + optional public `/c/[slug]` recipient page
+
+## Not allowed
+
+- Duplicating mobile screens as the main product UI
+- Firebase/auth logic for the creator app
+- New product features that belong in `src/features/`
+
+## Adding a doc page
+
+1. Create `docs-site/content/<slug>.md` with frontmatter (`title`, `description`, `phase`, `updated`)
+2. Register in `docs-site/src/lib/navigation.ts`
+3. Update `docs-site/content/blueprint.md` if phase status changes
+
+## Source of truth for product code
+
+Mobile: `src/` + `ARCHITECTURE.md` + `AGENTS.md`
+
+Legacy `docs/prd-trd.md` — prefer split `content/prd.md` + `content/trd.md`.

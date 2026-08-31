@@ -1,0 +1,44 @@
+---
+description: Occasio core rules — mobile-first product, layers, secrets, build order
+alwaysApply: true
+---
+
+# Occasio — core rules
+
+**Product = React Native app** (`src/`). `docs-site/` is specs/landing only.
+
+## Before coding
+
+Read `ARCHITECTURE.md` and `docs-site/content/blueprint.md`. Active feature: `create-blueprint.md`.
+
+## Feature structure
+
+```
+src/features/<name>/{ui,application,domain,data}
+```
+
+- UI: no Firebase/RevenueCat imports
+- `data`: no React/UI imports
+- Features: no cross-import of other features' `ui`
+- Domain: pure TypeScript, strict, no `any`
+
+## Tokens
+
+Use `src/shared/theme/tokens.ts` (mirrors `design-tokens.json`). No hardcoded random colors.
+
+## Scope
+
+- Minimize diff; match existing patterns in `src/features/create/`
+- Guest can create/share without auth (PRD)
+- Phase 1 validates cards before auto-send engine
+
+## Secrets & git
+
+Never commit `.env`, keys, or credentials. No commits unless user requests.
+
+## Don't
+
+- Build product UI in `docs-site/`
+- Use Expo (RN CLI project)
+- Base64 images in Firestore
+- Skip Play/App Store billing for subscriptions

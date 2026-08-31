@@ -1,0 +1,60 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "product": "Occasio",
+    "version": "1.0.0",
+    "updated": "2026-08-31",
+    "notes": "Feed to Google Stitch and mirror in src/shared/theme/tokens.ts"
+  },
+  "color": {
+    "bg": { "value": "#F6F1E8", "type": "color" },
+    "surface": { "value": "#FFFDF8", "type": "color" },
+    "sidebar": { "value": "#EFE8DC", "type": "color" },
+    "ink": { "value": "#1C1914", "type": "color" },
+    "inkSoft": { "value": "#3D3830", "type": "color" },
+    "muted": { "value": "#6F675C", "type": "color" },
+    "border": { "value": "#DDD2C0", "type": "color" },
+    "accent": { "value": "#1F5C4D", "type": "color" },
+    "accentSoft": { "value": "#D8EBE4", "type": "color" },
+    "accentHover": { "value": "#174A3E", "type": "color" },
+    "error": { "value": "#B42318", "type": "color" },
+    "errorSoft": { "value": "#FEE4E2", "type": "color" },
+    "success": { "value": "#027A48", "type": "color" },
+    "white": { "value": "#FFFFFF", "type": "color" }
+  },
+  "typography": {
+    "fontDisplay": { "value": "Fraunces, Georgia, serif", "type": "fontFamily" },
+    "fontBody": { "value": "Source Sans 3, system-ui, sans-serif", "type": "fontFamily" },
+    "fontMono": { "value": "IBM Plex Mono, monospace", "type": "fontFamily" },
+    "sizeXs": { "value": "12", "type": "fontSize" },
+    "sizeSm": { "value": "14", "type": "fontSize" },
+    "sizeMd": { "value": "16", "type": "fontSize" },
+    "sizeLg": { "value": "20", "type": "fontSize" },
+    "sizeXl": { "value": "28", "type": "fontSize" },
+    "size2xl": { "value": "34", "type": "fontSize" },
+    "weightRegular": { "value": "400", "type": "fontWeight" },
+    "weightMedium": { "value": "500", "type": "fontWeight" },
+    "weightSemibold": { "value": "600", "type": "fontWeight" }
+  },
+  "radius": {
+    "sm": { "value": "6", "type": "borderRadius" },
+    "md": { "value": "10", "type": "borderRadius" },
+    "lg": { "value": "16", "type": "borderRadius" },
+    "xl": { "value": "24", "type": "borderRadius" },
+    "full": { "value": "9999", "type": "borderRadius" }
+  },
+  "spacing": {
+    "xs": { "value": "4", "type": "spacing" },
+    "sm": { "value": "8", "type": "spacing" },
+    "md": { "value": "16", "type": "spacing" },
+    "lg": { "value": "24", "type": "spacing" },
+    "xl": { "value": "32", "type": "spacing" },
+    "2xl": { "value": "48", "type": "spacing" }
+  },
+  "shadow": {
+    "card": {
+      "value": "0 4px 24px rgba(28, 25, 20, 0.08)",
+      "type": "boxShadow"
+    }
+  }
+}

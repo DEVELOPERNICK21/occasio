@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f6f1e8;
+  --sidebar: #efe8dc;
+  --surface: #fffdf8;
+  --border: #ddd2c0;
+  --ink: #1c1914;
+  --ink-soft: #3d3830;
+  --muted: #6f675c;
+  --accent: #1f5c4d;
+  --accent-soft: #d8ebe4;
+  --code-bg: #1c1914;
+  --code-fg: #f3eee4;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.doc-prose {
+  color: var(--ink-soft);
+  line-height: 1.7;
+  font-size: 1.02rem;
+}
+
+.doc-prose h1,
+.doc-prose h2,
+.doc-prose h3,
+.doc-prose h4 {
+  color: var(--ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.doc-prose h1 {
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.doc-prose h2 {
+  font-size: 1.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-prose h3 {
+  font-size: 1.15rem;
+}
+
+.doc-prose p {
+  margin: 0.85rem 0;
+}
+
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0.75rem 0;
+  padding-left: 1.35rem;
+}
+
+.doc-prose li {
+  margin: 0.35rem 0;
+}
+
+.doc-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.doc-prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.doc-prose blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.doc-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-prose code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.88em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.doc-prose pre {
+  margin: 1rem 0;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 1rem 1.1rem;
+  border: 1px solid #2a2620;
+}
+
+.doc-prose pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.85rem;
+}
+
+.doc-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.92rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.doc-prose th,
+.doc-prose td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-prose th {
+  background: var(--sidebar);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.doc-prose tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}

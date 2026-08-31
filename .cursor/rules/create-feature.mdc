@@ -1,0 +1,38 @@
+---
+description: Occasio create feature — acceptance criteria and file map
+globs: src/features/create/**/*
+alwaysApply: false
+---
+
+# Feature: create
+
+**Goal:** Template → Photos → Details → Preview → Share link (&lt;3 min, guest OK).
+
+Full spec: `docs-site/content/create-blueprint.md`
+
+## Files
+
+```
+domain/types.ts, templates.ts, quota.ts (todo)
+application/useCreateDraft.ts, CreateDraftContext.tsx
+data/creationRepository.ts, uploadService.ts (todo)
+ui/screens/*.tsx
+```
+
+## Acceptance (ship checklist)
+
+- [ ] 1–3 photos, name required
+- [ ] Real `shareUrl` from API (not demo string)
+- [ ] Share sheet / WhatsApp intent
+- [ ] Free quota → paywall modal
+- [ ] Vault nudge on ShareSuccess
+- [ ] Unit tests for `canPreview` + quota rules
+
+## API (see api-contracts.md)
+
+- `POST /v1/uploads/presign` → upload bytes
+- `POST /v1/creations` → `{ shareUrl, creationId }`
+
+## Analytics events
+
+`create_started`, `template_selected`, `photos_added`, `preview_opened`, `card_shared`, `upload_failed`

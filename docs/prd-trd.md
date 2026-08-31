@@ -1,0 +1,293 @@
+# Occasio — PRD & TRD
+**Product name:** Occasio  
+**Former working name:** "Momento" (deprecated)  
+**Author:** Nick Kubde | Draft v2 | August 2026  
+**Changelog (v1 → v2):** Renamed to Occasio; guest create + soft-auth clarified; review window elevated to PRD; mobile stack locked to React Native CLI; client architecture (feature-based + Clean Architecture principles); build phases realigned to Occasio-as-mobile; data model enums tightened.
+
+> **Canonical docs UI:** edit and browse the living record in [`docs-site/`](../docs-site/) (`content/prd.md`, `content/trd.md`, blueprint, IA, flows). This combined file is kept as a flat export.
+
+---
+
+# PART 1 — PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+## 1. Vision
+
+Not a card generator. A **relationship-memory subscription**: you save the people who matter (mom, partner, best friend, dad) once, with their key dates, and the app automatically creates and sends them a personalized, gamified digital wish on the right day — every year — without you having to remember or open the app.
+
+The one-off card ("HeartCraft" model) is the acquisition hook. The **auto-send relationship vault** is the retention engine and the actual subscription product.
+
+## 2. Problem Statement
+
+- People forget dates, or remember too late to do something thoughtful.
+- Existing digital card tools (HeartCraft and similar) solve the *creation* moment but not the *remembering* moment — they require the sender to open the app every single time, which is why retention on pure card-generator apps is weak (proven by their own pay-per-use pricing complaints).
+- A generic calendar reminder ("Mom's birthday today") still leaves the *work* of making something nice to the last minute.
+
+## 3. Target Users
+
+| Segment | Why they'd use it |
+|---|---|
+| Young adults (18–30), India-first | Partners, proposals, anniversaries — the emotionally expressive, low-cash-but-high-sentiment segment |
+| "Forgetful but caring" adult children (25–45) | Auto-send for parents' birthdays / Mother's Day / Father's Day — guilt-driven retention |
+| Long-distance couples/families | Recurring emotional touchpoints without effort |
+| Content creators / influencers (secondary channel) | Use cards as shareable content themselves — organic distribution loop |
+
+## 4. Core Differentiation vs. HeartCraft
+
+| | HeartCraft (as observed) | This product |
+|---|---|---|
+| Monetization | Pay-per-card → recently bundled subscription | Relationship-based recurring subscription from day one |
+| Retention driver | None — must remember to open app | Automated: app remembers for you |
+| Value delivered | One nice moment | An ongoing "I never miss what matters" relationship |
+| Growth loop | Recipient sees branded card, may click through | Same, plus recipients become senders (auto-send creates repeat exposure every year) |
+
+## 5. MVP Feature Set (Phase 1)
+
+1. **Occasion templates** (reuse the proven mechanic, don't reinvent): Birthday, Sorry, Proposal, Anniversary, Photo Puzzle, Mother's/Father's Day — 4-5 to start, not all 6.
+2. **Creation flow**: pick template → upload 1-3 photos + name + short message → preview → generate shareable link (no login required for recipient).
+   - **Guest create:** a user can complete Create → Share **without** signing in.
+   - **Soft auth gate:** sign-in is required only when saving to the Vault, enabling auto-send, syncing creations history across devices, or managing a subscription.
+3. **Relationship Vault** (the differentiator): save a person (name, relationship type, birthday/anniversary date, phone/WhatsApp or email), toggle "auto-send" per occasion.
+4. **Auto-send engine**: on the scheduled date, system auto-generates a card from a saved template + saved photos/message and sends the link via WhatsApp/SMS/email, with a push notification to the sender ("Sent! 🎉 Priya just got her birthday surprise from you").
+   - **Review window (required for MVP):** before the recipient is notified, the sender gets a short window (e.g. 2 hours) to preview, edit, approve, or cancel the send. Reduces unwanted-send and trust risk.
+5. **Payment**: Google Play Billing (Android) / App Store (iOS) for subscriptions; web checkout only for non-mobile flows where store policy allows.
+6. **Basic account**: phone/Google sign-in, saved creations history.
+
+## 6. Phase 2 (post-MVP, only after traction)
+
+- Video-based templates (short animated messages)
+- Group gifting (multiple people contribute to one card — e.g., friends pooling a birthday surprise)
+- AI-assisted message writing ("help me say this") — careful, no impersonation of real people
+- Reminder-only free tier upsell nudges ("You have 3 days left to personalize Mom's card")
+- Referral rewards (free month for both sides)
+
+## 7. Explicit Non-Goals
+
+- Not a general greeting-card marketplace (no print-on-demand, no physical products in v1)
+- Not a dating app or matchmaking feature
+- No AI voice/deepfake features
+- No scraping of contacts' personal data beyond what the user manually enters
+
+## 8. Monetization Model — Full Subscription Structure
+
+**Principle:** free tier hooks people via the one-off card mechanic (like HeartCraft); the *paid* product is the Relationship Vault + auto-send.
+
+| Tier | Price (India) | What's included |
+|---|---|---|
+| **Free** | ₹0 | 1 manual card/month, watermark on shared card, no auto-send, up to 1 saved person (manual reminder only, no auto-generate) |
+| **Personal** | ₹149/month or ₹999/year | Unlimited manual cards, up to 5 saved people with auto-send, no watermark, all templates |
+| **Family** | ₹299/month or ₹1,999/year | Up to 15 saved people, priority/seasonal templates, video templates (Phase 2), early access to new occasions |
+| **One-off unlock** (no subscription) | ₹49–99/card | For users who just want a single polished card — this is the HeartCraft-equivalent entry point, kept intentionally cheap to funnel into subscription |
+
+**Why annual-first pricing:** the core value (auto-send on a birthday next year) only pays off across a year — monthly billing undersells the product and increases churn-related admin. Lead with annual in-app messaging; offer monthly as the "trial" path.
+
+**Google Play/App Store cut:** budget ~15% off subscription revenue (India, as of mid-2026 fee structure) — price accordingly; this is non-negotiable for any purchase flow inside the Android/iOS app.
+
+## 9. Success Metrics (first 90 days post-launch)
+
+- Free → paid conversion: 3–6% is a realistic target for this category (gifting/lifestyle apps skew low; don't plan around SaaS-level 15%+ conversion)
+- Vault attach rate: % of card-creators who save at least 1 person to the vault (this is the KPI that predicts long-term revenue, more than downloads)
+- Auto-send delivery success rate: >98% (a missed birthday send is a trust-breaking failure for this exact product)
+- Recipient → sender conversion: % of people who received a card and later created their own account
+
+## 10. Key Risks
+
+- **Trust/refund risk**: the HeartCraft reviews flagged unclear/unauthorized charges — subscription cancellation and refund flow must be unambiguous, or 1-star reviews will cap growth.
+- **Marketing-dependent, not tech-dependent**: revenue ceiling is set by distribution (Instagram/WhatsApp virality), not feature count — don't over-invest in features before validating this.
+- **Notification delivery reliability**: WhatsApp Business API / SMS providers can fail or get rate-limited — auto-send is a promise; broken promises are the whole product's downside risk.
+- **Data sensitivity**: storing other people's names, phone numbers, birthdays without their direct consent — needs a clear privacy policy and easy data-deletion path (per Play Store Data Safety requirements).
+
+---
+
+# PART 2 — TECHNICAL REQUIREMENTS DOCUMENT (TRD)
+
+## 1. Architecture Overview (system)
+
+```
+┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│  Next.js Web App │      │  React Native App │      │  Recipient Link  │
+│  (creator flow,   │◄────►│  Occasio (CLI)    │      │  (public, no      │
+│  marketing pages) │      │  + push notifs    │      │  login, view-only)│
+└────────┬─────────┘      └────────┬─────────┘      └────────┬────────┘
+         │                          │                         │
+         └───────────────┬──────────┴──────────────┬──────────┘
+                          ▼                         ▼
+                 ┌─────────────────┐       ┌─────────────────┐
+                 │ Firebase Auth /  │       │  Cloud Functions │
+                 │ Firestore (data) │◄─────►│ (scheduler, send │
+                 └─────────────────┘       │  engine, payments)│
+                          │                 └────────┬─────────┘
+                          ▼                          ▼
+                 ┌─────────────────┐       ┌─────────────────┐
+                 │ Cloudflare R2    │       │ WhatsApp/SMS/    │
+                 │ (image/video     │       │ Email provider   │
+                 │  storage)        │       │ (send channel)   │
+                 └─────────────────┘       └─────────────────┘
+```
+
+## 2. Tech Stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| Web (creator + recipient view) | Next.js 14+, Tailwind, Framer Motion | Fast to ship recipient/marketing surfaces; share public card links |
+| Mobile | **React Native CLI** (Occasio repo; RN 0.86+) | Already bootstrapped; core competency; **not Expo** unless a later migration is explicitly decided |
+| Auth + DB | Firebase Auth + Firestore | Same stack as Finch/Pawfect — reuse patterns/instincts |
+| Media storage | **Cloudflare R2** (not Firebase Storage) | Zero egress fees — critical since shared cards get viewed repeatedly by recipients with no login |
+| Scheduler (auto-send) | Google Cloud Scheduler + Cloud Functions (cron, daily check) | Managed, cheap, reliable enough for date-based triggers |
+| Payments | Google Play Billing (Android) / StoreKit (iOS); Razorpay only for any web-only checkout where store policy allows it | Store policy compliance is mandatory for digital goods |
+| Billing abstraction | RevenueCat | Avoid building receipt validation from scratch (solo-dev time saver) |
+| Notifications (in-app) | Firebase Cloud Messaging | Free, already Firebase-native |
+| Send channel (to recipient) | WhatsApp Business API (Meta) primary, SMS (e.g., MSG91) fallback, email (Resend/SendGrid) always-on backup | WhatsApp is the highest open-rate channel in India; needs a fallback because Business API approval/cost can be a blocker early on |
+| Language | **TypeScript strict** (`strict: true`) | Typed domain + Firestore/DTO boundaries; no `any` in domain |
+
+## 2b. Client application architecture (Occasio RN + later Next.js)
+
+**Approach:** feature-based modules + Clean Architecture *principles* (dependency rule, pure domain) — **not** a full enterprise ports-and-adapters monorepo for MVP.
+
+### Feature modules
+
+Top-level features aligned to MVP IA:
+
+| Feature | Owns |
+|---|---|
+| `auth` | Sign-in, OTP, soft-auth modal, session |
+| `create` | Templates, photos, message, preview, share success, free-limit / one-off paywall entry |
+| `vault` | People list, add/edit, auto-send toggles, upcoming, review window UI, delete person |
+| `history` | Creations list + detail, reshare |
+| `billing` | Plans, store purchase, manage/cancel, entitlement surface |
+| `recipient` | Public card view concerns (primarily web; shared types with mobile where useful) |
+| `shared` | Design tokens, UI primitives, navigation shell, pure utilities |
+
+### Per-feature layering (pragmatic)
+
+```
+feature/
+  ui/            → screens, components (React Native)
+  application/   → hooks / use-cases orchestrating domain + data
+  domain/        → types, pure rules (tier caps, auto-send eligibility, status transitions)
+  data/          → Firestore / R2 / RevenueCat / FCM adapters
+```
+
+### Dependency rules (enforced)
+
+1. **UI** may depend on `application` and `domain`; UI must **not** import Firebase/RevenueCat SDKs directly.
+2. **`data`** may depend on `domain`; `data` must **not** import React components or `ui`.
+3. Features must **not** import another feature’s `ui`. Cross-feature calls go through `application` APIs or shared domain types.
+4. Enforce with ESLint `no-restricted-imports` (or equivalent) from Phase 1 onward; tighten in Phase 5.
+
+### State management (predictable)
+
+| Kind | Approach | Examples |
+|---|---|---|
+| **Server / remote state** | Cache + sync layer (e.g. TanStack Query) and/or controlled Firestore listeners | Vault list, creations history, subscription entitlement |
+| **Local flow / UI state** | Small scoped store (e.g. Zustand) or feature-local state | Create wizard steps, review-window draft edits |
+| **Auth session** | Dedicated auth module state sourced from Firebase Auth | Soft gate, tab shell |
+
+Do **not** dump all app state into one global store.
+
+### Explicitly out of MVP (client)
+
+- Full Clean Architecture package graph (separate npm packages per layer)
+- Shared monorepo domain package between Next.js and RN — **revisit** when web + mobile actively share domain logic
+- Over-abstracted repository interfaces for every collection “just in case”
+
+## 3. Data Model (Firestore, high-level)
+
+Typed enums / unions (strict TypeScript at the boundary):
+
+```
+SubscriptionTier = 'free' | 'personal' | 'family'
+ScheduledSendStatus = 'pending' | 'review' | 'approved' | 'sent' | 'cancelled' | 'failed'
+DeliveryChannel = 'whatsapp' | 'sms' | 'email'
+SubscriptionProvider = 'google_play' | 'app_store' | 'razorpay'
+SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'grace' | 'pending'
+```
+
+```
+users/{userId}
+  - name, phone, email
+  - subscriptionTier: SubscriptionTier
+  - subscriptionExpiry: timestamp | null
+
+creations/{creationId}
+  - userId, templateType, mediaUrls[] (R2 refs), message, recipientName
+  - shareLink (public slug), viewCount, createdAt, expiresAt
+  - watermarked: boolean
+
+relationships/{relationshipId}
+  - userId, personName, relationshipType
+  - dates: { birthday?, anniversary?, ... }
+  - autoSendEnabled: { birthday?: boolean, anniversary?: boolean, ... }
+  - contactChannel: { whatsapp?, phone?, email? }
+  - preferredTemplateType?: string
+
+scheduled_sends/{sendId}
+  - relationshipId, userId, occasionType
+  - scheduledDate, reviewDeadline
+  - status: ScheduledSendStatus
+  - generatedCreationId?
+  - deliveryChannelAttempted?: DeliveryChannel[]
+  - deliveryChannelUsed?: DeliveryChannel
+  - lastError?: string
+
+subscriptions/{subscriptionId}
+  - userId, tier: SubscriptionTier
+  - provider: SubscriptionProvider
+  - status: SubscriptionStatus
+  - renewalDate
+```
+
+**Domain rules (pure, in `domain/`):** vault person caps by tier; auto-send allowed only on paid tiers; free manual card quota; watermark when free/one-off rules say so.
+
+## 4. Core System: Auto-Send Engine
+
+1. **Daily cron job** (Cloud Scheduler, runs once/day, e.g. 6 AM IST) queries `relationships` where `autoSendEnabled` is true and today matches a saved date (or N days before, for prep-ahead cards).
+2. For each match: auto-generate a `creation` using the person's saved photos/template preference (fallback to a default template if none set) → upload media to R2 → create shareable link; set `scheduled_sends.status` to `review`.
+3. Notify sender (FCM) that the review window is open. On approve **or** review deadline timeout → dispatch. On cancel → `cancelled` (no delivery).
+4. Dispatch via preferred channel (WhatsApp → SMS fallback → email fallback) using a queue (Cloud Tasks) to handle retries and avoid provider rate limits. Record `deliveryChannelUsed` / errors on the send doc.
+5. Push notification to the **sender** confirming send (`sent`).
+6. Log delivery status; alert (email to yourself, initially) on failures above a threshold — this is your highest-severity bug class since it breaks the core promise.
+
+## 5. Payments & Store Compliance
+
+- All subscription purchases inside the Android/iOS apps **must** route through Google Play Billing / StoreKit — no exceptions for digital goods.
+- Use RevenueCat to abstract both platforms' billing and avoid building receipt validation from scratch — saves real engineering time for a solo dev.
+- Entitlement checks used by UI live behind `billing` / `domain` (tier → caps, auto-send allowed) — screens never hardcode store SKUs for business rules.
+- Design the cancel/refund flow to be one-tap and unambiguous in-app — directly mitigates the "unauthorized charge" complaint pattern seen in HeartCraft's reviews.
+
+## 6. Security & Privacy
+
+- Recipient-facing card pages: no login, but rate-limit view endpoints to prevent scraping of other users' photos.
+- Relationship data (other people's names/dates/numbers) is personal data about non-users — Play Store Data Safety form must disclose this; provide an easy in-app "delete this person's data" action.
+- Auto-expire and hard-delete media in R2 after a configurable window (e.g., 120 days) unless the sender pins it — controls storage cost and reduces data-retention liability.
+
+## 7. Cost Estimate (early stage, <5K users)
+
+| Item | Estimated monthly cost |
+|---|---|
+| Firebase (Auth + Firestore, free tier initially) | ₹0–1,500 |
+| Cloudflare R2 (storage, zero egress) | ₹500–2,000 |
+| Cloud Scheduler + Functions | ₹0–500 (generous free tier) |
+| WhatsApp Business API / SMS fallback | ₹1,000–5,000 (usage-based, scales with sends) |
+| Domain + misc | ~₹100/month amortized |
+| **Total pre-scale** | **~₹2,000–9,000/month**, scaling with send volume, not user count |
+
+Play Store/App Store commission (~15% of subscription revenue) comes off the top separately — factor into your price points, don't treat it as a cost line to optimize away.
+
+## 8. Build Phases & Timeline (solo, part-time — Occasio-as-mobile)
+
+Occasio RN is the primary client. Web recipient/marketing can start minimal alongside Phase 1 share links.
+
+| Phase | Scope | Est. time | Architecture focus |
+|---|---|---|---|
+| 1 | Create flow, 3 templates, shareable link, minimal recipient view (no auth to view) | 3 weeks | Features `create` + `recipient`; `Creation` domain types; guest create |
+| 2 | Auth, Relationship Vault (add/edit people, dates), History; manual reminders only (no auto-send yet) | 2 weeks | Features `auth`, `vault`, `history`; soft-auth gate |
+| 3 | Auto-send engine (cron + WhatsApp/SMS/email dispatch), review-window UX | 2–3 weeks | `scheduled_sends` status machine in domain; Functions outside app UI |
+| 4 | Subscription tiers + Play Billing (RevenueCat), one-off unlock | 1–2 weeks | Feature `billing`; entitlement rules in domain |
+| 5 | Hardening: FCM permissions, cancel/delete-data flows, ESLint dependency boundaries, strictness pass; shared types with web only if needed | 1–2 weeks | Boundaries + predictability pass |
+| **Total** | | **~10–12 weeks part-time** | Automation engine remains the added scope vs a plain card clone |
+
+## 9. Recommended Build Order Relative to Your Other Projects
+
+Per earlier discussion: this sits behind the model portfolio outreach and UNTIL growth work in priority. If you do start it, **Phase 1 alone (plain card creator, no automation) is enough to test demand** before investing in the scheduler/auto-send engine — validate people actually want to make and share cards before building the harder, more valuable automation layer.
+
+That priority also constrains architecture: ship Phase 1 with feature folders + strict TS + thin domain; do **not** block launch on a shared monorepo or full Clean Architecture package split.

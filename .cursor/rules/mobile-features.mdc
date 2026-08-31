@@ -1,0 +1,53 @@
+---
+description: Occasio mobile features — layers, navigation, create flow patterns
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Mobile app (`src/`)
+
+## Layers
+
+| Layer | Path | May import |
+|---|---|---|
+| ui | `features/*/ui/` | application, domain, shared |
+| application | `features/*/application/` | domain, data |
+| domain | `features/*/domain/` | nothing from features/shared ui |
+| data | `features/*/data/` | domain only |
+
+## Navigation
+
+- Tabs: `src/shared/navigation/MainTabNavigator.tsx`
+- Create stack: `src/shared/navigation/CreateNavigator.tsx`
+- Types: `src/shared/navigation/types.ts`
+- New screens: add to stack + implement under `features/<feature>/ui/screens/`
+
+## Shared UI
+
+Reuse `src/shared/ui/Screen.tsx` and `Button.tsx`. Match wireframes in `docs-site/content/wireframes.md`.
+
+## Create flow (current)
+
+```
+TemplatePicker → AddPhotos → Details → Preview → ShareSuccess
+```
+
+Draft state: `CreateDraftContext` / `useCreateDraft` in `application/`.
+
+## Next implementation targets
+
+- `features/create/data/creationRepository.ts`
+- `features/create/data/uploadService.ts`
+- `features/create/domain/quota.ts`
+
+Wire through `application/` hooks — screens call hooks, not Firebase directly.
+
+## Example
+
+```typescript
+// ❌ BAD — Firebase in screen
+import firestore from '@react-native-firebase/firestore';
+
+// ✅ GOOD — screen uses application hook
+const { generateShareLink, isLoading } = useCreateShareLink();
+```
