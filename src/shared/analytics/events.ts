@@ -8,6 +8,9 @@ export function trackEvent(name: string, payload?: AnalyticsPayload): void {
 }
 
 export const AnalyticsEvents = {
+  onboardingStarted: 'onboarding_started',
+  onboardingCompleted: 'onboarding_completed',
+  onboardingSkipped: 'onboarding_skipped',
   createStarted: 'create_started',
   templateSelected: 'template_selected',
   photosAdded: 'photos_added',
