@@ -1,32 +1,39 @@
-import firestore from '@react-native-firebase/firestore';
 import { env } from '../../../shared/config/env';
-import { computeShareLinkExpiresAt } from '../domain/shareLink';
+import { httpClient } from '../../../shared/api/httpClient';
+import { HttpError } from '../../../shared/api/errors';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from './types';
 import { CreationApiError } from './types';
-import { getPhotoDownloadUrl } from './storageService';
 
-function randomSlug(length = 8): string {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let slug = '';
-  for (let i = 0; i < length; i += 1) {
-    slug += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return slug;
-}
-
-async function resolveStorageMediaUrls(photoRefs: string[]): Promise<string[]> {
-  const urls: string[] = [];
-  for (const path of photoRefs) {
-    if (path.startsWith('uploads/tmp/placeholder') || path.startsWith('inline:')) {
-      continue;
+function toCreationError(error: unknown): CreationApiError {
+  if (error instanceof HttpError) {
+    if (error.status === 404) {
+      return new CreationApiError(
+        'INTERNAL',
+        'Share API not found. Deploy docs-site to Vercel with the latest code.',
+      );
     }
-    urls.push(await getPhotoDownloadUrl(path));
+    if (error.status === 503) {
+      return new CreationApiError(
+        'INTERNAL',
+        'Server not configured. Add FIREBASE_SERVICE_ACCOUNT_JSON on Vercel and redeploy.',
+      );
+    }
+    const code =
+      error.code === 'NOT_FOUND' ||
+      error.code === 'EXPIRED' ||
+      error.code === 'NOT_IMPLEMENTED'
+        ? 'INTERNAL'
+        : error.code;
+    return new CreationApiError(code, error.message);
   }
-  return urls;
+  if (error instanceof CreationApiError) {
+    return error;
+  }
+  return new CreationApiError('INTERNAL', 'Could not create share link');
 }
 
-/** Spark plan: write creation to Firestore (no Cloud Functions). */
+/** Spark plan: create via Vercel API (Admin SDK server-side — no direct Firestore from app). */
 export async function createShareLinkSpark(
   draft: CreationDraft,
   photoRefs: string[],
@@ -36,36 +43,19 @@ export async function createShareLinkSpark(
     throw new CreationApiError('VALIDATION_ERROR', 'Template is required');
   }
 
-  const createdAt = new Date();
-  const expiresAt = computeShareLinkExpiresAt(createdAt, 'free', true);
-  const shareSlug = randomSlug();
-  const resolvedMediaUrls =
-    mediaUrls.length > 0 ? mediaUrls : await resolveStorageMediaUrls(photoRefs);
-
-  const doc = {
-    templateType: draft.templateType,
-    recipientName: draft.recipientName.trim(),
-    message: draft.message.trim(),
-    photoRefs,
-    mediaUrls: resolvedMediaUrls,
-    shareSlug,
-    watermarked: true,
-    viewCount: 0,
-    createdAt: firestore.Timestamp.fromDate(createdAt),
-    expiresAt: firestore.Timestamp.fromDate(expiresAt),
-    userId: null,
-  };
-
   try {
-    const ref = await firestore().collection('creations').add(doc);
-    return {
-      creationId: ref.id,
-      shareSlug,
-      shareUrl: `${env.shareBaseUrl}/c/${shareSlug}`,
-      expiresAt: expiresAt.toISOString(),
-      watermarked: true,
-    };
-  } catch {
-    throw new CreationApiError('INTERNAL', 'Could not save your card');
+    return await httpClient.post<CreateCreationResponse>(
+      env.sparkApiBaseUrl,
+      '/api/v1/creations',
+      {
+        templateType: draft.templateType,
+        recipientName: draft.recipientName.trim(),
+        message: draft.message.trim(),
+        photoRefs,
+        mediaUrls,
+      },
+    );
+  } catch (error) {
+    throw toCreationError(error);
   }
 }

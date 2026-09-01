@@ -43,7 +43,7 @@ PreviewScreen → useCreateShareLink() → quota.ts + creationRepository.ts → 
 | Auth session | Firebase Auth → application auth module | `features/auth/data/` |
 | User profile, vault, history | Firestore | `features/*/data/` + listeners in hooks |
 | Card media bytes | **Base64 interim** (Spark, 1 photo) → **Firebase Storage** (Blaze) → R2 at scale | `photoRefs.ts` / `base64MediaService.ts` or `storageService.ts` |
-| Share link record | Firestore `creations` | `POST /v1/creations` (Function) |
+| Share link record | Firestore `creations` | **Server only** — Vercel API / Functions; rules deny client access |
 | Subscription entitlement | RevenueCat + Firestore mirror | `features/billing/data/` |
 | Public card view | Read-only API | `GET /v1/cards/:slug` (recipient web) |
 

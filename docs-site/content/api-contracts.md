@@ -104,7 +104,7 @@ Server-to-server subscription updates — never called from client.
 |---|---|---|
 | `users/{uid}` | own doc | own profile fields only |
 | `relationships` | own | via rules + validation |
-| `creations` | own | create via Function only |
+| `creations` | **server only** (Admin SDK) | **deny all clients** |
 | `scheduled_sends` | own | approve/cancel via Function |
 
 ## Analytics events (Phase 4)

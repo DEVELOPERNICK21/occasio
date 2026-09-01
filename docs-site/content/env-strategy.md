@@ -29,19 +29,40 @@ Firestore documents are capped at **~1 MB**. Three photos as base64 will break q
 
 **At scale:** migrate blobs to Cloudflare R2 + presigned URLs (TRD) when egress or cost matters.
 
-### API without Blaze
+### API without Blaze (current path)
 
-Until Blaze, pick one:
+Spark uses **Vercel serverless API** on `docs-site` — not direct Firestore from the mobile app:
 
-1. **Mock API in dev** (`useMockApi: true`) — default in `__DEV__` for fast UI iteration
-2. **Spark + base64** — `useMockApi: false`, `useBase64Media: true` (default): one photo inline in Firestore; deploy rules with `npm run firestore:deploy`
+| Route | Purpose |
+|---|---|
+| `POST /api/v1/creations` | Create card (mobile) |
+| `GET /api/v1/cards/:slug` | Card metadata (optional; recipient page uses Admin SDK directly) |
+
+Firestore rules: **`creations` deny all client read/write** — only Admin SDK (Vercel) or Cloud Functions (Blaze later).
+
+1. **Mock API in dev** (`useMockApi: true`) — offline UI only
+2. **Spark + Vercel API** — `useMockApi: false`, mobile POSTs to `shareBaseUrl/api/v1/creations`
 3. **Blaze + Storage** — `useBase64Media: false`, enable Storage, `npm run spark:deploy`
-4. **Functions emulator locally** — `npm run functions:serve`, `useFunctionsEmulator: true`
-5. **Vercel serverless routes** on `docs-site` — alternative API without Blaze
+4. **Functions emulator** — `npm run functions:serve`, `useFunctionsEmulator: true`
 
-Deploy Firestore rules only (Spark base64): `npm run firestore:deploy`.
+Deploy locked rules: `npm run firestore:deploy`.
 
-Cloud Functions in `functions/` are ready for when you upgrade; not required on Spark day one.
+### GCP setup (same project — do NOT create a new Firebase project)
+
+Use existing project **`occasio-app-dev`**.
+
+1. [Firebase Console](https://console.firebase.google.com/project/occasio-app-dev/settings/serviceaccounts/adminsdk) → **Service accounts** → **Generate new private key** (JSON)
+2. **Vercel** → Project → Settings → Environment Variables:
+   - `FIREBASE_SERVICE_ACCOUNT_JSON` = paste the **entire JSON** (mark Sensitive)
+   - `OCCASIO_SHARE_BASE` = `https://occasio-greetings.vercel.app`
+3. **Redeploy** docs-site (env vars apply only to new deployments)
+4. From repo root: `npm run firestore:deploy` (locks `creations` to server-only)
+
+**Do not commit** the service account JSON. Rotate the key if it was ever pasted in chat or committed.
+
+**Optional (later):** restrict a separate web API key in [GCP Credentials](https://console.cloud.google.com/apis/credentials?project=occasio-app-dev) — not required when using Admin SDK only.
+
+**Rate limiting / abuse:** enable [Vercel Firewall](https://vercel.com/docs/security/firewall) on `/api/v1/creations` or upgrade to Blaze + Cloud Functions + App Check.
 
 ## Projects
 
@@ -67,9 +88,12 @@ Cloud Functions in `functions/` are ready for when you upgrade; not required on 
 
 | Secret | Where |
 |---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Vercel env (docs-site API + recipient pages) |
 | R2 access keys | Cloud Functions env / Secret Manager |
 | WhatsApp / SMS / email | Functions only |
 | RevenueCat webhook secret | Functions only |
+
+**Never in client or git:** service account JSON, R2 secrets, webhook secrets.
 
 ## Local dev
 
