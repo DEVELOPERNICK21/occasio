@@ -42,6 +42,12 @@ export function PublicShell({ children }: Props) {
             >
               Terms of Service
             </Link>
+            <Link
+              href="/delete-account"
+              className="rounded-[var(--radius-md)] text-[var(--ink-soft)] underline-offset-4 hover:text-[var(--ink)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            >
+              Delete account
+            </Link>
           </nav>
         </div>
       </footer>

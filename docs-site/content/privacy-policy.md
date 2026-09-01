@@ -99,7 +99,7 @@ Depending on where you live (including under India’s **Digital Personal Data P
 - **Withdraw consent** where processing is based on consent
 - **Complain** to a supervisory authority
 
-**In the app (when signed in):** delete Vault people from the Vault screen. Sign out from Account. Full account deletion is available on request.
+**Delete account or specific data:** see **[Delete your account and data](/delete-account)** for step-by-step instructions.
 
 **By email:** send requests to **[privacy@occasio.app](mailto:privacy@occasio.app)**. We will respond within a reasonable time (typically within 30 days).
 

@@ -32,7 +32,7 @@ If you create an account, you are responsible for:
 
 Notify us at **[privacy@occasio.app](mailto:privacy@occasio.app)** if you suspect unauthorized access.
 
-You may sign out or request account deletion at any time. See our [Privacy Policy](/privacy) for how we handle your data.
+You may sign out or request account deletion at any time. See [Delete your account and data](/delete-account) and our [Privacy Policy](/privacy).
 
 ## 4. Your content
 
