@@ -10,17 +10,19 @@ import {
   MAX_PHOTOS_BASE64,
   MAX_PHOTOS_STORAGE,
 } from '../../../../shared/config/media';
+import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
 import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
-import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
+import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'AddPhotos'>;
 
 const maxPhotos = env.useBase64Media ? MAX_PHOTOS_BASE64 : MAX_PHOTOS_STORAGE;
+const CREATE_STEPS = 4;
 
 export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
@@ -32,7 +34,8 @@ export function AddPhotosScreen({ navigation }: Props) {
 
     const next = [...draft.photoUris];
     next[slotIndex] = uri;
-    setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
+      setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
+      trackEvent(AnalyticsEvents.photosAdded, { count: next.filter(Boolean).length });
   };
 
   const removePhoto = (slotIndex: number) => {
@@ -41,6 +44,7 @@ export function AddPhotosScreen({ navigation }: Props) {
   };
 
   const slots = Array.from({ length: maxPhotos }, (_, i) => i);
+  const filledCount = draft.photoUris.filter(Boolean).length;
 
   return (
     <Screen
@@ -48,8 +52,9 @@ export function AddPhotosScreen({ navigation }: Props) {
       subtitle={
         env.useBase64Media ? 'Add 1 photo' : `Add 1–${maxPhotos} photos`
       }
-      footer={
-        <Button
+      step={{ current: 2, total: CREATE_STEPS }}
+      headerAction={
+        <ScreenHeaderAction
           label="Next"
           disabled={draft.photoUris.length < 1 || picking}
           onPress={() => navigation.navigate('Details')}
@@ -70,6 +75,9 @@ export function AddPhotosScreen({ navigation }: Props) {
           );
         })}
       </View>
+      <Text style={styles.counter}>
+        {filledCount} of {maxPhotos} added
+      </Text>
       <Text style={styles.hint}>
         {env.useBase64Media
           ? 'Pick from gallery or take a photo. One compressed image is saved with your card.'
@@ -97,12 +105,15 @@ function PhotoSlot({
         accessibilityLabel={uri ? 'Change photo' : 'Add photo'}
         disabled={disabled}
         onPress={onPick}
-        style={[styles.slot, uri && styles.slotFilled]}
+        style={[styles.slot, uri ? styles.slotFilled : styles.slotEmpty]}
       >
         {uri ? (
           <Image source={{ uri }} style={styles.image} resizeMode="cover" />
         ) : (
-          <Text style={styles.plus}>+</Text>
+          <View style={styles.emptyContent}>
+            <Text style={styles.plus}>+</Text>
+            <Text style={styles.slotLabel}>Add</Text>
+          </View>
         )}
       </Pressable>
       {uri && onRemove ? (
@@ -133,24 +144,39 @@ const styles = StyleSheet.create({
   },
   slot: {
     aspectRatio: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
+  slotEmpty: {
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+    backgroundColor: colors.sidebar,
+  },
   slotFilled: {
+    borderWidth: 1,
     borderColor: colors.accent,
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  emptyContent: {
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   plus: {
     fontSize: typography.sizeLg,
+    color: colors.accent,
+    fontWeight: typography.weightSemibold,
+  },
+  slotLabel: {
+    fontSize: typography.sizeXs,
     color: colors.muted,
+    fontWeight: typography.weightMedium,
   },
   removeBtn: {
     position: 'absolute',
@@ -169,9 +195,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: typography.weightSemibold,
   },
+  counter: {
+    marginTop: spacing.md,
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.inkSoft,
+  },
   hint: {
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
     fontSize: typography.sizeSm,
     color: colors.muted,
+    lineHeight: typography.sizeSm * 1.4,
   },
 });

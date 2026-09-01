@@ -13,15 +13,23 @@ type Props = PressableProps & {
   variant?: Variant;
 };
 
-export function Button({ label, variant = 'primary', style, ...rest }: Props) {
+export function Button({
+  label,
+  variant = 'primary',
+  style,
+  disabled,
+  ...rest
+}: Props) {
   return (
     <Pressable
+      disabled={disabled}
       style={({ pressed }) => [
         styles.base,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'ghost' && styles.ghost,
-        pressed && styles.pressed,
+        pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
         typeof style === 'function' ? style({ pressed }) : style,
       ]}
       {...rest}
@@ -61,6 +69,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
+  },
+  disabled: {
+    opacity: 0.5,
   },
   label: {
     fontSize: typography.sizeMd,

@@ -1,15 +1,24 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, typography } from '../theme/tokens';
+import { colors, radius, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
+
+type StepProgress = {
+  current: number;
+  total: number;
+};
 
 type Props = {
   title: string;
   subtitle?: string;
   children: ReactNode;
+  /** Prefer `headerAction` or inline `ScreenActions` over sticky footers. */
   footer?: ReactNode;
+  /** Trailing header CTA — compact accent action (Continue, Sign in, Save). */
+  headerAction?: ReactNode;
   scroll?: boolean;
+  step?: StepProgress;
 };
 
 export function Screen({
@@ -17,7 +26,9 @@ export function Screen({
   subtitle,
   children,
   footer,
+  headerAction,
   scroll = true,
+  step,
 }: Props) {
   const insets = useSafeAreaInsets();
   const Body = scroll ? ScrollView : View;
@@ -25,8 +36,29 @@ export function Screen({
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {step ? (
+          <View style={styles.stepRow}>
+            {Array.from({ length: step.total }, (_, index) => {
+              const active = index + 1 <= step.current;
+              return (
+                <View
+                  key={index}
+                  style={[styles.stepDot, active && styles.stepDotActive]}
+                />
+              );
+            })}
+            <Text style={styles.stepLabel}>
+              Step {step.current} of {step.total}
+            </Text>
+          </View>
+        ) : null}
+        <View style={styles.titleRow}>
+          <View style={styles.titleBlock}>
+            <Text style={styles.title}>{title}</Text>
+            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          </View>
+          {headerAction}
+        </View>
       </View>
       <Body
         style={styles.body}
@@ -35,7 +67,7 @@ export function Screen({
         {children}
       </Body>
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
+        <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.sm }]}>
           {footer}
         </View>
       ) : null}
@@ -52,6 +84,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  stepDot: {
+    width: 24,
+    height: 4,
+    borderRadius: radius.full,
+    backgroundColor: colors.border,
+  },
+  stepDotActive: {
+    backgroundColor: colors.accent,
+  },
+  stepLabel: {
+    marginLeft: spacing.sm,
+    fontSize: typography.sizeXs,
+    color: colors.muted,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  titleBlock: {
+    flex: 1,
   },
   title: {
     fontSize: typography.sizeXl,
@@ -74,9 +135,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
+    paddingTop: spacing.sm,
   },
 });

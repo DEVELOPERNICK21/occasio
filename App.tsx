@@ -8,6 +8,8 @@ import { StatusBar, useColorScheme } from 'react-native';
 import '@react-native-firebase/app';
 import { lockToPortrait } from 'react-native-orientation-turbo';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider } from './src/features/auth/application/AuthProvider';
+import { SoftAuthModal } from './src/features/auth/ui/components/SoftAuthModal';
 import { AppNavigator } from './src/shared/navigation/AppNavigator';
 import {
   getFirebaseProjectId,
@@ -30,7 +32,10 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppNavigator />
+      <AuthProvider>
+        <AppNavigator />
+        <SoftAuthModal />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

@@ -5,13 +5,28 @@ export type CreateStackParamList = {
   AddPhotos: undefined;
   Details: undefined;
   Preview: undefined;
-  ShareSuccess: { shareUrl: string; expiresAt: string };
+  ShareSuccess: {
+    shareUrl: string;
+    expiresAt: string;
+    creationId: string;
+    shareSlug: string;
+  };
+};
+
+export type HistoryStackParamList = {
+  HistoryList: undefined;
+  HistoryDetail: { entryId: string };
+};
+
+export type VaultStackParamList = {
+  VaultList: undefined;
+  AddPerson: { prefilledName?: string };
 };
 
 export type MainTabParamList = {
   CreateTab: NavigatorScreenParams<CreateStackParamList>;
-  VaultTab: undefined;
-  HistoryTab: undefined;
+  VaultTab: NavigatorScreenParams<VaultStackParamList>;
+  HistoryTab: NavigatorScreenParams<HistoryStackParamList>;
   AccountTab: undefined;
 };
 

@@ -1,3 +1,5 @@
+import { LandingHero } from "@/components/LandingHero";
+
 const steps = [
   {
     title: "Create a wish",
@@ -24,101 +26,88 @@ const features = [
   },
   {
     title: "Never forget again",
-    body: "Birthdays, anniversaries, festivals — arm auto-send once and let Occasio remember for you.",
+    body: "Birthdays, anniversaries, festivals — set auto-send once and let Occasio remember for you.",
   },
 ];
 
 export default function LandingPage() {
   return (
     <>
-      <section className="mx-auto max-w-5xl px-4 py-16 md:px-8 md:py-24">
-        <div className="max-w-2xl">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
-            Personalized digital wishes
-          </p>
-          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-[1.1] tracking-tight text-[var(--ink)] md:text-6xl">
-            Never miss what matters.
-          </h1>
-          <p className="mt-6 text-lg leading-relaxed text-[var(--ink-soft)] md:text-xl">
-            Save the people you love once. Occasio creates and sends a personalized wish on
-            the right day — every year — without you having to remember.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <span className="inline-flex items-center rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white">
-              App launching soon
-            </span>
-            <span className="inline-flex items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-3 text-sm font-medium text-[var(--ink-soft)]">
-              Android & iOS
-            </span>
-          </div>
-        </div>
+      <LandingHero />
 
-        <div
-          className="mt-14 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 md:p-12"
-          style={{ boxShadow: "0 4px 24px rgba(28, 25, 20, 0.08)" }}
-        >
-          <div className="mx-auto max-w-sm text-center">
-            <p className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Birthday</p>
-            <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">
-              For Mom
-            </p>
-            <p className="mt-4 text-[var(--ink-soft)]">
-              Happy birthday, Ma. Thank you for everything you do.
-            </p>
-            <p className="mt-6 text-sm text-[var(--muted)]">A wish shared via Occasio</p>
-          </div>
-        </div>
+      <section className="border-y border-[var(--border)] bg-[var(--surface)]">
+        <ul className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-8 text-sm text-[var(--ink-soft)] md:flex-row md:flex-wrap md:gap-x-8 md:gap-y-2">
+          <li>Readable on any phone</li>
+          <li>Your dates stay private</li>
+          <li>Recipients need no app</li>
+        </ul>
       </section>
 
-      <section className="border-t border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto max-w-5xl px-4 py-16 md:px-8 md:py-20">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--ink)]">
+      <section className="border-b border-[var(--border)]">
+        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-[1.75rem]">
             How it works
           </h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <p className="mt-3 max-w-xl text-[var(--ink-soft)]">
+            Three steps from idea to a wish that arrives on the right day.
+          </p>
+          <ol className="mt-10 space-y-6">
             {steps.map((step, index) => (
-              <div
+              <li
                 key={step.title}
-                className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-6"
+                className="flex gap-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg)] p-6"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
-                  Step {index + 1}
-                </p>
-                <h3 className="mt-3 font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-[var(--ink-soft)]">{step.body}</p>
-              </div>
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white"
+                  aria-hidden
+                >
+                  {index + 1}
+                </span>
+                <div>
+                  <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--ink)]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+                    {step.body}
+                  </p>
+                </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      <section className="border-t border-[var(--border)]">
-        <div className="mx-auto max-w-5xl px-4 py-16 md:px-8 md:py-20">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--ink)]">
+      <section className="border-b border-[var(--border)] bg-[var(--sidebar)]">
+        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-[1.75rem]">
             Built for real relationships
           </h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 space-y-4">
             {features.map((feature) => (
-              <div key={feature.title} className="rounded-xl bg-[var(--accent-soft)] p-6">
-                <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
+              <div
+                key={feature.title}
+                className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-6"
+              >
+                <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--ink)]">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-[var(--ink-soft)]">{feature.body}</p>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+                  {feature.body}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-[var(--border)] bg-[var(--accent-soft)]">
-        <div className="mx-auto max-w-5xl px-4 py-16 text-center md:px-8 md:py-20">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--ink)] md:text-4xl">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-16 text-center md:py-20">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-[var(--ink)] md:text-[1.75rem]">
             Someone sent you a wish?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-[var(--ink-soft)]">
-            Open the link they shared — your card plays right in the browser. No sign-up needed.
+          <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-[var(--ink-soft)]">
+            Open the link they shared — your card plays right in the browser. No sign-up
+            needed.
           </p>
         </div>
       </section>

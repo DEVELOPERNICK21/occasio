@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCardBySlug } from '@/lib/creationsServer';
+import { lookupCardBySlug } from '@/lib/creationsServer';
 import { isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 
 export const runtime = 'nodejs';
@@ -24,13 +24,21 @@ export async function GET(_request: Request, context: RouteContext) {
     );
   }
 
-  const card = await getCardBySlug(slug);
-  if (!card) {
+  const result = await lookupCardBySlug(slug);
+  if (result.status === 'expired') {
+    return NextResponse.json(
+      { code: 'EXPIRED', message: 'This link has expired' },
+      { status: 410 },
+    );
+  }
+  if (result.status === 'not_found') {
     return NextResponse.json(
       { code: 'NOT_FOUND', message: 'Card not found' },
       { status: 404 },
     );
   }
+
+  const card = result.card;
 
   return NextResponse.json({
     recipientName: card.recipientName,

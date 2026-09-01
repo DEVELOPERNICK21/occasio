@@ -1,6 +1,7 @@
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
+import { generateShareSlug } from '@/lib/shareSlug';
 
 const GUEST_LINK_TTL_DAYS = 30;
 const MAX_BASE64_DATA_URL_CHARS = 750_000;
@@ -32,13 +33,21 @@ export class ApiRouteError extends Error {
   }
 }
 
-function randomSlug(length = 8): string {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let slug = '';
-  for (let i = 0; i < length; i += 1) {
-    slug += alphabet[Math.floor(Math.random() * alphabet.length)];
+function randomSlug(): string {
+  return generateShareSlug();
+}
+
+async function uniqueShareSlug(db: Firestore): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const slug = randomSlug();
+    const existing = await db
+      .collection('creations')
+      .where('shareSlug', '==', slug)
+      .limit(1)
+      .get();
+    if (existing.empty) return slug;
   }
-  return slug;
+  throw new ApiRouteError(500, 'INTERNAL', 'Could not generate share link');
 }
 
 function computeExpiresAt(createdAt: Date): Date {
@@ -123,7 +132,7 @@ export async function createCreation(
   const db = getAdminFirestore();
   const createdAt = new Date();
   const expiresAt = computeExpiresAt(createdAt);
-  const shareSlug = randomSlug();
+  const shareSlug = await uniqueShareSlug(db);
   const shareBase =
     process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';
 
@@ -151,8 +160,15 @@ export async function createCreation(
   };
 }
 
-export async function getCardBySlug(slug: string): Promise<RecipientCard | null> {
-  if (!isFirebaseAdminConfigured()) return null;
+export type CardLookupResult =
+  | { status: 'found'; card: RecipientCard }
+  | { status: 'expired' }
+  | { status: 'not_found' };
+
+export async function lookupCardBySlug(slug: string): Promise<CardLookupResult> {
+  if (!isFirebaseAdminConfigured()) {
+    return { status: 'not_found' };
+  }
 
   const db = getAdminFirestore();
   const snapshot = await db
@@ -161,23 +177,33 @@ export async function getCardBySlug(slug: string): Promise<RecipientCard | null>
     .limit(1)
     .get();
 
-  if (snapshot.empty) return null;
+  if (snapshot.empty) return { status: 'not_found' };
 
   const doc = snapshot.docs[0]!.data();
   const expiresAt = doc.expiresAt as Timestamp | undefined;
-  if (expiresAt && expiresAt.toDate() < new Date()) return null;
+  if (expiresAt && expiresAt.toDate() < new Date()) {
+    return { status: 'expired' };
+  }
 
   const recipientName = doc.recipientName as string | undefined;
-  if (!recipientName) return null;
+  if (!recipientName) return { status: 'not_found' };
 
   return {
-    recipientName,
-    message: (doc.message as string | null) ?? null,
-    templateType: (doc.templateType as string) ?? 'birthday',
-    fromName: (doc.fromName as string | null) ?? null,
-    isDemo: false,
-    mediaUrls: (doc.mediaUrls as string[] | undefined) ?? [],
+    status: 'found',
+    card: {
+      recipientName,
+      message: (doc.message as string | null) ?? null,
+      templateType: (doc.templateType as string) ?? 'birthday',
+      fromName: (doc.fromName as string | null) ?? null,
+      isDemo: false,
+      mediaUrls: (doc.mediaUrls as string[] | undefined) ?? [],
+    },
   };
+}
+
+export async function getCardBySlug(slug: string): Promise<RecipientCard | null> {
+  const result = await lookupCardBySlug(slug);
+  return result.status === 'found' ? result.card : null;
 }
 
 /** Increment view count (best-effort, server-only). */

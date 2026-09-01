@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { Fraunces, Source_Sans_3, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Plus_Jakarta_Sans({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
-const body = Source_Sans_3({
+const displaySerif = Fraunces({
+  variable: "--font-display-serif",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const body = Inter({
   variable: "--font-body",
   subsets: ["latin"],
 });
@@ -34,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
+        className={`${display.variable} ${displaySerif.variable} ${body.variable} ${mono.variable} antialiased`}
       >
         {children}
       </body>

@@ -35,8 +35,10 @@ export function templateLabel(templateType: string): string {
     birthday: "Birthday",
     anniversary: "Anniversary",
     congratulations: "Congratulations",
-    thankyou: "Thank you",
-    festival: "Festival",
+    sorry: "Sorry",
+    proposal: "Proposal",
+    mothers_day: "Mother's Day",
+    fathers_day: "Father's Day",
   };
   return labels[templateType] ?? "Special wish";
 }

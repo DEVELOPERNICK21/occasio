@@ -14,22 +14,31 @@
     "spark:deploy": "npx firebase-tools deploy --only firestore:rules,storage",
     "firestore:deploy": "npx firebase-tools deploy --only firestore:rules",
     "typecheck": "tsc --noEmit",
+    "icons:generate": "bash scripts/generate-app-icons.sh",
     "firebase:deploy": "firebase deploy --only functions,firestore:rules"
   },
   "dependencies": {
+    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-firebase/app": "^23.8.8",
+    "@react-native-firebase/auth": "^23.8.8",
     "@react-native-firebase/firestore": "^23.8.8",
     "@react-native-firebase/storage": "^23.8.8",
+    "@react-native-google-signin/google-signin": "^15.0.0",
     "@react-native/new-app-screen": "0.86.0",
     "@react-navigation/bottom-tabs": "^7.18.18",
     "@react-navigation/native": "^7.3.18",
     "@react-navigation/native-stack": "^7.18.10",
     "react": "19.2.3",
     "react-native": "0.86.0",
+    "react-native-gesture-handler": "^3.2.1",
+    "react-native-haptic-feedback": "^3.0.0",
     "react-native-image-picker": "^8.2.1",
     "react-native-orientation-turbo": "^2.2.0",
+    "react-native-reanimated": "^4.6.0",
     "react-native-safe-area-context": "^5.5.2",
-    "react-native-screens": "^4.27.0"
+    "react-native-screens": "^4.27.0",
+    "react-native-svg": "^15.15.5",
+    "react-native-worklets": "^0.12.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

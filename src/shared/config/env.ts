@@ -51,6 +51,12 @@ export const env = {
    * Run: npm run functions:serve — then set true and useMockApi false.
    */
   useFunctionsEmulator: false,
+
+  /**
+   * Offline auth UI dev — skips Firebase (mock Google/email sign-in).
+   * Set true only for UI work without network. Default: real Firebase Auth.
+   */
+  useMockAuth: false,
 } as const;
 
 export function getApiBaseUrl(): string {

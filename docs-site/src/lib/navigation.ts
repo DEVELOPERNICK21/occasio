@@ -58,6 +58,26 @@ export const navigation: NavSection[] = [
         description: "Active slice — screens, API, acceptance criteria.",
       },
       {
+        title: "Recipient web",
+        href: "/docs/recipient-blueprint",
+        description: "Public card view, OG previews, expired/404 states.",
+      },
+      {
+        title: "Auth feature",
+        href: "/docs/auth-blueprint",
+        description: "Soft-auth, phone OTP, session — guest create unchanged.",
+      },
+      {
+        title: "Vault feature",
+        href: "/docs/vault-blueprint",
+        description: "Save people, birthdays, contact — Firestore relationships.",
+      },
+      {
+        title: "History feature",
+        href: "/docs/history-blueprint",
+        description: "Past creations, reshare — user_creations index.",
+      },
+      {
         title: "API contracts",
         href: "/docs/api-contracts",
         description: "Endpoints the mobile app calls.",

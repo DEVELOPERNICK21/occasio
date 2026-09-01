@@ -3,7 +3,7 @@ title: Data flow, API & network
 description: How data moves through Occasio — mandatory patterns for agents building features.
 phase: Phase 3 — Technical
 status: Locked
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 Agents: follow this flow **every time**. No `fetch` in screens. No Firestore in `ui/`.
@@ -212,3 +212,40 @@ After successful domain action, not from `data/`:
 - [ ] Document new endpoints in `api-contracts.md`
 - [ ] Mock path for `__DEV__` when backend not ready
 - [ ] No secrets in client
+
+---
+
+## 12. Anti-slop — avoid generic AI code
+
+**Smallest correct diff.** Match `src/features/create/` — don't invent a new architecture per prompt.
+
+### Never add
+
+| Slop signal | Do instead |
+|---|---|
+| New `utils/`, `helpers/`, `services/` folders | Put logic in `domain/` (pure) or `data/` (IO) |
+| `interface` + `class` wrappers around one function | Plain exported functions |
+| `ApiService` / `RepositoryFactory` / DI container | One `*Repository.ts` per feature |
+| `fetch` in screens or hooks that belong in `data/` | `httpClient` in `shared/api/` |
+| `any` in `domain/` | Strict types; narrow at `data/` boundary |
+| Catch-all `try/catch` with silent fail | Typed `*ApiError`; message in `application/` |
+| Comments restating the code | Comments only for non-obvious business rules |
+| README per feature folder | Update feature blueprint + `api-contracts.md` |
+| Duplicate types across layers | `domain/types.ts` is SSOT; data maps to/from API |
+| 200-line refactor “while we're here” | Only touch files required by the task |
+| New npm package for one helper | Use existing deps or inline 3 lines |
+| Tests that assert `true === true` | Domain rules only; meaningful behavior |
+
+### Always do
+
+- Read an existing file in the same feature before writing a new one
+- Export one clear function per repository action (`createShareLink`, `signInWithEmail`)
+- Keep hooks thin: loading/error state + call domain then data
+- Update `api-contracts.md` when the wire format changes
+
+### Mental check
+
+```
+❌ Slop: VaultService.ts + useVaultStore.ts + fetch in VaultScreen.tsx
+✅ Occasio: vault/data/personRepository.ts → useVaultPeople() → VaultListScreen.tsx
+```

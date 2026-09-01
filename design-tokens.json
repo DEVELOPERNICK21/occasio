@@ -2,29 +2,33 @@
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "meta": {
     "product": "Occasio",
-    "version": "1.0.0",
-    "updated": "2026-08-31",
-    "notes": "Feed to Google Stitch and mirror in src/shared/theme/tokens.ts"
+    "version": "2.0.0",
+    "updated": "2026-09-01",
+    "notes": "Stitch Full Design System — mirror in src/shared/theme/tokens.ts"
   },
   "color": {
-    "bg": { "value": "#F6F1E8", "type": "color" },
-    "surface": { "value": "#FFFDF8", "type": "color" },
-    "sidebar": { "value": "#EFE8DC", "type": "color" },
-    "ink": { "value": "#1C1914", "type": "color" },
-    "inkSoft": { "value": "#3D3830", "type": "color" },
-    "muted": { "value": "#6F675C", "type": "color" },
-    "border": { "value": "#DDD2C0", "type": "color" },
-    "accent": { "value": "#1F5C4D", "type": "color" },
-    "accentSoft": { "value": "#D8EBE4", "type": "color" },
-    "accentHover": { "value": "#174A3E", "type": "color" },
+    "primary": { "value": "#E8615D", "type": "color" },
+    "secondary": { "value": "#F6A94A", "type": "color" },
+    "tertiary": { "value": "#F7C9B6", "type": "color" },
+    "neutral": { "value": "#857371", "type": "color" },
+    "bg": { "value": "#FDF6F2", "type": "color" },
+    "surface": { "value": "#FFFFFF", "type": "color" },
+    "sidebar": { "value": "#FCEEE8", "type": "color" },
+    "ink": { "value": "#2A2220", "type": "color" },
+    "inkSoft": { "value": "#4D4340", "type": "color" },
+    "muted": { "value": "#857371", "type": "color" },
+    "border": { "value": "#EDD5CA", "type": "color" },
+    "accent": { "value": "#E8615D", "type": "color" },
+    "accentSoft": { "value": "#F7C9B6", "type": "color" },
+    "accentHover": { "value": "#C94E4A", "type": "color" },
     "error": { "value": "#B42318", "type": "color" },
     "errorSoft": { "value": "#FEE4E2", "type": "color" },
     "success": { "value": "#027A48", "type": "color" },
     "white": { "value": "#FFFFFF", "type": "color" }
   },
   "typography": {
-    "fontDisplay": { "value": "Fraunces, Georgia, serif", "type": "fontFamily" },
-    "fontBody": { "value": "Source Sans 3, system-ui, sans-serif", "type": "fontFamily" },
+    "fontDisplay": { "value": "Plus Jakarta Sans, system-ui, sans-serif", "type": "fontFamily" },
+    "fontBody": { "value": "Inter, system-ui, sans-serif", "type": "fontFamily" },
     "fontMono": { "value": "IBM Plex Mono, monospace", "type": "fontFamily" },
     "sizeXs": { "value": "12", "type": "fontSize" },
     "sizeSm": { "value": "14", "type": "fontSize" },
@@ -53,7 +57,7 @@
   },
   "shadow": {
     "card": {
-      "value": "0 4px 24px rgba(28, 25, 20, 0.08)",
+      "value": "0 4px 24px rgba(42, 34, 32, 0.08)",
       "type": "boxShadow"
     }
   }

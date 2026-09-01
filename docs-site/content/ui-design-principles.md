@@ -3,7 +3,7 @@ title: UI design principles
 description: Visual and interaction rules for Occasio mobile + recipient web — all UI must follow these.
 phase: Phase 2.5 — UI Design
 status: Locked
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 Agents and humans: **do not invent UI ad hoc.** Use tokens + shared components + these rules.
@@ -151,3 +151,69 @@ Build in `src/shared/ui/`. Feature screens **compose** shared components.
 - [ ] Loading, error, empty states considered
 - [ ] Matches [wireframes](./wireframes.md) structure
 - [ ] No new hex values in feature `StyleSheet`
+- [ ] **Anti-slop:** no generic AI palette, copy, or layout (see §11)
+- [ ] Copied patterns from an existing screen in the same feature — not invented from scratch
+
+---
+
+## 11. Anti-slop — avoid generic AI UI & copy
+
+**Occasio is calm trust, not “AI greeting card generator.”** If it could be any random SaaS or Dribbble shot, reject it.
+
+### Visual — never add
+
+| Slop signal | Do instead |
+|---|---|
+| Purple/violet gradients, neon pink, “startup blue” | `bg`, `surface`, `accent` from `tokens.ts` only |
+| New fonts (Inter, Roboto swap, system default drift) | Token sizes + weights; Fraunces **marketing only** |
+| Heavy glassmorphism, blur stacks, 3D cards | Border + `surface` + light shadow on web only |
+| Emoji in titles, buttons, or empty states | Plain text; user message is the emotion |
+| Confetti, particles, bounce-on-every-tap | Subtle feedback; success = link + share, not celebration UI |
+| Random icons from mixed sets | Text labels first; icons only when wireframe specifies |
+| Gradients on primary buttons | Solid `accent` + white label |
+| `borderRadius: 999` pills everywhere | `radius.md` / `radius.lg` per §5 |
+| Extra wrapper `View`s “for spacing” | `gap` + token spacing on parent |
+| Copy-pasted card styles per screen | Compose `Screen` + shared `shared/ui/` |
+
+### Copy — never write
+
+| Slop copy | Occasio tone |
+|---|---|
+| “Welcome back!” / “Hey there!” / “Let’s get started!” | State the screen job: “Photos”, “Link ready” |
+| “Oops! Something went wrong” | Specific: “Could not create share link” + retry |
+| “Unlock premium features” / “Supercharge your…” | “Free limit reached” · plain plan names |
+| “Your journey begins here” | What happens next in one line |
+| Lorem ipsum or placeholder names (“John Doe”) | Wireframe copy or `[Recipient name]` hint |
+| Exclamation marks in body text | Periods; calm, not hype |
+
+Full tone: [product-principles.md](./product-principles.md) — trust-first, no dark patterns.
+
+### Interaction — never add
+
+| Slop pattern | Rule |
+|---|---|
+| Second primary button competing for attention | One accent CTA; rest `secondary` or `ghost` |
+| Full-screen loader for &lt;2s actions | Disabled button + small `ActivityIndicator` |
+| Auto-opening modals on tab focus | Soft auth only when user taps a gated action |
+| Onboarding carousel before first create | Guest goes straight to Create (PRD) |
+| “Skip” + “Get started” + “Sign up” trio | One path forward + one dismiss |
+
+### UI implementation — never do
+
+- Invent a new `*Card` style in a feature — extend `shared/ui/` or match `create/` screens
+- Inline `style={{ … }}` with magic numbers — `StyleSheet` + tokens
+- `console.log` left in screens for “debug”
+- Ship a screen without empty + error path because “we’ll add later”
+
+### Before/after (mental check)
+
+```
+❌ Slop: gradient header, “Welcome! 🎉”, two blue CTAs, shadow-xl card
+✅ Occasio: cream bg, “Create a wish”, one green Continue, bordered surface tile
+```
+
+---
+
+## 12. Reference screen (copy this, don’t reinvent)
+
+When unsure, open **`src/features/create/ui/screens/`** — TemplatePicker, Details, ShareSuccess. Match spacing, `Screen` footer, and button variants.

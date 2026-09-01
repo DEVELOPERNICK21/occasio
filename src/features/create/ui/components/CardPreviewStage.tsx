@@ -1,8 +1,9 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { TEMPLATE_OPTIONS } from '../../domain/templates';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { TemplateType } from '../../domain/types';
+import { AnimatedWishCard } from './AnimatedWishCard';
 
 type Props = {
   recipientName: string;
@@ -21,33 +22,16 @@ export function CardPreviewStage({
   templateType,
   photoUris,
 }: Props) {
-  const heroUri = photoUris[0];
-  const hasPhoto = Boolean(heroUri);
-
   return (
     <View style={styles.stage}>
-      <View style={styles.card}>
-        <View style={styles.mediaArea}>
-          {hasPhoto ? (
-            <Image source={{ uri: heroUri }} style={styles.hero} resizeMode="cover" />
-          ) : null}
-          <View style={[styles.overlay, hasPhoto && styles.overlayOnPhoto]}>
-            {templateType ? (
-              <Text style={[styles.badge, hasPhoto && styles.badgeOnPhoto]}>
-                {templateLabel(templateType)}
-              </Text>
-            ) : null}
-            <Text style={[styles.recipient, hasPhoto && styles.recipientOnPhoto]}>
-              {recipientName}
-            </Text>
-            {message ? (
-              <Text style={[styles.message, hasPhoto && styles.messageOnPhoto]}>
-                {message}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-      </View>
+      <Text style={styles.eyebrow}>Occasio</Text>
+      <AnimatedWishCard
+        recipientName={recipientName}
+        message={message}
+        templateType={templateType}
+        photoUri={photoUris[0]}
+        showReplay
+      />
       <Text style={styles.meta}>
         {photoUris.length} photo{photoUris.length === 1 ? '' : 's'}
         {templateType ? ` · ${templateLabel(templateType)}` : ''}
@@ -59,57 +43,20 @@ export function CardPreviewStage({
 const styles = StyleSheet.create({
   stage: {
     marginTop: spacing.md,
+    alignItems: 'center',
   },
-  card: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-    backgroundColor: colors.surface,
-  },
-  mediaArea: {
-    minHeight: 280,
-    backgroundColor: colors.accentSoft,
-    justifyContent: 'flex-end',
-  },
-  hero: {
-    ...StyleSheet.absoluteFill,
-  },
-  overlay: {
-    padding: spacing.lg,
-  },
-  overlayOnPhoto: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  badge: {
+  eyebrow: {
+    marginBottom: spacing.md,
     fontSize: typography.sizeXs,
-    color: colors.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  badgeOnPhoto: {
-    color: 'rgba(255,255,255,0.85)',
-  },
-  recipient: {
-    marginTop: spacing.sm,
-    fontSize: typography.sizeXl,
     fontWeight: typography.weightSemibold,
-    color: colors.ink,
-  },
-  recipientOnPhoto: {
-    color: colors.surface,
-  },
-  message: {
-    marginTop: spacing.sm,
-    fontSize: typography.sizeMd,
-    color: colors.inkSoft,
-  },
-  messageOnPhoto: {
-    color: 'rgba(255,255,255,0.92)',
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
   },
   meta: {
     marginTop: spacing.md,
     fontSize: typography.sizeSm,
     color: colors.muted,
+    textAlign: 'center',
   },
 });

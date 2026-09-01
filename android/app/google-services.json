@@ -12,7 +12,20 @@
           "package_name": "com.occasio"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "751525617274-b75tp2roe246c3d2i9dfgj1omcgfbjvv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.occasio",
+            "certificate_hash": "f9b3db50d7e149c999695c408332ad7a9ff7fde1"
+          }
+        },
+        {
+          "client_id": "751525617274-0t0ddniivdckvsed99l7s66v3jlvnv3f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBi2dei4daDHAf5YKv1hr5KmKFTvPWcv7o"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "751525617274-0t0ddniivdckvsed99l7s66v3jlvnv3f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "751525617274-lejd339l36uiqcjf9g0c8cgcrqgb1ue6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.occasio"
+              }
+            }
+          ]
         }
       }
     }

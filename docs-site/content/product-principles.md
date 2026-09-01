@@ -31,3 +31,16 @@ Snappy create wizard; readable type; workable on mid/low-end Android. Important 
 ## 6. Offline best-effort (not offline-first)
 
 Drafting a card offline is nice. Sharing and auto-send **require network**. Do not block architecture on full offline-first sync.
+
+## 7. Copy & tone (anti-slop)
+
+Product UI copy is **specific and calm** — not generic AI marketing voice.
+
+| Avoid | Prefer |
+|---|---|
+| Hype (“amazing”, “supercharge”, “unlock”) | What the user gets (“Link works until 30 Sep”) |
+| Fake friendliness (“Hey there!”) | Neutral labels (“Sign in”, “Add photo”) |
+| Vague errors (“Oops!”) | Actionable errors from domain/hooks |
+| Dark patterns (hidden cancel, pre-checked upsell) | Clear pricing, one-tap cancel (trust-first) |
+
+Visual anti-slop: [ui-design-principles.md §11](./ui-design-principles.md).

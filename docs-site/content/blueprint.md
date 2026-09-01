@@ -68,7 +68,7 @@ See [Solo dev playbook](/docs/playbook) for the full phase map.
 
 Build order: **create → recipient → auth/vault/history → billing → auto-send engine**
 
-### Create (in progress)
+### Create
 
 - [x] Mini-PRD — [Create blueprint](/docs/create-blueprint)
 - [x] Screens scaffold + domain draft hook
@@ -78,16 +78,51 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 - [x] Firebase RN init (`@react-native-firebase/app`, google-services / plist)
 - [x] `domain/quota.ts`, `creationRules.ts` + unit tests
 - [x] `useCreateShareLink` → Preview → ShareSuccess with real URL shape
-- [ ] Image picker + upload bytes to storage
-- [ ] Firebase Functions **deployed** to `occasio-app-dev` (source ready; run `npm run firebase:deploy`)
-- [ ] Analytics events wired
-- [ ] Paywall modal UI
-- [ ] All acceptance criteria met
+- [x] Image picker + base64 upload (Spark interim)
+- [x] Vercel API `POST /api/v1/creations` deployed (Spark path)
+- [x] Analytics stub events
+- [x] Paywall modal UI
+- [x] Create acceptance criteria met (vault deferred → auth)
+
+### Recipient (web — in progress)
+
+- [x] Mini-PRD — [Recipient blueprint](/docs/recipient-blueprint)
+- [x] `/c/[slug]` card view (Firestore Admin)
+- [x] Expired + not-found pages
+- [x] Dynamic OG images for link previews
+- [ ] Multi-photo carousel (Blaze + Storage)
+- [ ] `card_viewed` analytics
+
+### Auth (in progress)
+
+- [x] Mini-PRD — [Auth blueprint](/docs/auth-blueprint)
+- [x] `features/auth/` layers (domain → data → application → ui)
+- [x] Soft-auth modal (Google + Email)
+- [x] Account tab + guest gates on Vault/History
+- [x] Share success → Save to Vault triggers soft auth
+- [ ] Firebase Phone provider enabled + device test
+- [ ] Google sign-in
+
+### Vault (in progress)
+
+- [x] Mini-PRD — [Vault blueprint](/docs/vault-blueprint)
+- [x] `relationships` Firestore CRUD (client, rules in place)
+- [x] Vault list + Add person screens
+- [x] Share success → prefilled Add person
+- [ ] Person detail + delete
+- [ ] Paid tier caps from RevenueCat
+
+### History (in progress)
+
+- [x] Mini-PRD — [History blueprint](/docs/history-blueprint)
+- [x] `user_creations` index + Firestore rules
+- [x] History list + detail (reshare)
+- [x] Auto-record on Share success when signed in
+- [ ] Deploy Firestore rules
+- [ ] Link guest creations on sign-in
 
 ### Other features
 
-- [ ] recipient (web)
-- [ ] auth + vault + history
 - [ ] billing
 - [ ] auto-send engine
 

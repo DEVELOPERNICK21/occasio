@@ -40,3 +40,5 @@ ui → application (hooks) → domain (rules) + data (IO)
 - Base64 images in Firestore
 - Return raw `Response` to UI
 - Skip error/loading states in hooks
+- New `utils/` folders, factory classes, or `fetch` outside `data/`
+- Refactor unrelated files; duplicate types instead of using `domain/types.ts`

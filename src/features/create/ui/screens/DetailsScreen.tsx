@@ -1,13 +1,17 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet, View } from 'react-native';
+import { Field } from '../../../../shared/ui/Field';
 import { TextInput } from '../../../../shared/ui/TextInput';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
-import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
+import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Details'>;
+
+const CREATE_STEPS = 4;
+const MESSAGE_MAX = 280;
 
 export function DetailsScreen({ navigation }: Props) {
   const { draft, setRecipientName, setMessage } = useCreateDraftContext();
@@ -16,40 +20,48 @@ export function DetailsScreen({ navigation }: Props) {
     <Screen
       title="Details"
       subtitle="Who is this for?"
-      footer={
-        <Button
+      step={{ current: 3, total: CREATE_STEPS }}
+      headerAction={
+        <ScreenHeaderAction
           label="Preview"
           disabled={!draft.recipientName.trim()}
           onPress={() => navigation.navigate('Preview')}
         />
       }
     >
-      <View style={styles.field}>
-        <TextInput
-          placeholder="Recipient name"
-          placeholderTextColor={colors.muted}
-          value={draft.recipientName}
-          onChangeText={setRecipientName}
-          style={styles.input}
-        />
-      </View>
-      <View style={styles.field}>
-        <TextInput
-          placeholder="Your message"
-          placeholderTextColor={colors.muted}
-          value={draft.message}
-          onChangeText={setMessage}
-          multiline
-          style={[styles.input, styles.textArea]}
-        />
+      <View style={styles.form}>
+        <Field label="To">
+          <TextInput
+            placeholder="Recipient name"
+            placeholderTextColor={colors.muted}
+            value={draft.recipientName}
+            onChangeText={setRecipientName}
+            style={styles.input}
+            autoCapitalize="words"
+          />
+        </Field>
+        <Field
+          label="Message"
+          hint={`${draft.message.length}/${MESSAGE_MAX} characters`}
+        >
+          <TextInput
+            placeholder="Write something personal"
+            placeholderTextColor={colors.muted}
+            value={draft.message}
+            onChangeText={(text) => setMessage(text.slice(0, MESSAGE_MAX))}
+            multiline
+            style={[styles.input, styles.textArea]}
+          />
+        </Field>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  field: {
+  form: {
     marginTop: spacing.md,
+    gap: spacing.lg,
   },
   input: {
     backgroundColor: colors.surface,
@@ -62,7 +74,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   textArea: {
-    minHeight: 120,
+    minHeight: 132,
     textAlignVertical: 'top',
   },
 });

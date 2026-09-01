@@ -1,62 +1,35 @@
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { PlaceholderTabScreen } from '../ui/PlaceholderTabScreen';
+import { AccountScreen } from '../../features/auth/ui/screens/AccountScreen';
 import { CreateNavigator } from './CreateNavigator';
-import { lockedTabBarLabel } from './tabBarLabel';
+import { HistoryNavigator } from './HistoryNavigator';
+import { VaultNavigator } from './VaultNavigator';
+import { FLOATING_TAB_BAR_HEIGHT } from './tabBarConstants';
 import type { MainTabParamList } from './types';
-import { colors, typography } from '../theme/tokens';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
+
+function renderFloatingTabBar(props: BottomTabBarProps) {
+  const { FloatingTabBar } = require('./FloatingTabBar') as typeof import('./FloatingTabBar');
+  return <FloatingTabBar {...props} />;
+}
 
 export function MainTabNavigator() {
   return (
     <Tab.Navigator
+      tabBar={renderFloatingTabBar}
       screenOptions={{
         headerShown: false,
-        tabBarAllowFontScaling: false,
-        tabBarLabel: lockedTabBarLabel,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-        tabBarLabelStyle: {
-          fontSize: typography.sizeXs,
+        tabBarHideOnKeyboard: true,
+        sceneStyle: {
+          paddingBottom: FLOATING_TAB_BAR_HEIGHT,
         },
       }}
     >
-      <Tab.Screen
-        name="CreateTab"
-        component={CreateNavigator}
-        options={{ title: 'Create' }}
-      />
-      <Tab.Screen
-        name="VaultTab"
-        children={() => (
-          <PlaceholderTabScreen
-            title="Vault"
-            message="Save people and enable auto-send."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="HistoryTab"
-        children={() => (
-          <PlaceholderTabScreen
-            title="History"
-            message="Past creations and reshares."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="AccountTab"
-        children={() => (
-          <PlaceholderTabScreen
-            title="Account"
-            message="Sign-in, plans, privacy."
-          />
-        )}
-      />
+      <Tab.Screen name="CreateTab" component={CreateNavigator} />
+      <Tab.Screen name="VaultTab" component={VaultNavigator} />
+      <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
+      <Tab.Screen name="AccountTab" component={AccountScreen} />
     </Tab.Navigator>
   );
 }

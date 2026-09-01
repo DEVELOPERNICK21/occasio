@@ -39,6 +39,17 @@
 	<string>Occasio needs camera access so you can take photos for greeting cards.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Occasio needs access to your photos so you can add them to greeting cards.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.751525617274-lejd339l36uiqcjf9g0c8cgcrqgb1ue6</string>
+			</array>
+		</dict>
+	</array>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

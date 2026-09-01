@@ -11,6 +11,10 @@ import {
   isDataUrl,
   isDataUrlWithinLimit,
 } from '../../src/features/create/domain/base64Media';
+import {
+  isValidShareSlug,
+  SHARE_SLUG_LENGTH,
+} from '../../src/features/create/domain/shareSlug';
 import { EMPTY_CREATION_DRAFT } from '../../src/features/create/domain/types';
 
 describe('creationRules', () => {
@@ -69,5 +73,14 @@ describe('base64Media', () => {
     const huge = `data:image/jpeg;base64,${'a'.repeat(800_000)}`;
     expect(isDataUrlWithinLimit(small)).toBe(true);
     expect(isDataUrlWithinLimit(huge)).toBe(false);
+  });
+});
+
+describe('shareSlug', () => {
+  it('validates production slug format', () => {
+    expect(isValidShareSlug('6agd6sg9')).toBe(true);
+    expect(isValidShareSlug('demo-mom-abc')).toBe(false);
+    expect(isValidShareSlug('abc')).toBe(false);
+    expect(SHARE_SLUG_LENGTH).toBe(8);
   });
 });

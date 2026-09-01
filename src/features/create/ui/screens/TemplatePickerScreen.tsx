@@ -1,24 +1,38 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { TEMPLATE_OPTIONS } from '../../domain/templates';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
-import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
+import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'TemplatePicker'>;
 
+const CREATE_STEPS = 4;
+
 export function TemplatePickerScreen({ navigation }: Props) {
   const { draft, setTemplate } = useCreateDraftContext();
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.createStarted);
+  }, []);
+
+  const selectTemplate = (id: typeof TEMPLATE_OPTIONS[number]['id']) => {
+    setTemplate(id);
+    trackEvent(AnalyticsEvents.templateSelected, { templateType: id });
+  };
 
   return (
     <Screen
       title="Create a wish"
       subtitle="Pick an occasion"
-      footer={
-        <Button
+      step={{ current: 1, total: CREATE_STEPS }}
+      headerAction={
+        <ScreenHeaderAction
           label="Continue"
           disabled={!draft.templateType}
           onPress={() => navigation.navigate('AddPhotos')}
@@ -31,9 +45,17 @@ export function TemplatePickerScreen({ navigation }: Props) {
           return (
             <Pressable
               key={t.id}
-              onPress={() => setTemplate(t.id)}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              onPress={() => selectTemplate(t.id)}
               style={[styles.card, selected && styles.cardSelected]}
             >
+              {selected ? (
+                <View style={styles.check}>
+                  <Text style={styles.checkLabel}>✓</Text>
+                </View>
+              ) : null}
+              <Text style={styles.emoji}>{t.emoji}</Text>
               <Text style={styles.cardLabel}>{t.label}</Text>
               <Text style={styles.cardDesc}>{t.description}</Text>
             </Pressable>
@@ -58,11 +80,34 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.lg,
     padding: spacing.md,
-    minHeight: 96,
+    minHeight: 112,
+    ...shadow.card,
   },
   cardSelected: {
     borderColor: colors.accent,
     backgroundColor: colors.accentSoft,
+  },
+  check: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 22,
+    height: 22,
+    borderRadius: radius.full,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkLabel: {
+    color: colors.white,
+    fontSize: typography.sizeXs,
+    fontWeight: typography.weightSemibold,
+    lineHeight: 14,
+  },
+  emoji: {
+    fontSize: 28,
+    lineHeight: 32,
+    marginBottom: spacing.sm,
   },
   cardLabel: {
     fontSize: typography.sizeMd,

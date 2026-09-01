@@ -11,8 +11,8 @@
 | # | File | Why |
 |---|---|---|
 | 1 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Repo map, layers, build order |
-| 2 | [`docs-site/content/ui-design-principles.md`](./docs-site/content/ui-design-principles.md) | **UI tokens, components, consistency** |
-| 3 | [`docs-site/content/data-flow.md`](./docs-site/content/data-flow.md) | **Data flow, API, network patterns** |
+| 2 | [`docs-site/content/ui-design-principles.md`](./docs-site/content/ui-design-principles.md) | **UI tokens, components, anti-slop (§11)** |
+| 3 | [`docs-site/content/data-flow.md`](./docs-site/content/data-flow.md) | **Data flow, API, code anti-slop (§12)** |
 | 4 | [`docs-site/content/blueprint.md`](./docs-site/content/blueprint.md) | Phase + current focus |
 | 5 | Active feature blueprint (e.g. [`create-blueprint.md`](./docs-site/content/create-blueprint.md)) | Acceptance criteria |
 
@@ -62,7 +62,13 @@ src/features/<feature>/
 - One primary CTA per screen · calm trust aesthetic
 - Mobile + recipient web share tokens; docs-site is separate
 
-Full rules: `ui-design-principles.md`
+Full rules: `ui-design-principles.md` (§11 anti-slop for visual + copy)
+
+## Anti-slop (agents)
+
+**UI:** cream/green tokens only · one primary CTA · no purple gradients · no emoji/hype copy · copy `create/` screens.  
+**Code:** smallest diff · no new utils folders · no `fetch` in `ui/` · match existing feature patterns.  
+Details: `ui-design-principles.md` §11 · `data-flow.md` §12 · `product-principles.md` §7.
 
 ## Data & network
 
@@ -89,6 +95,7 @@ Build order: create → recipient web → auth/vault/history → billing → aut
 - Store billing bypass for digital goods
 - Commit secrets or create git commits unless asked
 - Over-engineer (no microservices, no repo-per-layer packages)
+- Generic AI slop: purple UI, hype copy, extra abstractions, unrelated refactors (see anti-slop sections in `ui-design-principles.md` + `data-flow.md`)
 
 ## Verify
 
@@ -100,3 +107,7 @@ npm start && npm run android
 ## Cursor rules (auto-loaded)
 
 `.cursor/rules/occasio.mdc` · `ui-design.mdc` · `data-network.mdc` · `mobile-features.mdc` · `create-feature.mdc` · `docs-site.mdc`
+
+## Prompt cheat sheet (you)
+
+[`PROMPTING.md`](./PROMPTING.md) — 3-file prompt template, learning lines, copy-paste examples. **@PROMPTING.md** when you want the agent to follow your ritual.

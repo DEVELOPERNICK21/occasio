@@ -46,3 +46,4 @@ Never commit `.env`, keys, or credentials. No commits unless user requests.
 - Use Expo (RN CLI project)
 - Base64 images in Firestore
 - Skip Play/App Store billing for subscriptions
+- AI slop: purple gradients, hype copy, emoji UI, new abstractions, drive-by refactors

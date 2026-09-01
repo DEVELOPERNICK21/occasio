@@ -4,13 +4,14 @@ export type TemplateOption = {
   id: TemplateType;
   label: string;
   description: string;
+  emoji: string;
 };
 
 export const TEMPLATE_OPTIONS: TemplateOption[] = [
-  { id: 'birthday', label: 'Birthday', description: 'Celebrate their day' },
-  { id: 'anniversary', label: 'Anniversary', description: 'Mark the date' },
-  { id: 'sorry', label: 'Sorry', description: 'Make it right' },
-  { id: 'proposal', label: 'Proposal', description: 'Big moment' },
-  { id: 'mothers_day', label: "Mother's Day", description: 'For mom' },
-  { id: 'fathers_day', label: "Father's Day", description: 'For dad' },
+  { id: 'birthday', label: 'Birthday', description: 'Celebrate their day', emoji: '🎂' },
+  { id: 'anniversary', label: 'Anniversary', description: 'Mark the date', emoji: '💍' },
+  { id: 'sorry', label: 'Sorry', description: 'Make it right', emoji: '💐' },
+  { id: 'proposal', label: 'Proposal', description: 'Big moment', emoji: '✨' },
+  { id: 'mothers_day', label: "Mother's Day", description: 'For mom', emoji: '🌸' },
+  { id: 'fathers_day', label: "Father's Day", description: 'For dad', emoji: '🌿' },
 ];

@@ -29,6 +29,12 @@ Add reusable UI only to `src/shared/ui/`. Feature screens compose — don't copy
 ## Don't
 
 - Invent new color palette or generic purple AI aesthetic
+- Emoji, exclamation-heavy, or SaaS hype copy (“Welcome back!”, “Unlock…”)
+- Duplicate styles — copy an existing screen in `features/create/ui/screens/`
 - Raw `TextInput` without plan to move to shared `Input`
 - Full-screen blocking loader for quick ops
 - Multiple competing primary buttons on one screen
+
+## Anti-slop
+
+Read `ui-design-principles.md` §11 before any new screen. **When in doubt, match Create flow screens.**
