@@ -10,16 +10,28 @@ import {
   type NativeSyntheticEvent,
   type ViewToken,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
+import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import type { RootStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, spacing, typography } from '../../../../shared/theme/tokens';
-import { getOnboardingCtaLabel } from '../../domain/onboardingFlow';
+import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import {
+  getOnboardingCtaLabel,
+  getOnboardingProgressLabel,
+  getOnboardingTrustLine,
+} from '../../domain/onboardingFlow';
 import { ONBOARDING_SLIDES } from '../../domain/onboardingSlides';
 import { OnboardingPagerDots } from '../components/OnboardingPagerDots';
+import { OnboardingSlidePanel } from '../components/OnboardingSlidePanel';
 import { OnboardingSlideVisual } from '../components/OnboardingSlideVisual';
+import { OnboardingTrustStrip } from '../components/OnboardingTrustStrip';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'> & {
   onComplete: () => Promise<void>;
@@ -27,14 +39,51 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'> & {
 
 type SlideItem = (typeof ONBOARDING_SLIDES)[number];
 
+function OnboardingProgressBar({ activeIndex, total }: { activeIndex: number; total: number }) {
+  const progress = useSharedValue((activeIndex + 1) / total);
+
+  useEffect(() => {
+    progress.value = withSpring((activeIndex + 1) / total, {
+      damping: 20,
+      stiffness: 180,
+    });
+  }, [activeIndex, progress, total]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
+
+  return (
+    <View style={styles.progressTrack}>
+      <Animated.View style={[styles.progressFill, fillStyle]} />
+    </View>
+  );
+}
+
 export function OnboardingScreen({ navigation, onComplete }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<SlideItem>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [replayKeys, setReplayKeys] = useState(() =>
+    ONBOARDING_SLIDES.map(() => 0),
+  );
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.onboardingStarted);
+  }, []);
+
+  useEffect(() => {
+    setReplayKeys((prev) =>
+      prev.map((key, index) => (index === activeIndex ? key + 1 : key)),
+    );
+  }, [activeIndex]);
+
+  const bumpReplay = useCallback((index: number) => {
+    triggerCardHaptic();
+    setReplayKeys((prev) =>
+      prev.map((key, i) => (i === index ? key + 1 : key)),
+    );
   }, []);
 
   const finish = useCallback(async () => {
@@ -54,6 +103,7 @@ export function OnboardingScreen({ navigation, onComplete }: Props) {
   }, [activeIndex, finish]);
 
   const advance = useCallback(() => {
+    triggerCardHaptic();
     if (activeIndex < ONBOARDING_SLIDES.length - 1) {
       const nextIndex = activeIndex + 1;
       listRef.current?.scrollToIndex({ index: nextIndex, animated: true });
@@ -81,21 +131,39 @@ export function OnboardingScreen({ navigation, onComplete }: Props) {
   );
 
   const renderSlide = useCallback(
-    ({ item }: { item: SlideItem }) => (
-      <View style={[styles.slide, { width }]}>
-        <View style={styles.visual}>
-          <OnboardingSlideVisual slideId={item.id} />
+    ({ item, index }: { item: SlideItem; index: number }) => {
+      const isActive = index === activeIndex;
+      return (
+        <View style={[styles.slide, { width }]}>
+          <View style={styles.visual}>
+            <OnboardingSlideVisual
+              slideId={item.id}
+              isActive={isActive}
+              replayKey={replayKeys[index] ?? 0}
+              onReplay={() => bumpReplay(index)}
+            />
+          </View>
+          <OnboardingSlidePanel
+            slide={item}
+            isActive={isActive}
+            replayKey={replayKeys[index] ?? 0}
+          />
         </View>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.body}>{item.body}</Text>
-      </View>
-    ),
-    [width],
+      );
+    },
+    [activeIndex, bumpReplay, replayKeys, width],
   );
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.topBar}>
+        <View style={styles.topBarMain}>
+          <Text style={styles.progress}>{getOnboardingProgressLabel(activeIndex)}</Text>
+          <OnboardingProgressBar
+            activeIndex={activeIndex}
+            total={ONBOARDING_SLIDES.length}
+          />
+        </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Skip onboarding"
@@ -133,7 +201,12 @@ export function OnboardingScreen({ navigation, onComplete }: Props) {
           count={ONBOARDING_SLIDES.length}
           activeIndex={activeIndex}
         />
+        <OnboardingTrustStrip
+          text={getOnboardingTrustLine(activeIndex)}
+          slideKey={activeIndex}
+        />
         <Button
+          key={`cta-${activeIndex}`}
           label={getOnboardingCtaLabel(activeIndex)}
           onPress={advance}
           style={styles.cta}
@@ -149,9 +222,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   topBar: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
+    gap: spacing.md,
+  },
+  topBarMain: {
+    flex: 1,
+    gap: spacing.sm,
+  },
+  progressTrack: {
+    height: 3,
+    borderRadius: radius.full,
+    backgroundColor: colors.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: radius.full,
+    backgroundColor: colors.accent,
+  },
+  progress: {
+    fontSize: typography.sizeXs,
+    fontWeight: typography.weightSemibold,
+    color: colors.muted,
+    letterSpacing: 0.3,
   },
   skip: {
     paddingVertical: spacing.xs,
@@ -168,33 +265,19 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.lg,
     justifyContent: 'flex-start',
   },
   visual: {
     minHeight: 280,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing['2xl'],
-  },
-  title: {
-    fontSize: typography.size2xl,
-    lineHeight: typography.size2xl * 1.12,
-    letterSpacing: -0.6,
-    fontWeight: typography.weightSemibold,
-    color: colors.ink,
-    marginBottom: spacing.md,
-  },
-  body: {
-    fontSize: typography.sizeMd,
-    lineHeight: typography.sizeMd * 1.45,
-    color: colors.muted,
-    maxWidth: 340,
+    marginBottom: spacing.xl,
   },
   footer: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    gap: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.md,
   },
   cta: {
     width: '100%',

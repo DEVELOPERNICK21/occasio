@@ -1,82 +1,179 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet, View } from 'react-native';
-import { Text } from '../../../../shared/ui/Text';
+import { useScrollToTop } from '@react-navigation/native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
-import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import { Text } from '../../../../shared/ui/Text';
+import {
+  SessionBootSkeleton,
+  VaultListSkeleton,
+} from '../../../../shared/ui/SkeletonLayouts';
+import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import type { VaultStackParamList } from '../../../../shared/navigation/types';
 import { useAuth } from '../../../auth/application/useAuth';
 import { GuestGateScreen } from '../../../auth/ui/screens/GuestGateScreen';
+import { useDeletePerson } from '../../application/useDeletePerson';
+import { useToggleAutoSend } from '../../application/useToggleAutoSend';
 import { useVaultPeople } from '../../application/useVaultPeople';
-import {
-  daysUntilPersonDate,
-  formatPersonDate,
-} from '../../domain/personRules';
-import { relationshipLabel } from '../../domain/relationshipTypes';
-import type { VaultStackParamList } from '../../../../shared/navigation/types';
+import { getVaultCardTheme } from '../../domain/vaultCardTheme';
+import { filterVaultPeople, getPersonNextOccasion } from '../../domain/vaultOccasion';
+import type { VaultPerson } from '../../domain/types';
+import { VaultExpandPrompt } from '../components/VaultExpandPrompt';
+import { VaultPersonCard } from '../components/VaultPersonCard';
+import { VaultSearchField } from '../components/VaultSearchField';
 
 type ListProps = NativeStackScreenProps<VaultStackParamList, 'VaultList'>;
 
 function VaultListContent({ navigation }: ListProps) {
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
+
   const { people, isLoading, error } = useVaultPeople(true);
-  const upcoming = people
-    .filter((person) => person.birthday)
-    .map((person) => ({
-      person,
-      days: daysUntilPersonDate(person.birthday!),
-    }))
-    .sort((a, b) => a.days - b.days)
-    .slice(0, 3);
+  const { remove } = useDeletePerson();
+  const { toggle, error: toggleError, autoSendAllowed } = useToggleAutoSend();
+  const [query, setQuery] = useState('');
+  const [optimisticAutoSend, setOptimisticAutoSend] = useState<
+    Record<string, boolean>
+  >({});
+
+  const filtered = useMemo(
+    () => filterVaultPeople(people, query),
+    [people, query],
+  );
+
+  useEffect(() => {
+    setOptimisticAutoSend((current) => {
+      if (Object.keys(current).length === 0) {
+        return current;
+      }
+
+      const next = { ...current };
+      let changed = false;
+
+      for (const person of people) {
+        if (
+          person.id in next &&
+          next[person.id] === person.autoSendBirthday
+        ) {
+          delete next[person.id];
+          changed = true;
+        }
+      }
+
+      return changed ? next : current;
+    });
+  }, [people]);
+
+  const resolveAutoSend = (person: VaultPerson) =>
+    person.id in optimisticAutoSend
+      ? optimisticAutoSend[person.id]
+      : person.autoSendBirthday;
+
+  const openAddPerson = () => {
+    triggerCardHaptic();
+    navigation.navigate('AddPerson', {});
+  };
+
+  const openPerson = (personId: string) => {
+    navigation.navigate('PersonDetail', { personId });
+  };
+
+  const openMenu = (personId: string, personName: string) => {
+    Alert.alert(personName, undefined, [
+      {
+        text: 'View details',
+        onPress: () => openPerson(personId),
+      },
+      {
+        text: 'Remove from Vault',
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert(
+            'Remove from Vault?',
+            `${personName} will be removed. Auto-send for this person will stop.`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Remove',
+                style: 'destructive',
+                onPress: () => {
+                  void remove(personId);
+                },
+              },
+            ],
+          );
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  const handleAutoSendToggle = (personId: string, current: boolean) => {
+    triggerCardHaptic();
+    const next = !current;
+    setOptimisticAutoSend((prev) => ({ ...prev, [personId]: next }));
+    void toggle(personId, next).then((ok) => {
+      if (!ok) {
+        setOptimisticAutoSend((prev) => {
+          const copy = { ...prev };
+          delete copy[personId];
+          return copy;
+        });
+      }
+    });
+  };
 
   return (
     <Screen
       title="Vault"
-      subtitle="People you never want to forget"
+      subtitle="People you celebrate — birthdays and auto-send."
+      scrollRef={scrollRef}
       headerAction={
-        <ScreenHeaderAction
-          label="Add"
-          onPress={() => navigation.navigate('AddPerson', {})}
-        />
+        <ScreenHeaderAction label="Add" onPress={openAddPerson} />
       }
     >
+      <VaultSearchField value={query} onChangeText={setQuery} />
+
       {isLoading ? (
-        <Text style={styles.muted}>Loading…</Text>
+        <VaultListSkeleton />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : people.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No people yet</Text>
-          <Text style={styles.emptyBody}>
-            Save someone you care about — their birthday, WhatsApp, and auto-send
-            preferences live here.
-          </Text>
-        </View>
+        <VaultExpandPrompt onPress={openAddPerson} />
+      ) : filtered.length === 0 ? (
+        <Text style={styles.muted}>No one matches that search.</Text>
       ) : (
         <View style={styles.list}>
-          {people.map((person) => (
-            <View key={person.id} style={styles.row}>
-              <View style={styles.rowMain}>
-                <Text style={styles.rowName}>{person.personName}</Text>
-                <Text style={styles.rowMeta}>
-                  {relationshipLabel(person.relationshipType)}
-                  {person.birthday ? ` · ${formatPersonDate(person.birthday)}` : ''}
-                </Text>
-              </View>
-            </View>
-          ))}
+          {filtered.map((person) => {
+            const theme = getVaultCardTheme(person.relationshipType);
+            const occasion = getPersonNextOccasion(person);
+            const autoSendEnabled = resolveAutoSend(person);
 
-          {upcoming.length > 0 ? (
-            <View style={styles.upcoming}>
-              <Text style={styles.upcomingTitle}>Upcoming</Text>
-              {upcoming.map(({ person, days }) => (
-                <Text key={person.id} style={styles.upcomingRow}>
-                  · {person.personName} birthday
-                  {days === 0 ? ' today' : ` in ${days}d`}
-                </Text>
-              ))}
-            </View>
-          ) : null}
+            return (
+              <VaultPersonCard
+                key={person.id}
+                person={person}
+                theme={theme}
+                occasion={occasion}
+                autoSendEnabled={autoSendEnabled}
+                autoSendDisabled={!autoSendAllowed || !person.birthday}
+                onAutoSendToggle={() =>
+                  handleAutoSendToggle(person.id, autoSendEnabled)
+                }
+                onOpenVault={() => openPerson(person.id)}
+                onNote={() => openPerson(person.id)}
+                onMenu={() => openMenu(person.id, person.personName)}
+              />
+            );
+          })}
         </View>
       )}
+
+      {people.length > 0 ? <VaultExpandPrompt onPress={openAddPerson} /> : null}
+
+      {toggleError ? <Text style={styles.error}>{toggleError}</Text> : null}
     </Screen>
   );
 }
@@ -85,18 +182,14 @@ export function VaultListScreen(props: ListProps) {
   const { isSignedIn, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <Screen title="Vault">
-        <Text style={styles.muted}>Checking session…</Text>
-      </Screen>
-    );
+    return <SessionBootSkeleton withTabBar />;
   }
 
   if (!isSignedIn) {
     return (
       <GuestGateScreen
         title="Vault"
-        message="Save people, birthdays, and auto-send preferences in one place."
+        message="Save people and birthdays so you never miss a moment."
         action="vault_view"
       />
     );
@@ -106,78 +199,20 @@ export function VaultListScreen(props: ListProps) {
 }
 
 const styles = StyleSheet.create({
-  muted: {
-    fontSize: typography.sizeSm,
-    color: colors.muted,
-  },
-  error: {
-    fontSize: typography.sizeSm,
-    color: colors.error,
-  },
-  empty: {
-    marginTop: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: typography.sizeMd,
-    fontWeight: typography.weightSemibold,
-    color: colors.ink,
-  },
-  emptyBody: {
-    fontSize: typography.sizeSm,
-    lineHeight: typography.sizeSm * 1.45,
-    color: colors.inkSoft,
-  },
   list: {
     marginTop: spacing.md,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.card,
-  },
-  rowMain: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  rowName: {
-    fontSize: typography.sizeMd,
-    fontWeight: typography.weightSemibold,
-    color: colors.ink,
-  },
-  rowMeta: {
+  muted: {
+    marginTop: spacing.md,
     fontSize: typography.sizeSm,
     color: colors.muted,
+    textAlign: 'center',
   },
-  upcoming: {
-    marginTop: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.sidebar,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.xs,
-  },
-  upcomingTitle: {
-    fontSize: typography.sizeXs,
-    fontWeight: typography.weightSemibold,
-    color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  upcomingRow: {
+  error: {
+    marginTop: spacing.md,
     fontSize: typography.sizeSm,
-    color: colors.inkSoft,
+    color: colors.error,
+    textAlign: 'center',
   },
 });

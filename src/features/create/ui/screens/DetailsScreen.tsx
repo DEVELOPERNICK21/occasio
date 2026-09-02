@@ -21,6 +21,7 @@ export function DetailsScreen({ navigation }: Props) {
       title="Details"
       subtitle="Who is this for?"
       step={{ current: 3, total: CREATE_STEPS }}
+      onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
           label="Preview"

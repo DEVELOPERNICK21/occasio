@@ -157,3 +157,28 @@ export async function deleteVaultPerson(personId: string): Promise<void> {
     throw new VaultError('NETWORK', 'Could not delete person.');
   }
 }
+
+export async function setVaultPersonAutoSendBirthday(
+  personId: string,
+  enabled: boolean,
+): Promise<void> {
+  requireUid();
+
+  if (env.useMockAuth) {
+    mockStore = mockStore.map((person) =>
+      person.id === personId
+        ? { ...person, autoSendBirthday: enabled, updatedAt: new Date().toISOString() }
+        : person,
+    );
+    return;
+  }
+
+  try {
+    await firestore().collection('relationships').doc(personId).update({
+      'autoSendEnabled.birthday': enabled,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    });
+  } catch {
+    throw new VaultError('NETWORK', 'Could not update auto-send.');
+  }
+}

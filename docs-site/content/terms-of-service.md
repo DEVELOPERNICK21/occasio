@@ -30,7 +30,7 @@ If you create an account, you are responsible for:
 - Keeping your sign-in credentials secure
 - All activity under your account
 
-Notify us at **[privacy@occasio.app](mailto:privacy@occasio.app)** if you suspect unauthorized access.
+Notify us at **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** if you suspect unauthorized access.
 
 You may sign out or request account deletion at any time. See [Delete your account and data](/delete-account) and our [Privacy Policy](/privacy).
 
@@ -114,7 +114,7 @@ These Terms are governed by the laws of **India**, without regard to conflict-of
 
 ## 15. Contact
 
-**Email:** [privacy@occasio.app](mailto:privacy@occasio.app)  
+**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
 **Website:** [occasio-greetings.vercel.app](https://occasio-greetings.vercel.app)
 
 For privacy-specific requests, see our [Privacy Policy](/privacy).

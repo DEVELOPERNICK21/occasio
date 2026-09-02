@@ -13,6 +13,8 @@ export type AuthUser = {
   email: string | null;
   phoneNumber: string | null;
   displayName: string | null;
+  /** ISO timestamp from Firebase Auth metadata when available. */
+  createdAt: string | null;
 };
 
 export type AuthSessionStatus = 'loading' | 'guest' | 'signed_in';

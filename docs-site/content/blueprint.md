@@ -8,7 +8,7 @@ updated: 2026-08-31
 
 Use this as the master checklist. **Engineering work happens in the mobile app** (`src/`); docs-site records decisions and progress.
 
-**Current focus (mobile):** Create — image picker + Firebase Functions for real share links.
+**Current focus (mobile):** Phase 4 wrap-up — billing and auto-send engine next.
 
 See [Solo dev playbook](/docs/playbook) for the full phase map.
 
@@ -93,33 +93,33 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 - [ ] Multi-photo carousel (Blaze + Storage)
 - [ ] `card_viewed` analytics
 
-### Auth (in progress)
+### Auth (done)
 
 - [x] Mini-PRD — [Auth blueprint](/docs/auth-blueprint)
 - [x] `features/auth/` layers (domain → data → application → ui)
 - [x] Soft-auth modal (Google + Email)
 - [x] Account tab + guest gates on Vault/History
 - [x] Share success → Save to Vault triggers soft auth
-- [ ] Firebase Phone provider enabled + device test
-- [ ] Google sign-in
+- [x] Device tested: sign-in on Android
+- [ ] Device tested: sign-in on iOS
 
-### Vault (in progress)
+### Vault (mostly done)
 
 - [x] Mini-PRD — [Vault blueprint](/docs/vault-blueprint)
 - [x] `relationships` Firestore CRUD (client, rules in place)
 - [x] Vault list + Add person screens
 - [x] Share success → prefilled Add person
-- [ ] Person detail + delete
+- [x] Person detail + delete
 - [ ] Paid tier caps from RevenueCat
 
-### History (in progress)
+### History (done)
 
 - [x] Mini-PRD — [History blueprint](/docs/history-blueprint)
 - [x] `user_creations` index + Firestore rules
 - [x] History list + detail (reshare)
 - [x] Auto-record on Share success when signed in
-- [ ] Deploy Firestore rules
-- [ ] Link guest creations on sign-in
+- [x] Link guest creations on sign-in (local queue → sync)
+- [x] Deploy Firestore rules
 
 ### Other features
 

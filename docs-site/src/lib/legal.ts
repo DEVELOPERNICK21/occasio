@@ -2,7 +2,7 @@
 export const legal = {
   appName: "Occasio",
   website: "https://occasio-greetings.vercel.app",
-  contactEmail: "privacy@occasio.app",
+  contactEmail: "develoepernick1@gmail.com",
   operator: "Nick Kubde",
   country: "India",
   effectiveDate: "1 September 2026",

@@ -1,6 +1,7 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type CreateStackParamList = {
+  CreateHome: undefined;
   TemplatePicker: undefined;
   AddPhotos: undefined;
   Details: undefined;
@@ -21,6 +22,7 @@ export type HistoryStackParamList = {
 export type VaultStackParamList = {
   VaultList: undefined;
   AddPerson: { prefilledName?: string };
+  PersonDetail: { personId: string };
 };
 
 export type MainTabParamList = {

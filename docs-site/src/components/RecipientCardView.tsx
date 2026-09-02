@@ -10,7 +10,7 @@ export function RecipientCardView({ card }: Props) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg)] px-4 py-12">
       <div className="w-full max-w-sm">
-        <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+        <p className="mb-6 text-center text-xs font-medium tracking-wide text-[var(--accent)]">
           Occasio
         </p>
 

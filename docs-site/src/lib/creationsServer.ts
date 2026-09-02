@@ -3,8 +3,8 @@ import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmi
 import type { RecipientCard } from '@/lib/recipientCard';
 import { generateShareSlug } from '@/lib/shareSlug';
 
-const GUEST_LINK_TTL_DAYS = 30;
-const MAX_BASE64_DATA_URL_CHARS = 750_000;
+const GUEST_LINK_TTL_DAYS_PROD = 30;
+const GUEST_LINK_TTL_DAYS_DEV = 3;
 
 export type CreateCreationInput = {
   templateType: string;
@@ -12,6 +12,8 @@ export type CreateCreationInput = {
   message: string;
   photoRefs: string[];
   mediaUrls?: string[];
+  /** Ignored unless server is in dev-relaxed mode. */
+  devMode?: boolean;
 };
 
 export type CreateCreationResult = {
@@ -50,9 +52,28 @@ async function uniqueShareSlug(db: Firestore): Promise<string> {
   throw new ApiRouteError(500, 'INTERNAL', 'Could not generate share link');
 }
 
-function computeExpiresAt(createdAt: Date): Date {
+const MAX_BASE64_DATA_URL_CHARS = 750_000;
+
+/** Local docs-site dev or explicit env — never enable on production Vercel. */
+export function isDevRelaxedQuota(devModeRequested = false): boolean {
+  if (process.env.OCCASIO_DEV_RELAXED_QUOTA === 'true') {
+    return true;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return true;
+  }
+  return devModeRequested && process.env.OCCASIO_ALLOW_DEV_CREATE === 'true';
+}
+
+function guestLinkTtlDays(devModeRequested = false): number {
+  return isDevRelaxedQuota(devModeRequested)
+    ? GUEST_LINK_TTL_DAYS_DEV
+    : GUEST_LINK_TTL_DAYS_PROD;
+}
+
+function computeExpiresAt(createdAt: Date, devModeRequested = false): Date {
   const expiresAt = new Date(createdAt);
-  expiresAt.setDate(expiresAt.getDate() + GUEST_LINK_TTL_DAYS);
+  expiresAt.setDate(expiresAt.getDate() + guestLinkTtlDays(devModeRequested));
   return expiresAt;
 }
 
@@ -117,12 +138,15 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
 
   validateMediaUrls(mediaUrls, photoRefs);
 
+  const devMode = input.devMode === true;
+
   return {
     templateType,
     recipientName,
     message,
     photoRefs,
     mediaUrls,
+    devMode,
   };
 }
 
@@ -131,7 +155,7 @@ export async function createCreation(
 ): Promise<CreateCreationResult> {
   const db = getAdminFirestore();
   const createdAt = new Date();
-  const expiresAt = computeExpiresAt(createdAt);
+  const expiresAt = computeExpiresAt(createdAt, input.devMode === true);
   const shareSlug = await uniqueShareSlug(db);
   const shareBase =
     process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';

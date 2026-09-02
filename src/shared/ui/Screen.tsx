@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import type { ReactNode, RefObject } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import type { ScrollView as ScrollViewType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
@@ -17,9 +18,18 @@ type Props = {
   footer?: ReactNode;
   /** Trailing header CTA — compact accent action (Continue, Sign in, Save). */
   headerAction?: ReactNode;
+  /** Hide title block — home-style surfaces that lead with content cards. */
+  hideHeader?: boolean;
+  /** Top-left back control — familiar stack navigation (Jakob's Law). */
+  onBack?: () => void;
+  /** Attach for tab re-press scroll-to-top via `useScrollToTop`. */
+  scrollRef?: RefObject<ScrollViewType | null>;
   scroll?: boolean;
   step?: StepProgress;
 };
+
+/** Room for sticky footer CTA above the floating tab bar. */
+const FOOTER_SCROLL_RESERVE = 96;
 
 export function Screen({
   title,
@@ -27,45 +37,73 @@ export function Screen({
   children,
   footer,
   headerAction,
+  hideHeader = false,
+  onBack,
+  scrollRef,
   scroll = true,
   step,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const Body = scroll ? ScrollView : View;
+  const scrollBottomPadding = spacing.xl + (footer ? FOOTER_SCROLL_RESERVE : 0);
+  const scrollContentStyle = [
+    styles.bodyContent,
+    hideHeader && styles.bodyContentFlush,
+    { paddingBottom: scrollBottomPadding },
+  ];
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        {step ? (
-          <View style={styles.stepRow}>
-            {Array.from({ length: step.total }, (_, index) => {
-              const active = index + 1 <= step.current;
-              return (
-                <View
-                  key={index}
-                  style={[styles.stepDot, active && styles.stepDotActive]}
-                />
-              );
-            })}
-            <Text style={styles.stepLabel}>
-              Step {step.current} of {step.total}
-            </Text>
+      {hideHeader ? null : (
+        <View style={styles.header}>
+          {onBack ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              onPress={onBack}
+              hitSlop={8}
+              style={styles.backButton}
+            >
+              <Text style={styles.backLabel}>←</Text>
+            </Pressable>
+          ) : null}
+          {step ? (
+            <View style={styles.stepRow}>
+              {Array.from({ length: step.total }, (_, index) => {
+                const active = index + 1 <= step.current;
+                return (
+                  <View
+                    key={index}
+                    style={[styles.stepDot, active && styles.stepDotActive]}
+                  />
+                );
+              })}
+              <Text style={styles.stepLabel}>
+                Step {step.current} of {step.total}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.titleRow}>
+            <View style={styles.titleBlock}>
+              <Text style={styles.title}>{title}</Text>
+              {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+            </View>
+            {headerAction}
           </View>
-        ) : null}
-        <View style={styles.titleRow}>
-          <View style={styles.titleBlock}>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-          </View>
-          {headerAction}
         </View>
-      </View>
-      <Body
-        style={styles.body}
-        contentContainerStyle={scroll ? styles.bodyContent : undefined}
-      >
-        {children}
-      </Body>
+      )}
+      {scroll ? (
+        <ScrollView
+          ref={scrollRef}
+          style={styles.body}
+          contentContainerStyle={scrollContentStyle}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={styles.body}>{children}</View>
+      )}
       {footer ? (
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.sm }]}>
           {footer}
@@ -82,8 +120,22 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+    marginLeft: -spacing.xs,
+  },
+  backLabel: {
+    fontSize: typography.sizeXl,
+    lineHeight: typography.sizeXl,
+    fontWeight: typography.weightMedium,
+    color: colors.accent,
   },
   stepRow: {
     flexDirection: 'row',
@@ -116,25 +168,33 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.sizeXl,
-    lineHeight: typography.sizeXl * 1.15,
+    lineHeight: typography.sizeXl * 1.12,
     fontWeight: typography.weightSemibold,
     color: colors.ink,
+    letterSpacing: -0.4,
   },
   subtitle: {
-    marginTop: spacing.xs,
-    fontSize: typography.sizeMd,
-    lineHeight: typography.sizeMd * 1.25,
-    color: colors.muted,
+    marginTop: spacing.sm,
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.45,
+    color: colors.inkSoft,
+    maxWidth: 320,
   },
   body: {
     flex: 1,
   },
   bodyContent: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
+    flexGrow: 1,
+  },
+  bodyContentFlush: {
+    paddingTop: spacing.lg,
   },
   footer: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.bg,
   },
 });

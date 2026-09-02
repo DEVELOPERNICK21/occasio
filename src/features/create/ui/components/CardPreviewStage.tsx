@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
-import { TEMPLATE_OPTIONS } from '../../domain/templates';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import { templateLabel } from '../../domain/templates';
 import type { TemplateType } from '../../domain/types';
 import { AnimatedWishCard } from './AnimatedWishCard';
 
@@ -11,10 +11,6 @@ type Props = {
   templateType: TemplateType | null;
   photoUris: string[];
 };
-
-function templateLabel(templateType: TemplateType): string {
-  return TEMPLATE_OPTIONS.find((t) => t.id === templateType)?.label ?? 'Special wish';
-}
 
 export function CardPreviewStage({
   recipientName,
@@ -48,10 +44,8 @@ const styles = StyleSheet.create({
   eyebrow: {
     marginBottom: spacing.md,
     fontSize: typography.sizeXs,
-    fontWeight: typography.weightSemibold,
+    fontWeight: typography.weightMedium,
     color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
   },
   meta: {
     marginTop: spacing.md,

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "fetch:stitch:landing": "node scripts/fetch-stitch-screen.mjs 14328155097794469134 7f5a20678abd4ee7bec098d0e9ee1233 occasio-landing-v2",
     "fetch:stitch:preview": "node scripts/fetch-stitch-screen.mjs 14328155097794469134 3a738a0580c745729568d3ccf43c8a4a animated-preview-birthday",
+    "fetch:stitch:preview-refined": "node scripts/fetch-stitch-screen.mjs 14328155097794469134 23ea9c5cc23e4b91a74cb1af0febaa40 preview-birthday-refined-hierarchy",
     "fetch:stitch:recipient": "node scripts/fetch-stitch-screen.mjs 14328155097794469134 95a3d5ca71c042f3838ae36256f94b16 recipient-view-refined",
     "fetch:stitch:banner": "node scripts/fetch-stitch-screen.mjs 14328155097794469134 6f98df10f6994913918eb8d320032c20 occasio-marketing-banner"
   },

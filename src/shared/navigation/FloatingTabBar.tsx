@@ -1,6 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
@@ -17,9 +17,10 @@ import {
   AccountTabIcon,
   CreateTabIcon,
   HistoryTabIcon,
+  TAB_ICON_INACTIVE,
   VaultTabIcon,
 } from '../ui/icons/TabIcons';
-import { colors, radius, shadow, spacing, typography } from '../theme/tokens';
+import { colors, shadow, spacing, typography } from '../theme/tokens';
 import { TAB_BAR_LAYOUT } from './tabBarConstants';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -27,11 +28,16 @@ const AnimatedText = Animated.createAnimatedComponent(Text);
 
 const {
   barHeight: BAR_HEIGHT,
-  bubbleLift: BUBBLE_LIFT,
+  bubbleRise: BUBBLE_RISE,
+  bubbleBarGap: BUBBLE_BAR_GAP,
   bottomGap: BAR_BOTTOM_GAP,
   bubbleSize: BUBBLE_SIZE,
   horizontalMargin: BAR_HORIZONTAL_MARGIN,
   iconSize: ICON_SIZE,
+  notchDepth: NOTCH_DEPTH,
+  notchHalfWidth: NOTCH_HALF_WIDTH,
+  notchShoulderEase: NOTCH_SHOULDER_EASE,
+  barCornerRadius: BAR_CORNER_RADIUS,
 } = TAB_BAR_LAYOUT;
 
 type TabRouteName = 'CreateTab' | 'VaultTab' | 'HistoryTab' | 'AccountTab';
@@ -58,29 +64,50 @@ const PRESS_SPRING = {
   mass: 0.6,
 };
 
-const BAR_CORNER_RADIUS = 24;
-
-/** Smooth U-notch with horizontal tangents at the shoulders (no arc kinks). */
+/** Smooth U-notch — cubic shoulders; shape drawn entirely in SVG (no View borderRadius). */
 function buildTabBarPath(width: number, height: number, centerX: number): string {
   'worklet';
   const corner = BAR_CORNER_RADIUS;
-  const notchHalfWidth = 34;
-  const notchDepth = 26;
-  const shoulderEase = 22;
+  const edgePad = 4;
+  const idealHalfSpan = NOTCH_HALF_WIDTH + NOTCH_SHOULDER_EASE;
+  const depth = NOTCH_DEPTH;
 
-  const leftShoulder = Math.max(corner + 6, centerX - notchHalfWidth - shoulderEase);
-  const rightShoulder = Math.min(
-    width - corner - 6,
-    centerX + notchHalfWidth + shoulderEase,
-  );
+  const maxLeft = centerX - corner - edgePad;
+  const maxRight = width - corner - edgePad - centerX;
+  let halfSpan = Math.min(idealHalfSpan, maxLeft, maxRight);
+  halfSpan = Math.max(halfSpan, 14);
 
-  const cpSpread = 18;
+  let leftShoulder = centerX - halfSpan;
+  let rightShoulder = centerX + halfSpan;
+
+  if (leftShoulder < corner + 2) {
+    halfSpan = Math.min(maxRight, centerX - (corner + 2));
+    halfSpan = Math.max(halfSpan, 14);
+    leftShoulder = centerX - halfSpan;
+    rightShoulder = centerX + halfSpan;
+  }
+
+  if (rightShoulder > width - corner - 2) {
+    halfSpan = Math.min(centerX - (corner + 2), width - corner - 2 - centerX);
+    halfSpan = Math.max(halfSpan, 14);
+    leftShoulder = centerX - halfSpan;
+    rightShoulder = centerX + halfSpan;
+  }
+
+  const span = rightShoulder - leftShoulder;
+  const shoulderCp = span * 0.24;
+  const centerCp = span * 0.2;
+
+  const leftCp1X = leftShoulder + shoulderCp;
+  const leftCp2X = centerX - centerCp;
+  const rightCp1X = centerX + centerCp;
+  const rightCp2X = rightShoulder - shoulderCp;
 
   return [
     `M ${corner} 0`,
     `H ${leftShoulder}`,
-    `C ${leftShoulder + shoulderEase} 0 ${centerX - cpSpread} ${notchDepth} ${centerX} ${notchDepth}`,
-    `C ${centerX + cpSpread} ${notchDepth} ${rightShoulder - shoulderEase} 0 ${rightShoulder} 0`,
+    `C ${leftCp1X} 0 ${leftCp2X} ${depth} ${centerX} ${depth}`,
+    `C ${rightCp1X} ${depth} ${rightCp2X} 0 ${rightShoulder} 0`,
     `H ${width - corner}`,
     `Q ${width} 0 ${width} ${corner}`,
     `V ${height - corner}`,
@@ -157,7 +184,66 @@ function TabBarLabel({ focused, label }: TabBarLabelProps) {
   );
 }
 
-export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
+type TabPressableProps = {
+  focused: boolean;
+  label: string;
+  Icon: typeof CreateTabIcon;
+  onPress: () => void;
+  onLongPress: () => void;
+};
+
+function TabPressable({
+  focused,
+  label,
+  Icon,
+  onPress,
+  onLongPress,
+}: TabPressableProps) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.88, PRESS_SPRING);
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, SPRING);
+  };
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={label}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onLongPress={onLongPress}
+      android_ripple={{ color: colors.accentSoft, borderless: true }}
+      style={styles.tab}
+    >
+      <Animated.View style={[styles.iconSlot, animatedStyle]}>
+        {!focused ? (
+          <Icon size={ICON_SIZE} color={TAB_ICON_INACTIVE} />
+        ) : (
+          <View style={styles.iconSpacer} />
+        )}
+      </Animated.View>
+      <TabBarLabel focused={focused} label={label} />
+    </Pressable>
+  );
+}
+
+export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarProps) {
+  const focusedRoute = state.routes[state.index];
+  const tabBarStyle = descriptors[focusedRoute.key]?.options.tabBarStyle as ViewStyle | undefined;
+  if (StyleSheet.flatten(tabBarStyle)?.display === 'none') {
+    return null;
+  }
+
   const insets = useSafeAreaInsets();
   const [barWidth, setBarWidth] = useState(0);
   const barWidthShared = useSharedValue(0);
@@ -185,7 +271,6 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const bubbleStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: centerX.value - BUBBLE_SIZE / 2 },
-      { translateY: -BUBBLE_LIFT },
       { scale: bubbleScale.value },
     ],
   }));
@@ -205,18 +290,20 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
           centerX.value = state.index * nextTabWidth + nextTabWidth / 2;
         }}
       >
-        <View style={styles.barShadow}>
+        <View style={styles.barShadow} pointerEvents="none">
           <Svg width={barWidth || 1} height={BAR_HEIGHT}>
             {barWidth > 0 ? (
               <AnimatedPath
                 animatedProps={animatedBarProps}
                 fill={colors.surface}
+                stroke={colors.border}
+                strokeWidth={1}
               />
             ) : null}
           </Svg>
         </View>
 
-        <Animated.View style={[styles.bubble, bubbleStyle]}>
+        <Animated.View style={[styles.bubble, bubbleStyle]} pointerEvents="none">
           <View style={styles.bubbleRing} />
           {state.routes.map((route, index) => {
             const config = TAB_CONFIG[route.name as TabRouteName];
@@ -235,7 +322,6 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
           {state.routes.map((route, index) => {
             const focused = state.index === index;
             const config = TAB_CONFIG[route.name as TabRouteName];
-            const Icon = config.Icon;
 
             const onPress = () => {
               triggerTabHaptic();
@@ -252,11 +338,11 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
             };
 
             return (
-              <Pressable
+              <TabPressable
                 key={route.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected: focused }}
-                accessibilityLabel={config.label}
+                focused={focused}
+                label={config.label}
+                Icon={config.Icon}
                 onPress={onPress}
                 onLongPress={() => {
                   navigation.emit({
@@ -264,18 +350,7 @@ export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                     target: route.key,
                   });
                 }}
-                android_ripple={{ color: colors.accentSoft, borderless: true }}
-                style={styles.tab}
-              >
-                <View style={[styles.iconSlot, focused && styles.iconSlotActive]}>
-                  {!focused ? (
-                    <Icon size={ICON_SIZE} color={colors.muted} />
-                  ) : (
-                    <View style={styles.iconSpacer} />
-                  )}
-                </View>
-                <TabBarLabel focused={focused} label={config.label} />
-              </Pressable>
+              />
             );
           })}
         </View>
@@ -292,7 +367,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   barShell: {
-    minHeight: BAR_HEIGHT + BUBBLE_LIFT,
+    minHeight: BAR_HEIGHT + BUBBLE_RISE,
     justifyContent: 'flex-end',
   },
   barShadow: {
@@ -301,10 +376,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: BAR_HEIGHT,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
     ...shadow.card,
     shadowOpacity: 0.14,
     shadowRadius: 20,
@@ -312,7 +383,7 @@ const styles = StyleSheet.create({
   },
   bubble: {
     position: 'absolute',
-    bottom: BAR_HEIGHT - 6,
+    bottom: BAR_HEIGHT + BUBBLE_BAR_GAP,
     width: BUBBLE_SIZE,
     height: BUBBLE_SIZE,
     borderRadius: BUBBLE_SIZE / 2,
@@ -343,7 +414,8 @@ const styles = StyleSheet.create({
     height: BAR_HEIGHT,
     alignItems: 'flex-end',
     paddingBottom: spacing.sm,
-    zIndex: 2,
+    zIndex: 4,
+    elevation: 14,
   },
   tab: {
     flex: 1,
@@ -353,12 +425,9 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   iconSlot: {
-    height: 26,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconSlotActive: {
-    height: 10,
   },
   iconSpacer: {
     width: 1,
@@ -373,7 +442,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
   },
   labelInactive: {
-    color: colors.muted,
+    color: TAB_ICON_INACTIVE,
     fontWeight: typography.weightMedium,
   },
 });

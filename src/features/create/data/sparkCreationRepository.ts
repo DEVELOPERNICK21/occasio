@@ -53,6 +53,7 @@ export async function createShareLinkSpark(
         message: draft.message.trim(),
         photoRefs,
         mediaUrls,
+        ...(env.devRelaxedQuota ? { devMode: true } : {}),
       },
     );
   } catch (error) {

@@ -32,6 +32,41 @@ function parsePersonDate(monthRaw: string, dayRaw: string): PersonDate | null {
   return { month, day };
 }
 
+/** Parse dd/mm or dd/mm/yyyy into month + day strings for the draft. */
+export function parseBirthdayInput(
+  raw: string,
+): { month: string; day: string } | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  const parts = trimmed.split('/').map((part) => part.trim());
+  if (parts.length < 2) return null;
+
+  const day = Number.parseInt(parts[0] ?? '', 10);
+  const month = Number.parseInt(parts[1] ?? '', 10);
+
+  if (
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return null;
+  }
+
+  return { month: String(month), day: String(day) };
+}
+
+export function formatBirthdayInput(monthRaw: string, dayRaw: string): string {
+  const month = monthRaw.trim();
+  const day = dayRaw.trim();
+  if (!month && !day) return '';
+  if (!month || !day) return day || month;
+  return `${day.padStart(2, '0')}/${month.padStart(2, '0')}`;
+}
+
 export function validatePersonDraft(
   draft: PersonDraft,
   options: { autoSendBirthday: boolean },

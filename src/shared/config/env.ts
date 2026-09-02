@@ -57,6 +57,12 @@ export const env = {
    * Set true only for UI work without network. Default: real Firebase Auth.
    */
   useMockAuth: false,
+
+  /**
+   * Dev builds only (__DEV__): skip free-tier paywall and request 3-day link TTL.
+   * Stripped from production release builds — never set manually to true.
+   */
+  devRelaxedQuota: __DEV__,
 } as const;
 
 export function getApiBaseUrl(): string {

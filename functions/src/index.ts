@@ -8,7 +8,24 @@ const db = admin.firestore();
 const app = express();
 app.use(express.json());
 
-const GUEST_LINK_TTL_DAYS = 30;
+const GUEST_LINK_TTL_DAYS_PROD = 30;
+const GUEST_LINK_TTL_DAYS_DEV = 3;
+
+function isDevRelaxedQuota(devModeRequested = false): boolean {
+  if (process.env.OCCASIO_DEV_RELAXED_QUOTA === 'true') {
+    return true;
+  }
+  if (process.env.FUNCTIONS_EMULATOR === 'true') {
+    return true;
+  }
+  return devModeRequested && process.env.OCCASIO_ALLOW_DEV_CREATE === 'true';
+}
+
+function guestLinkTtlDays(devModeRequested = false): number {
+  return isDevRelaxedQuota(devModeRequested)
+    ? GUEST_LINK_TTL_DAYS_DEV
+    : GUEST_LINK_TTL_DAYS_PROD;
+}
 
 function randomSlug(length = 8): string {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -20,11 +37,12 @@ function randomSlug(length = 8): string {
 }
 
 app.post('/v1/creations', async (req: Request, res: Response) => {
-  const { templateType, recipientName, message, photoRefs } = req.body as {
+  const { templateType, recipientName, message, photoRefs, devMode } = req.body as {
     templateType?: string;
     recipientName?: string;
     message?: string;
     photoRefs?: string[];
+    devMode?: boolean;
   };
 
   if (!templateType || !recipientName?.trim() || !photoRefs?.length) {
@@ -33,8 +51,9 @@ app.post('/v1/creations', async (req: Request, res: Response) => {
   }
 
   const createdAt = admin.firestore.Timestamp.now();
+  const ttlDays = guestLinkTtlDays(devMode === true);
   const expiresAt = admin.firestore.Timestamp.fromDate(
-    new Date(Date.now() + GUEST_LINK_TTL_DAYS * 24 * 60 * 60 * 1000),
+    new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000),
   );
   const shareSlug = randomSlug();
   const shareBase =

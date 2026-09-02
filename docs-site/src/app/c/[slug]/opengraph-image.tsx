@@ -62,32 +62,25 @@ export default async function OpengraphImage({ params }: Props) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#f6f1e8',
-          padding: 48,
+          background: '#fdf6f2',
+          padding: 40,
         }}
       >
         <div
           style={{
             display: 'flex',
-            width: 900,
+            flexDirection: 'column',
+            width: 420,
             height: 520,
-            borderRadius: 24,
+            borderRadius: 20,
             overflow: 'hidden',
-            border: '2px solid #ddd2c0',
+            border: '1px solid #e8ddd4',
             background: '#fffdf8',
-            boxShadow: '0 8px 32px rgba(28, 25, 20, 0.12)',
+            boxShadow: '0 8px 32px rgba(28, 25, 20, 0.1)',
           }}
         >
           {photo ? (
-            <div
-              style={{
-                width: 360,
-                height: '100%',
-                position: 'relative',
-                display: 'flex',
-              }}
-            >
-              {/* img required for Satori OG renderer (base64 + remote URLs) */}
+            <div style={{ width: '100%', height: 220, display: 'flex' }}>
               <img
                 src={photo}
                 alt=""
@@ -97,9 +90,9 @@ export default async function OpengraphImage({ params }: Props) {
           ) : (
             <div
               style={{
-                width: 360,
-                height: '100%',
-                background: '#d8ebe4',
+                width: '100%',
+                height: 160,
+                background: '#fceee8',
               }}
             />
           )}
@@ -108,27 +101,30 @@ export default async function OpengraphImage({ params }: Props) {
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'center',
               justifyContent: 'center',
-              padding: 48,
+              padding: '32px 36px',
+              textAlign: 'center',
             }}
           >
             <p
               style={{
-                fontSize: 18,
-                color: '#6f675c',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
+                fontSize: 22,
+                color: '#e8615d',
+                fontFamily: 'Georgia, serif',
+                fontWeight: 600,
                 margin: 0,
               }}
             >
-              {templateLabel(card.templateType)}
+              Happy {templateLabel(card.templateType)},
             </p>
             <p
               style={{
-                fontSize: 56,
-                color: '#1c1914',
+                fontSize: 40,
+                color: '#f6a94a',
                 fontFamily: 'Georgia, serif',
-                margin: '16px 0 0',
+                fontWeight: 600,
+                margin: '8px 0 0',
                 lineHeight: 1.1,
               }}
             >
@@ -136,19 +132,21 @@ export default async function OpengraphImage({ params }: Props) {
             </p>
             <p
               style={{
-                fontSize: 28,
-                color: '#3d3830',
-                margin: '24px 0 0',
-                lineHeight: 1.4,
+                fontSize: 20,
+                color: '#6f675c',
+                fontStyle: 'italic',
+                fontFamily: 'Georgia, serif',
+                margin: '20px 0 0',
+                lineHeight: 1.45,
               }}
             >
-              {truncate(message, 120)}
+              {truncate(message, 100)}
             </p>
             <p
               style={{
-                fontSize: 20,
-                color: '#1f5c4d',
-                letterSpacing: '0.14em',
+                fontSize: 14,
+                color: '#857371',
+                letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 marginTop: 'auto',
               }}

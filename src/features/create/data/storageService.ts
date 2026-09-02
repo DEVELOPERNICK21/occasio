@@ -1,7 +1,6 @@
 import storage from '@react-native-firebase/storage';
+import { MAX_STORAGE_PHOTO_BYTES } from '../../../shared/config/media';
 import { CreationApiError } from './types';
-
-const MAX_BYTES = 5 * 1024 * 1024;
 
 function newStoragePath(): string {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -24,7 +23,7 @@ export async function uploadPhotoToStorage(localUri: string): Promise<string> {
     const task = ref.putFile(localUri);
     await task;
     const meta = await ref.getMetadata();
-    if (meta.size != null && meta.size > MAX_BYTES) {
+    if (meta.size != null && meta.size > MAX_STORAGE_PHOTO_BYTES) {
       await ref.delete().catch(() => undefined);
       throw new CreationApiError('VALIDATION_ERROR', 'Photo must be under 5 MB.');
     }

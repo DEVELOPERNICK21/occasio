@@ -10,13 +10,17 @@ import {
 import { AnalyticsEvents, trackEvent } from '../../../shared/analytics/events';
 import {
   createAccountWithEmail,
+  sendPasswordResetEmail,
   signInWithEmail,
   signInWithGoogle,
   signOut,
   subscribeAuthState,
 } from '../data/authRepository';
+import { syncPendingHistoryEntries } from '../../history/application/useHistory';
 import { configureGoogleSignIn } from '../data/googleSignIn';
 import { AuthError } from '../data/authErrors';
+import { env } from '../../../shared/config/env';
+import { isFirebaseConfigured } from '../../../shared/firebase/app';
 import type { AuthSessionStatus, AuthSignInMethod, AuthUser, GatedAction } from '../domain/types';
 
 type SoftAuthRequest = {
@@ -35,6 +39,7 @@ type AuthContextValue = {
   signInGoogle: () => Promise<void>;
   signInEmail: (email: string, password: string) => Promise<void>;
   createEmailAccount: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -46,12 +51,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     configureGoogleSignIn();
+
+    if (!env.useMockAuth && !isFirebaseConfigured()) {
+      if (__DEV__) {
+        console.warn(
+          '[Occasio] Firebase is not configured — auth will stay in guest mode. Check GoogleService-Info.plist and rebuild iOS.',
+        );
+      }
+      setStatus('guest');
+      return;
+    }
+
     const unsubscribe = subscribeAuthState((nextUser) => {
       setUser(nextUser);
       setStatus(nextUser ? 'signed_in' : 'guest');
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void syncPendingHistoryEntries();
+  }, [user]);
 
   const requestAuth = useCallback((action: GatedAction, onSuccess: () => void) => {
     if (user) {
@@ -102,6 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     trackSignIn('email');
   }, [trackSignIn]);
 
+  const resetPassword = useCallback(async (email: string) => {
+    await sendPasswordResetEmail(email);
+    trackEvent(AnalyticsEvents.passwordResetRequested);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -114,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInGoogle,
       signInEmail,
       createEmailAccount,
+      resetPassword,
     }),
     [
       user,
@@ -126,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInGoogle,
       signInEmail,
       createEmailAccount,
+      resetPassword,
     ],
   );
 

@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { Button } from '../../../../shared/ui/Button';
+import { ModalCloseButton } from '../../../../shared/ui/ModalCloseButton';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 const OVERLAY = 'rgba(42, 34, 32, 0.45)';
@@ -36,6 +37,9 @@ export function PaywallModal({ visible, onClose }: Props) {
           onPress={(e) => e.stopPropagation()}
           accessibilityRole="none"
         >
+          <View style={styles.sheetTop}>
+            <ModalCloseButton onPress={onClose} accessibilityLabel="Close paywall" />
+          </View>
           <Text style={styles.eyebrow}>Free plan</Text>
           <Text style={styles.title}>One wish per month</Text>
           <Text style={styles.body}>
@@ -74,6 +78,13 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  sheetTop: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: -spacing.xs,
+    marginBottom: spacing.xs,
+    marginHorizontal: -spacing.xs,
   },
   eyebrow: {
     fontSize: typography.sizeSm,

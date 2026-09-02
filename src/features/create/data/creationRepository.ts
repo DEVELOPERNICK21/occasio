@@ -23,7 +23,9 @@ function mockCreation(draft: CreationDraft): CreateCreationResponse {
     creationId: `c_mock_${Date.now()}`,
     shareSlug: slug,
     shareUrl: `${env.shareBaseUrl}/c/${slug}`,
-    expiresAt: computeShareLinkExpiresAt(createdAt, 'free', true).toISOString(),
+    expiresAt: computeShareLinkExpiresAt(createdAt, 'free', true, {
+      devShortTtl: env.devRelaxedQuota,
+    }).toISOString(),
     watermarked: true,
   };
 }

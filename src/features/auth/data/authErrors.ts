@@ -1,3 +1,5 @@
+import { statusCodes } from '@react-native-google-signin/google-signin';
+
 export type AuthErrorCode =
   | 'INVALID_EMAIL'
   | 'INVALID_PASSWORD'
@@ -5,6 +7,7 @@ export type AuthErrorCode =
   | 'USER_NOT_FOUND'
   | 'WRONG_PASSWORD'
   | 'TOO_MANY_REQUESTS'
+  | 'PASSWORD_RESET_UNAVAILABLE'
   | 'NETWORK'
   | 'CANCELLED'
   | 'UNKNOWN';
@@ -38,6 +41,7 @@ export function mapFirebaseAuthError(error: unknown): AuthError {
     case 'auth/user-not-found':
       return new AuthError('USER_NOT_FOUND', 'No account found. Create one below.');
     case 'auth/wrong-password':
+      return new AuthError('WRONG_PASSWORD', 'Email or password is incorrect.');
     case 'auth/invalid-credential':
       return new AuthError('WRONG_PASSWORD', 'Email or password is incorrect.');
     case 'auth/too-many-requests':
@@ -53,10 +57,29 @@ export function mapGoogleSignInError(error: unknown): AuthError {
   if (
     typeof error === 'object' &&
     error !== null &&
-    'code' in error &&
-    (error as { code: string }).code === 'SIGN_IN_CANCELLED'
+    'code' in error
   ) {
-    return new AuthError('CANCELLED', 'Sign-in was cancelled.');
+    const code = String((error as { code: unknown }).code);
+
+    if (code === 'SIGN_IN_CANCELLED' || code === statusCodes.SIGN_IN_CANCELLED) {
+      return new AuthError('CANCELLED', 'Sign-in was cancelled.');
+    }
+
+    if (code === '10' || code === 'DEVELOPER_ERROR') {
+      return new AuthError(
+        'UNKNOWN',
+        'Google Sign-In is not configured for this install. Add the correct SHA-1 in Firebase (debug, upload key, or Play App Signing key) and reinstall.',
+      );
+    }
+
+    if (code === '12500' || code === '12501') {
+      return new AuthError('CANCELLED', 'Sign-in was cancelled.');
+    }
+
+    if (code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      return new AuthError('NETWORK', 'Google Play Services is required for sign-in.');
+    }
   }
+
   return mapFirebaseAuthError(error);
 }

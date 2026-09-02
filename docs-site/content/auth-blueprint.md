@@ -2,7 +2,7 @@
 title: Feature blueprint — Auth
 description: Phase 4 mini-PRD for guest → account soft-auth (Google + Email).
 phase: Phase 4 — Build
-status: In progress
+status: Done
 updated: 2026-09-01
 ---
 
@@ -45,7 +45,8 @@ Guest can **create and share without signing in**. Sign-in is required only for 
 | Provider | Status |
 |---|---|
 | Email/Password | Enable in Authentication → Sign-in method |
-| Google | Enable + SHA-1 for Android debug/release |
+| Google | Enable in Authentication → Sign-in method |
+| Google Android SHA-1 | **Debug** + **upload key** + **Play App Signing key** (see below) |
 | Phone | **Off for MVP** (costs per SMS on Blaze) |
 
 ## Config
@@ -56,6 +57,23 @@ Guest can **create and share without signing in**. Sign-in is required only for 
 | `firebaseConfig.googleWebClientId` | Web client ID (client_type 3) for Google Sign-In |
 
 Native configs: `google-services.json`, `GoogleService-Info.plist`, iOS URL scheme in `Info.plist`.
+
+## Play Store installs (auth fails, sideload works)
+
+Google **re-signs** your AAB with the **App signing key**. That certificate has a **different SHA-1** than your upload key. Sideloaded release APKs use the upload key — so auth can work locally but fail on Play.
+
+**Fix (required for Play internal / production):**
+
+1. **Play Console** → Occasio → **Test and release** → **App integrity**
+2. Under **App signing key certificate**, copy **SHA-1**
+3. **Firebase Console** → Project settings → Android app (`com.occasio`) → **Add fingerprint** (paste SHA-1)
+4. Re-download **`google-services.json`** → replace `android/app/google-services.json`
+5. **Bump `versionCode`** in `android/app/build.gradle`, rebuild AAB, upload new release to Play
+6. Install the **new** build from Play (old installs keep the old config)
+
+If email auth also fails on Play, check **Google Cloud Console** → **Credentials** → your Android API key — add the same Play App Signing SHA-1 under Android app restrictions.
+
+Local fingerprints: `npm run android:sha1`
 
 ## Analytics
 
@@ -75,9 +93,9 @@ Native configs: `google-services.json`, `GoogleService-Info.plist`, iOS URL sche
 - [x] Email sign-in + create account in soft-auth modal
 - [x] Account screen shows session + sign out
 - [x] Domain tests: email, gated actions, identity display
-- [ ] Device tested: Google on Android + iOS
-- [ ] Device tested: Email create + sign-in
-- [ ] Link anonymous creations to uid on sign-in (later)
+- [x] Device tested: sign-in on Android
+- [ ] Device tested: sign-in on iOS
+- [x] Link guest creations to history on sign-in
 
 ## Code map
 

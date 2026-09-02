@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { colors, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
 
@@ -6,23 +6,33 @@ type Props = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 /** Compact primary action in the screen header — use instead of a full-width footer CTA. */
-export function ScreenHeaderAction({ label, onPress, disabled }: Props) {
+export function ScreenHeaderAction({ label, onPress, disabled, loading = false }: Props) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: !!disabled }}
-      disabled={disabled}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.root,
-        pressed && !disabled && styles.pressed,
-        disabled && styles.disabled,
+        pressed && !isDisabled && styles.pressed,
+        isDisabled && styles.disabled,
       ]}
     >
-      <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>
+      {loading ? (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator size="small" color={colors.accent} />
+          <Text style={[styles.label, styles.labelDisabled]}>{label}</Text>
+        </View>
+      ) : (
+        <Text style={[styles.label, isDisabled && styles.labelDisabled]}>{label}</Text>
+      )}
     </Pressable>
   );
 }
@@ -48,5 +58,10 @@ const styles = StyleSheet.create({
   },
   labelDisabled: {
     color: colors.muted,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

@@ -10,7 +10,7 @@ By using the Service, you agree to this policy. If you do not agree, please do n
 
 ## 1. Who we are
 
-Occasio is operated by **Nick Kubde** from **India**. For privacy questions or requests, contact us at **[privacy@occasio.app](mailto:privacy@occasio.app)**.
+Occasio is operated by **Nick Kubde** from **India**. For privacy questions or requests, contact us at **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)**.
 
 ## 2. What Occasio does
 
@@ -101,7 +101,7 @@ Depending on where you live (including under India’s **Digital Personal Data P
 
 **Delete account or specific data:** see **[Delete your account and data](/delete-account)** for step-by-step instructions.
 
-**By email:** send requests to **[privacy@occasio.app](mailto:privacy@occasio.app)**. We will respond within a reasonable time (typically within 30 days).
+**By email:** send requests to **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)**. We will respond within a reasonable time (typically within 30 days).
 
 ## 8. Children
 
@@ -121,5 +121,5 @@ We may update this Privacy Policy from time to time. We will post the new versio
 
 ## 12. Contact
 
-**Email:** [privacy@occasio.app](mailto:privacy@occasio.app)  
+**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
 **Website:** [occasio-greetings.vercel.app](https://occasio-greetings.vercel.app)

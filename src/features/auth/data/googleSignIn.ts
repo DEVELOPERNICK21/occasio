@@ -8,6 +8,7 @@ export function configureGoogleSignIn(): void {
   if (configured) return;
   GoogleSignin.configure({
     webClientId: firebaseConfig.googleWebClientId,
+    offlineAccess: true,
   });
   configured = true;
 }

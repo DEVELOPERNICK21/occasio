@@ -2,7 +2,7 @@
 title: Feature blueprint — History
 description: Signed-in list of past card creations with reshare.
 phase: Phase 4 — Build
-status: In progress
+status: Done
 updated: 2026-09-01
 ---
 
@@ -54,17 +54,17 @@ History tab
 | History list (empty + rows) | ✅ |
 | History detail (reshare, copy) | ✅ |
 | Guest soft-auth gate | ✅ |
-| Link guest cards on sign-in | Deferred |
+| Link guest cards on sign-in | ✅ |
 
 ## Acceptance criteria
 
 - [x] Signed-in create → entry appears in History
-- [x] Guest create → no history entry
+- [x] Guest create → queued locally, synced on sign-in
 - [x] List sorted newest first
 - [x] Expired links show badge; reshare disabled
 - [x] Firestore rules for `user_creations`
 - [x] Domain tests
-- [ ] Deploy updated Firestore rules
+- [x] Deploy updated Firestore rules
 - [ ] Server `userId` on `creations` doc when authed (optional sync)
 
 ## Code map
@@ -72,7 +72,7 @@ History tab
 ```
 src/features/history/
   domain/
-  data/historyRepository.ts
+  data/historyRepository.ts, pendingHistoryStorage.ts, syncPendingHistory.ts
   application/useHistory.ts
   ui/screens/HistoryListScreen.tsx, HistoryDetailScreen.tsx
 src/shared/navigation/HistoryNavigator.tsx

@@ -6,6 +6,10 @@ import {
 } from '../../src/features/auth/domain/email';
 import { formatAuthIdentity } from '../../src/features/auth/domain/mapUser';
 import {
+  passwordResetResendLabel,
+  PASSWORD_RESET_RESEND_SECONDS,
+} from '../../src/features/auth/domain/passwordReset';
+import {
   isValidOtpCode,
   normalizeIndiaPhone,
 } from '../../src/features/auth/domain/phone';
@@ -43,6 +47,7 @@ describe('mapUser', () => {
         displayName: 'Nick',
         email: 'nick@example.com',
         phoneNumber: null,
+        createdAt: null,
       }),
     ).toBe('Nick');
 
@@ -52,8 +57,17 @@ describe('mapUser', () => {
         displayName: null,
         email: 'nick@example.com',
         phoneNumber: null,
+        createdAt: null,
       }),
     ).toBe('nick@example.com');
+  });
+});
+
+describe('passwordReset', () => {
+  it('formats resend countdown label', () => {
+    expect(passwordResetResendLabel(0)).toBe('Resend email');
+    expect(passwordResetResendLabel(45)).toBe('Resend in 45s');
+    expect(PASSWORD_RESET_RESEND_SECONDS).toBe(60);
   });
 });
 

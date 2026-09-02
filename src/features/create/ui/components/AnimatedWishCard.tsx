@@ -1,18 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   FadeInDown,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 import { Text } from '../../../../shared/ui/Text';
-import { TEMPLATE_OPTIONS } from '../../domain/templates';
-import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import { templateLabel, wishGreeting } from '../../domain/templates';
+import { getTemplateTheme } from '../../domain/templateTheme';
+import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { TemplateType } from '../../domain/types';
 
 type Props = {
@@ -26,10 +24,6 @@ type Props = {
   compact?: boolean;
 };
 
-function templateLabel(templateType: TemplateType): string {
-  return TEMPLATE_OPTIONS.find((t) => t.id === templateType)?.label ?? 'Special wish';
-}
-
 export function AnimatedWishCard({
   recipientName,
   message,
@@ -38,105 +32,78 @@ export function AnimatedWishCard({
   showReplay = false,
   compact = false,
 }: Props) {
+  const theme = useMemo(() => getTemplateTheme(templateType), [templateType]);
   const hasPhoto = Boolean(photoUri);
   const [replayKey, setReplayKey] = useState(0);
+  const greeting = wishGreeting(templateType);
+  const displayName = recipientName.trim() || 'Their name';
 
-  const cardScale = useSharedValue(0.94);
   const cardOpacity = useSharedValue(0);
-  const photoScale = useSharedValue(1);
-  const orbOffset = useSharedValue(0);
+  const cardOffset = useSharedValue(12);
 
   const runEntrance = useCallback(() => {
     cardOpacity.value = 0;
-    cardScale.value = 0.94;
-    cardOpacity.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) });
-    cardScale.value = withTiming(1, { duration: 620, easing: Easing.out(Easing.cubic) });
-  }, [cardOpacity, cardScale]);
+    cardOffset.value = 12;
+    cardOpacity.value = withTiming(1, { duration: 480, easing: Easing.out(Easing.cubic) });
+    cardOffset.value = withTiming(0, { duration: 520, easing: Easing.out(Easing.cubic) });
+  }, [cardOffset, cardOpacity]);
 
   useEffect(() => {
     runEntrance();
-    photoScale.value = withRepeat(
-      withSequence(
-        withTiming(1.07, { duration: 9000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(1, { duration: 9000, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-      false,
-    );
-    orbOffset.value = withRepeat(
-      withSequence(
-        withTiming(-10, { duration: 4200, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0, { duration: 4200, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-      false,
-    );
-  }, [replayKey, runEntrance, photoScale, orbOffset]);
+  }, [replayKey, runEntrance]);
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({
     opacity: cardOpacity.value,
-    transform: [{ scale: cardScale.value }],
+    transform: [{ translateY: cardOffset.value }],
   }));
-
-  const photoAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: photoScale.value }],
-  }));
-
-  const orbAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: orbOffset.value }],
-  }));
-
-  const displayName = recipientName.trim() || 'Their name';
 
   return (
     <View style={[styles.wrap, compact && styles.wrapCompact]}>
-      <Animated.View style={[styles.orbA, orbAnimatedStyle]} />
-      <Animated.View style={[styles.orbB, orbAnimatedStyle]} />
-
-      <Animated.View style={[styles.card, compact && styles.cardCompact, cardAnimatedStyle]}>
-        <View style={[styles.mediaArea, compact && styles.mediaAreaCompact]}>
-          {hasPhoto ? (
-            <Animated.Image
-              source={{ uri: photoUri }}
-              style={[styles.hero, photoAnimatedStyle]}
-              resizeMode="cover"
-            />
-          ) : null}
-          <View style={[styles.scrim, hasPhoto && styles.scrimPhoto]} />
-          <View style={[styles.content, hasPhoto ? styles.contentOnPhoto : styles.contentPlain]}>
-            {templateType ? (
-              <Animated.View entering={FadeInDown.delay(180).duration(480)}>
-                <View style={styles.badgeRow}>
-                  <View style={styles.badgeDot} />
-                  <Text style={[styles.badge, hasPhoto && styles.badgeOnPhoto]}>
-                    {templateLabel(templateType)}
-                  </Text>
-                </View>
-              </Animated.View>
-            ) : null}
-            <Animated.View entering={FadeInDown.delay(320).duration(520)}>
-              <Text
-                style={[
-                  styles.recipient,
-                  compact && styles.recipientCompact,
-                  hasPhoto && styles.recipientOnPhoto,
-                ]}
-              >
-                {displayName}
-              </Text>
-            </Animated.View>
-            {message ? (
-              <Animated.View entering={FadeInDown.delay(460).duration(520)}>
-                <Text style={[styles.message, hasPhoto && styles.messageOnPhoto]}>
-                  {message}
-                </Text>
-              </Animated.View>
-            ) : !hasPhoto ? (
-              <Animated.View entering={FadeInDown.delay(460).duration(520)}>
-                <Text style={styles.placeholder}>Your message will appear here.</Text>
-              </Animated.View>
-            ) : null}
+      <Animated.View
+        key={replayKey}
+        style={[
+          styles.card,
+          compact && styles.cardCompact,
+          cardAnimatedStyle,
+        ]}
+      >
+        {hasPhoto && photoUri ? (
+          <View style={styles.hero}>
+            <Image source={{ uri: photoUri }} style={styles.heroImage} resizeMode="cover" />
           </View>
+        ) : (
+          <View style={[styles.heroPlain, { backgroundColor: theme.softBackground }]}>
+            <View style={[styles.heroAccent, { backgroundColor: theme.accent }]} />
+          </View>
+        )}
+
+        <View style={[styles.body, !hasPhoto && { backgroundColor: theme.softBackground }]}>
+          <Animated.View entering={FadeInDown.delay(120).duration(420)}>
+            <Text style={[styles.occasion, { color: theme.accent }]}>
+              {templateLabel(templateType)}
+            </Text>
+          </Animated.View>
+          <Animated.View entering={FadeInDown.delay(200).duration(420)}>
+            <Text style={[styles.greeting, { color: theme.accent }]}>{greeting}</Text>
+            <Text
+              style={[
+                styles.name,
+                compact && styles.nameCompact,
+                { color: theme.accentSecondary },
+              ]}
+            >
+              {displayName}
+            </Text>
+          </Animated.View>
+          {message ? (
+            <Animated.View entering={FadeInDown.delay(280).duration(420)}>
+              <Text style={styles.message}>{message}</Text>
+            </Animated.View>
+          ) : (
+            <Animated.View entering={FadeInDown.delay(280).duration(420)}>
+              <Text style={styles.placeholder}>Your message will appear here.</Text>
+            </Animated.View>
+          )}
         </View>
       </Animated.View>
 
@@ -147,7 +114,7 @@ export function AnimatedWishCard({
           onPress={() => setReplayKey((k) => k + 1)}
           style={styles.replayBtn}
         >
-          <Text style={styles.replayLabel}>Tap to replay</Text>
+          <Text style={[styles.replayLabel, { color: theme.accent }]}>Replay animation</Text>
         </Pressable>
       ) : null}
     </View>
@@ -158,30 +125,9 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     alignItems: 'center',
-    position: 'relative',
   },
   wrapCompact: {
     marginTop: spacing.sm,
-  },
-  orbA: {
-    position: 'absolute',
-    top: -12,
-    right: spacing.lg,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.tertiary,
-    opacity: 0.45,
-  },
-  orbB: {
-    position: 'absolute',
-    bottom: 24,
-    left: spacing.md,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.secondary,
-    opacity: 0.28,
   },
   card: {
     width: '100%',
@@ -190,92 +136,69 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     overflow: 'hidden',
     backgroundColor: colors.surface,
-    ...shadow.card,
   },
   cardCompact: {
     maxWidth: 280,
   },
-  mediaArea: {
-    aspectRatio: 3 / 4,
-    backgroundColor: colors.accentSoft,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-  },
-  mediaAreaCompact: {
-    aspectRatio: 4 / 5,
-  },
   hero: {
-    ...StyleSheet.absoluteFill,
+    aspectRatio: 5 / 4,
+    overflow: 'hidden',
+    backgroundColor: colors.sidebar,
   },
-  scrim: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'transparent',
+  heroImage: {
+    width: '100%',
+    height: '100%',
   },
-  scrimPhoto: {
-    backgroundColor: 'rgba(42, 34, 32, 0.12)',
+  heroPlain: {
+    height: 4,
   },
-  content: {
-    padding: spacing.lg,
+  heroAccent: {
+    height: '100%',
+    width: '100%',
+  },
+  body: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
     alignItems: 'center',
+    backgroundColor: colors.surface,
   },
-  contentOnPhoto: {
-    backgroundColor: 'rgba(42, 34, 32, 0.55)',
-  },
-  contentPlain: {
-    backgroundColor: 'transparent',
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  badgeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.secondary,
-  },
-  badge: {
+  occasion: {
     fontSize: typography.sizeXs,
     fontWeight: typography.weightSemibold,
-    color: colors.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
+    letterSpacing: 0.4,
   },
-  badgeOnPhoto: {
-    color: 'rgba(255,255,255,0.85)',
-  },
-  recipient: {
+  greeting: {
     marginTop: spacing.sm,
-    fontSize: typography.size2xl,
-    fontFamily: typography.fontDisplay,
+    fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
-    color: colors.ink,
     textAlign: 'center',
-    lineHeight: typography.size2xl * 1.1,
+    lineHeight: typography.sizeMd * 1.2,
   },
-  recipientCompact: {
+  name: {
+    marginTop: spacing.xs,
     fontSize: typography.sizeXl,
+    fontWeight: typography.weightSemibold,
+    textAlign: 'center',
     lineHeight: typography.sizeXl * 1.1,
   },
-  recipientOnPhoto: {
-    color: colors.surface,
+  nameCompact: {
+    fontSize: typography.sizeLg,
+    lineHeight: typography.sizeLg * 1.1,
   },
   message: {
     marginTop: spacing.md,
-    fontSize: typography.sizeMd,
+    fontSize: typography.sizeSm,
+    fontStyle: 'italic',
     color: colors.inkSoft,
     textAlign: 'center',
-    lineHeight: typography.sizeMd * 1.45,
-  },
-  messageOnPhoto: {
-    color: 'rgba(255,255,255,0.92)',
+    lineHeight: typography.sizeSm * 1.5,
   },
   placeholder: {
     marginTop: spacing.md,
     fontSize: typography.sizeSm,
-    color: colors.muted,
     fontStyle: 'italic',
+    color: colors.muted,
     textAlign: 'center',
   },
   replayBtn: {
@@ -286,7 +209,6 @@ const styles = StyleSheet.create({
   },
   replayLabel: {
     fontSize: typography.sizeSm,
-    color: colors.accent,
     fontWeight: typography.weightMedium,
   },
 });

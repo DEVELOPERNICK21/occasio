@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "751525617274-2dhtklc40bbjon7aqoaii5f9g5u0p9ei.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.occasio",
+            "certificate_hash": "126c619c3e6262db748abc3bfa0e2d0bf5b1c2e8"
+          }
+        },
+        {
+          "client_id": "751525617274-a4qb5r8mn5h490r9poag53m78k4h2rr5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.occasio",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
           "client_id": "751525617274-b75tp2roe246c3d2i9dfgj1omcgfbjvv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

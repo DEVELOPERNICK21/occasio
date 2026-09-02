@@ -6,6 +6,7 @@ import { Text } from '../../../../shared/ui/Text';
 import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
+import { PersonDetailSkeleton } from '../../../../shared/ui/SkeletonLayouts';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { HistoryStackParamList } from '../../../../shared/navigation/types';
 import { useHistory } from '../../application/useHistory';
@@ -18,11 +19,19 @@ import {
 type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryDetail'>;
 
 export function HistoryDetailScreen({ navigation, route }: Props) {
-  const { entries } = useHistory(true);
+  const { entries, isLoading } = useHistory(true);
   const entry = useMemo(
     () => entries.find((item) => item.id === route.params.entryId),
     [entries, route.params.entryId],
   );
+
+  if (isLoading) {
+    return (
+      <Screen title="Card" scroll={false}>
+        <PersonDetailSkeleton />
+      </Screen>
+    );
+  }
 
   if (!entry) {
     return (

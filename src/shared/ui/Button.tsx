@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   type PressableProps,
@@ -11,6 +12,7 @@ type Variant = 'primary' | 'secondary' | 'ghost';
 type Props = PressableProps & {
   label: string;
   variant?: Variant;
+  loading?: boolean;
 };
 
 export function Button({
@@ -18,31 +20,41 @@ export function Button({
   variant = 'primary',
   style,
   disabled,
+  loading = false,
   ...rest
 }: Props) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
-      disabled={disabled}
+      disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'ghost' && styles.ghost,
-        pressed && !disabled && styles.pressed,
-        disabled && styles.disabled,
+        pressed && !isDisabled && styles.pressed,
+        isDisabled && styles.disabled,
         typeof style === 'function' ? style({ pressed }) : style,
       ]}
       {...rest}
     >
-      <Text
-        style={[
-          styles.label,
-          variant === 'primary' && styles.labelPrimary,
-          variant !== 'primary' && styles.labelSecondary,
-        ]}
-      >
-        {label}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={variant === 'primary' ? colors.white : colors.accent}
+        />
+      ) : (
+        <Text
+          style={[
+            styles.label,
+            variant === 'primary' && styles.labelPrimary,
+            variant !== 'primary' && styles.labelSecondary,
+          ]}
+        >
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }

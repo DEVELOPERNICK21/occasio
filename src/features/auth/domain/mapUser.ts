@@ -5,6 +5,7 @@ type FirebaseUserLike = {
   email: string | null;
   phoneNumber: string | null;
   displayName: string | null;
+  createdAt?: string | null;
 };
 
 export function mapFirebaseUser(user: FirebaseUserLike): AuthUser {
@@ -13,6 +14,7 @@ export function mapFirebaseUser(user: FirebaseUserLike): AuthUser {
     email: user.email,
     phoneNumber: user.phoneNumber,
     displayName: user.displayName,
+    createdAt: user.createdAt ?? null,
   };
 }
 

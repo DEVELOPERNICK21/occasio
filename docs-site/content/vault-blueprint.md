@@ -40,7 +40,7 @@ data/          → relationshipRepository (Firestore)
 |---|---|
 | Vault list (empty + rows + upcoming) | ✅ |
 | Add person form | ✅ |
-| Person detail + delete | Deferred |
+| Person detail + delete | ✅ |
 | Auto-send review window | Deferred (engine phase) |
 
 ## Tier rules (domain)
@@ -61,7 +61,7 @@ Tier is `'free'` until billing ships (`useSavePerson` default).
 - [x] Share success → Save to Vault → Add person (prefilled name)
 - [x] Free tier: 1 person max; auto-send toggle disabled
 - [x] Domain tests: validation, tier caps
-- [ ] Person detail + delete
+- [x] Person detail + delete
 - [ ] Link creation to relationship record
 
 ## Code map
@@ -71,7 +71,7 @@ src/features/vault/
   domain/
   data/relationshipRepository.ts
   application/useVaultPeople.ts, useSavePerson.ts
-  ui/screens/VaultListScreen.tsx, AddPersonScreen.tsx
+  ui/screens/VaultListScreen.tsx, AddPersonScreen.tsx, PersonDetailScreen.tsx
 src/shared/navigation/VaultNavigator.tsx
 ```
 

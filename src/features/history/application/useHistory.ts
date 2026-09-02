@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { subscribeHistory, recordHistoryEntry } from '../data/historyRepository';
+import { enqueuePendingHistoryEntry } from '../data/pendingHistoryStorage';
+import { syncPendingHistoryEntries } from '../data/syncPendingHistory';
 import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
 
 export function useHistory(enabled: boolean) {
@@ -61,3 +63,20 @@ export function useRecordHistory() {
 
   return { record };
 }
+
+/** Queue a guest creation locally until the user signs in. */
+export function useQueueGuestHistory() {
+  const queuedRef = useRef<Set<string>>(new Set());
+
+  const queue = useCallback(async (input: RecordHistoryInput) => {
+    if (queuedRef.current.has(input.creationId)) {
+      return;
+    }
+    queuedRef.current.add(input.creationId);
+    await enqueuePendingHistoryEntry(input);
+  }, []);
+
+  return { queue };
+}
+
+export { syncPendingHistoryEntries };

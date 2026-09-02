@@ -89,8 +89,8 @@ android {
         applicationId "com.occasio"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.0.1"
     }
     signingConfigs {
         debug {
@@ -121,6 +121,9 @@ android {
 }
 
 dependencies {
+    // Backported Android photo picker on API 24–29 (react-native-image-picker).
+    implementation("androidx.activity:activity:1.9.+")
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

@@ -3,10 +3,12 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Button } from '../../../../shared/ui/Button';
 import { Field } from '../../../../shared/ui/Field';
+import { ModalCloseButton } from '../../../../shared/ui/ModalCloseButton';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { isAuthError, useAuthContext } from '../../application/AuthProvider';
+import { usePasswordReset } from '../../application/usePasswordReset';
 import {
   isValidEmail,
   isValidPassword,
@@ -14,8 +16,9 @@ import {
   normalizeEmail,
 } from '../../domain/email';
 import { gatedActionLabel } from '../../domain/gatedActions';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 
-type Step = 'choose' | 'email';
+type Step = 'choose' | 'email' | 'forgot';
 
 export function SoftAuthModal() {
   const {
@@ -26,6 +29,8 @@ export function SoftAuthModal() {
     signInEmail,
     createEmailAccount,
   } = useAuthContext();
+  const passwordReset = usePasswordReset();
+  const { clearResetState: clearPasswordReset } = passwordReset;
 
   const visible = softAuthRequest !== null;
   const action = softAuthRequest?.action ?? 'vault_save';
@@ -45,8 +50,9 @@ export function SoftAuthModal() {
       setIsSignUp(false);
       setError(null);
       setIsLoading(false);
+      passwordReset.clearResetState();
     }
-  }, [visible]);
+  }, [visible, clearPasswordReset]);
 
   const handleClose = () => {
     dismissSoftAuth();
@@ -55,6 +61,7 @@ export function SoftAuthModal() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
+    trackEvent(AnalyticsEvents.googleSignInStarted);
     try {
       await signInGoogle();
       completeSoftAuth();
@@ -62,7 +69,14 @@ export function SoftAuthModal() {
       if (isAuthError(e) && e.code === 'CANCELLED') {
         return;
       }
-      setError(isAuthError(e) ? e.message : 'Google sign-in failed. Try again.');
+      const message = isAuthError(e) ? e.message : 'Google sign-in failed. Try again.';
+      setError(message);
+      trackEvent(AnalyticsEvents.googleSignInFailed, {
+        code: isAuthError(e) ? e.code : 'unknown',
+      });
+      if (__DEV__) {
+        console.warn('[auth] SoftAuth Google error:', message, e);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +115,9 @@ export function SoftAuthModal() {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <Pressable style={styles.backdrop} onPress={handleClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+          <View style={styles.sheetTop}>
+            <ModalCloseButton onPress={handleClose} accessibilityLabel="Close sign in" />
+          </View>
           <Text style={styles.eyebrow}>Sign in</Text>
           <Text style={styles.title}>Continue to {gatedActionLabel(action)}</Text>
           <Text style={styles.body}>
@@ -109,9 +126,11 @@ export function SoftAuthModal() {
 
           {step === 'choose' ? (
             <View style={styles.form}>
+              {error ? <Text style={styles.error}>{error}</Text> : null}
               <Button
-                label={isLoading ? 'Signing in…' : 'Continue with Google'}
+                label="Continue with Google"
                 onPress={handleGoogleSignIn}
+                loading={isLoading}
                 disabled={isLoading}
               />
               <Button
@@ -123,6 +142,39 @@ export function SoftAuthModal() {
                 }}
                 disabled={isLoading}
               />
+            </View>
+          ) : step === 'forgot' ? (
+            <View style={styles.form}>
+              <ForgotPasswordForm
+                emailInput={emailInput}
+                onEmailChange={setEmailInput}
+                resetSent={passwordReset.resetSent}
+                successCopy={passwordReset.successCopy}
+                error={passwordReset.error}
+                isLoading={passwordReset.isLoading}
+                canResend={passwordReset.canResend}
+                resendLabel={passwordReset.resendLabel}
+                onSend={() => void passwordReset.sendReset(emailInput)}
+                onResend={() => void passwordReset.sendReset(emailInput)}
+                onBackToSignIn={() => {
+                  setStep('email');
+                  setIsSignUp(false);
+                  passwordReset.clearResetState();
+                }}
+                onUseDifferentEmail={passwordReset.clearResetState}
+              />
+              {!passwordReset.resetSent ? (
+                <Button
+                  label="Back"
+                  variant="ghost"
+                  onPress={() => {
+                    setStep('email');
+                    setIsSignUp(false);
+                    passwordReset.clearResetState();
+                  }}
+                  disabled={passwordReset.isLoading}
+                />
+              ) : null}
             </View>
           ) : (
             <View style={styles.form}>
@@ -150,16 +202,26 @@ export function SoftAuthModal() {
                   style={styles.input}
                 />
               </Field>
+              {!isSignUp ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Forgot password"
+                  onPress={() => {
+                    setStep('forgot');
+                    setError(null);
+                    passwordReset.clearResetState();
+                  }}
+                  hitSlop={8}
+                  style={styles.forgotLinkWrap}
+                >
+                  <Text style={styles.forgotLink}>Forgot password?</Text>
+                </Pressable>
+              ) : null}
               {error ? <Text style={styles.error}>{error}</Text> : null}
               <Button
-                label={
-                  isLoading
-                    ? 'Please wait…'
-                    : isSignUp
-                      ? 'Create account'
-                      : 'Sign in'
-                }
+                label={isSignUp ? 'Create account' : 'Sign in'}
                 onPress={handleEmailSubmit}
+                loading={isLoading}
                 disabled={isLoading}
               />
               <Button
@@ -205,6 +267,13 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     gap: spacing.sm,
   },
+  sheetTop: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: -spacing.xs,
+    marginBottom: -spacing.xs,
+    marginHorizontal: -spacing.xs,
+  },
   eyebrow: {
     fontSize: typography.sizeXs,
     fontWeight: typography.weightSemibold,
@@ -239,5 +308,14 @@ const styles = StyleSheet.create({
   error: {
     fontSize: typography.sizeSm,
     color: colors.error,
+  },
+  forgotLinkWrap: {
+    alignSelf: 'flex-end',
+    marginTop: -spacing.xs,
+  },
+  forgotLink: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.accent,
   },
 });

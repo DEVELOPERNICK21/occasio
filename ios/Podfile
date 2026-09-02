@@ -34,5 +34,19 @@ target 'Occasio' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # use_frameworks! + RNFB: allow React-Core headers inside pod frameworks.
+    installer.pods_project.build_configurations.each do |build_config|
+      build_config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_config|
+        build_config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        if target.name.start_with?('RNFB')
+          build_config.build_settings['DEFINES_MODULE'] = 'NO'
+        end
+      end
+    end
   end
 end

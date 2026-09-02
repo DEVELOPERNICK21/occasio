@@ -26,7 +26,23 @@ export function MainTabNavigator() {
         },
       }}
     >
-      <Tab.Screen name="CreateTab" component={CreateNavigator} />
+      <Tab.Screen
+        name="CreateTab"
+        component={CreateNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            const tabsState = navigation.getState();
+            const createRoute = tabsState.routes.find((r) => r.name === 'CreateTab');
+            const stackIndex =
+              createRoute?.state && 'index' in createRoute.state
+                ? (createRoute.state.index ?? 0)
+                : 0;
+            if (stackIndex > 0) {
+              navigation.navigate('CreateTab', { screen: 'CreateHome' });
+            }
+          },
+        })}
+      />
       <Tab.Screen name="VaultTab" component={VaultNavigator} />
       <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
       <Tab.Screen name="AccountTab" component={AccountScreen} />

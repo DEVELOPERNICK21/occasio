@@ -1,6 +1,8 @@
 export type SubscriptionTier = 'free' | 'personal' | 'family';
 
 export type RelationshipType =
+  | 'mom'
+  | 'dad'
   | 'parent'
   | 'partner'
   | 'sibling'

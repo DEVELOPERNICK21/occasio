@@ -16,7 +16,7 @@ If you signed in with **Google** or **email and password**, you can request perm
 
 1. Open the **Occasio** app on your device (optional but helps us match your request).
 2. Note the **email address** tied to your account (the one you used to sign in).
-3. Email **[privacy@occasio.app](mailto:privacy@occasio.app)** from that same email address.
+3. Email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from that same email address.
 4. Use the subject line: **Delete my Occasio account**.
 5. In the message, confirm you want your account and associated data permanently deleted.
 6. We will verify the request and complete deletion within **30 days**. We may reply once to confirm ownership before deleting.
@@ -48,7 +48,7 @@ After account deletion, you will not be able to sign in again with the same acco
 
 You can ask us to remove **specific** data while keeping your account.
 
-Email **[privacy@occasio.app](mailto:privacy@occasio.app)** from your account email and tell us what to delete, for example:
+Email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from your account email and tell us what to delete, for example:
 
 - A person in your **Vault**
 - An entry in your **creation history**
@@ -62,7 +62,7 @@ If you used Occasio **without signing in**, there is no account to delete.
 
 Card content you created is stored only as long as needed to host the **share link**. Guest links expire after **30 days**; after expiry, recipients can no longer open the card and related media is deleted within a short grace period.
 
-To remove a guest card before it expires, email **[privacy@occasio.app](mailto:privacy@occasio.app)** with the share link URL and ask us to delete it early.
+To remove a guest card before it expires, email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** with the share link URL and ask us to delete it early.
 
 ## 4. Data about other people
 
@@ -70,6 +70,6 @@ If you added someone to your Vault or addressed a card to them, that information
 
 ## 5. Contact
 
-**Email:** [privacy@occasio.app](mailto:privacy@occasio.app)  
+**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
 **Operator:** Nick Kubde, India  
 **Privacy Policy:** [occasio-greetings.vercel.app/privacy](https://occasio-greetings.vercel.app/privacy)

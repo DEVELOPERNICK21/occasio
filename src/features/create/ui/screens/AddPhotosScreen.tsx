@@ -1,5 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useState } from 'react';
 import {
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -14,6 +16,7 @@ import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events
 import { Text } from '../../../../shared/ui/Text';
 import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import { validatePickedPhoto } from '../../domain/photoValidation';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
@@ -22,25 +25,44 @@ import { colors, radius, spacing, typography } from '../../../../shared/theme/to
 type Props = NativeStackScreenProps<CreateStackParamList, 'AddPhotos'>;
 
 const maxPhotos = env.useBase64Media ? MAX_PHOTOS_BASE64 : MAX_PHOTOS_STORAGE;
+const photoMode = env.useBase64Media ? 'base64' : 'storage';
 const CREATE_STEPS = 4;
 
 export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
   const { pickPhoto, picking } = usePhotoPicker();
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handlePick = async (slotIndex: number) => {
-    const uri = await pickPhoto();
-    if (!uri) return;
+    const picked = await pickPhoto();
+    if (!picked) return;
 
+    const currentCount = draft.photoUris.filter(Boolean).length;
+    const validation = validatePickedPhoto({
+      uri: picked.uri,
+      currentCount,
+      mode: photoMode,
+      fileSizeBytes: picked.fileSizeBytes,
+      isReplacing: Boolean(draft.photoUris[slotIndex]),
+    });
+
+    if (!validation.valid) {
+      setValidationError(validation.message);
+      Alert.alert('Photo not added', validation.message);
+      return;
+    }
+
+    setValidationError(null);
     const next = [...draft.photoUris];
-    next[slotIndex] = uri;
-      setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
-      trackEvent(AnalyticsEvents.photosAdded, { count: next.filter(Boolean).length });
+    next[slotIndex] = picked.uri;
+    setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
+    trackEvent(AnalyticsEvents.photosAdded, { count: next.filter(Boolean).length });
   };
 
   const removePhoto = (slotIndex: number) => {
     const next = draft.photoUris.filter((_, i) => i !== slotIndex);
     setPhotoUris(next);
+    setValidationError(null);
   };
 
   const slots = Array.from({ length: maxPhotos }, (_, i) => i);
@@ -53,6 +75,7 @@ export function AddPhotosScreen({ navigation }: Props) {
         env.useBase64Media ? 'Add 1 photo' : `Add 1–${maxPhotos} photos`
       }
       step={{ current: 2, total: CREATE_STEPS }}
+      onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
           label="Next"
@@ -78,10 +101,13 @@ export function AddPhotosScreen({ navigation }: Props) {
       <Text style={styles.counter}>
         {filledCount} of {maxPhotos} added
       </Text>
+      {validationError ? (
+        <Text style={styles.error}>{validationError}</Text>
+      ) : null}
       <Text style={styles.hint}>
         {env.useBase64Media
-          ? 'Pick from gallery or take a photo. One compressed image is saved with your card.'
-          : 'Pick from gallery or camera. Photos upload when you share.'}
+          ? 'Pick from gallery or camera, then crop to fit your card.'
+          : 'Pick from gallery or camera, crop to fit, then upload when you share.'}
       </Text>
     </Screen>
   );
@@ -143,7 +169,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   slot: {
-    aspectRatio: 1,
+    aspectRatio: 5 / 4,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
     alignItems: 'center',
@@ -200,6 +226,12 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     fontWeight: typography.weightMedium,
     color: colors.inkSoft,
+  },
+  error: {
+    marginTop: spacing.xs,
+    fontSize: typography.sizeSm,
+    color: colors.error,
+    lineHeight: typography.sizeSm * 1.4,
   },
   hint: {
     marginTop: spacing.sm,

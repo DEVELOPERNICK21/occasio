@@ -58,6 +58,7 @@ export function PreviewScreen({ navigation }: Props) {
         title="Preview"
         subtitle="How it will look"
         step={{ current: 4, total: 4 }}
+        onBack={() => navigation.goBack()}
         headerAction={
           <ScreenHeaderAction
             label={isLoading ? 'Generating…' : 'Generate link'}

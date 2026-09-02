@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { env } from '../../../shared/config/env';
 import { createShareLink } from '../data/creationRepository';
 import { resolveCreationMedia } from '../data/photoRefs';
 import { CreationApiError } from '../data/types';
@@ -40,7 +41,11 @@ export function useCreateShareLink(options: Options = {}) {
         return null;
       }
 
-      if (shouldShowPaywall(cardsCreatedThisMonth)) {
+      if (
+        shouldShowPaywall(cardsCreatedThisMonth, 'free', {
+          bypassQuota: env.devRelaxedQuota,
+        })
+      ) {
         setState((s) => ({ ...s, paywallRequired: true, error: null }));
         return null;
       }
