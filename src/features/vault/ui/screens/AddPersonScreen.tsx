@@ -14,6 +14,7 @@ import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultStackParamList } from '../../../../shared/navigation/types';
+import { useSubscription } from '../../../billing/application/useSubscription';
 import { useVaultPeople } from '../../application/useVaultPeople';
 import { useSavePerson } from '../../application/useSavePerson';
 import { parseBirthdayInput } from '../../domain/personRules';
@@ -22,7 +23,6 @@ import { AddPersonAutoSendCard } from '../components/AddPersonAutoSendCard';
 import {
   AddPersonNameField,
   BirthdayDateField,
-  OccasionTypeField,
 } from '../components/AddPersonFormFields';
 import { AddPersonHero } from '../components/AddPersonHero';
 import { AddPersonDivider, AddPersonSection } from '../components/AddPersonSection';
@@ -38,11 +38,14 @@ export function AddPersonScreen({ navigation, route }: Props) {
     personName: prefilledName,
   });
   const [birthdayInput, setBirthdayInput] = useState('');
+  const [anniversaryInput, setAnniversaryInput] = useState('');
   const [autoSendBirthday, setAutoSendBirthday] = useState(false);
+  const [autoSendAnniversary, setAutoSendAnniversary] = useState(false);
 
   const { people } = useVaultPeople(true);
+  const { tier } = useSubscription();
   const { save, isSaving, error, canEnableAutoSend, personCapReached, clearError } =
-    useSavePerson({ currentCount: people.length });
+    useSavePerson({ currentCount: people.length, tier });
 
   useEffect(() => {
     if (prefilledName) {
@@ -70,13 +73,40 @@ export function AddPersonScreen({ navigation, route }: Props) {
     }
   };
 
-  const handleSave = async () => {
-    triggerCardHaptic();
-    const person = await save(draft, autoSendBirthday);
-    if (person) {
-      navigation.navigate('VaultList');
+  const handleAnniversaryChange = (text: string) => {
+    setAnniversaryInput(text);
+    const parsed = parseBirthdayInput(text);
+    if (parsed) {
+      updateDraft({
+        anniversaryMonth: parsed.month,
+        anniversaryDay: parsed.day,
+      });
+      return;
+    }
+    if (!text.trim()) {
+      updateDraft({ anniversaryMonth: '', anniversaryDay: '' });
     }
   };
+
+  const handleSave = async () => {
+    triggerCardHaptic();
+    const person = await save(draft, {
+      birthday: autoSendBirthday,
+      anniversary: autoSendAnniversary,
+    });
+    if (person) {
+      navigation.navigate('VaultList', {
+        linkCreation: route.params?.linkCreation,
+      });
+    }
+  };
+
+  const hasBirthday = Boolean(draft.birthdayMonth && draft.birthdayDay);
+  const hasAnniversary = Boolean(draft.anniversaryMonth && draft.anniversaryDay);
+
+  const freeTierBody = canEnableAutoSend
+    ? undefined
+    : 'Occasio Pro unlocks auto-send arming. Upgrade in Account.';
 
   return (
     <KeyboardAvoidingView
@@ -123,7 +153,7 @@ export function AddPersonScreen({ navigation, route }: Props) {
 
         {personCapReached ? (
           <Text style={styles.warn}>
-            Free plan includes 1 saved person. Upgrade to save more (coming soon).
+            Free plan includes 1 saved person. Upgrade to save more.
           </Text>
         ) : null}
 
@@ -144,21 +174,34 @@ export function AddPersonScreen({ navigation, route }: Props) {
 
           <AddPersonDivider />
 
-          <AddPersonSection label="Occasion type">
-            <OccasionTypeField />
-          </AddPersonSection>
-
-          <AddPersonSection label="Select date">
+          <AddPersonSection label="Birthday">
             <BirthdayDateField
               value={birthdayInput}
               onChangeText={handleBirthdayChange}
             />
           </AddPersonSection>
 
+          <AddPersonSection label="Anniversary">
+            <BirthdayDateField
+              value={anniversaryInput}
+              onChangeText={handleAnniversaryChange}
+            />
+          </AddPersonSection>
+
           <AddPersonAutoSendCard
+            title="Arm birthday auto-send"
             enabled={autoSendBirthday && canEnableAutoSend}
-            disabled={!canEnableAutoSend}
+            disabled={!canEnableAutoSend || !hasBirthday}
             onToggle={() => setAutoSendBirthday((current) => !current)}
+            body={freeTierBody}
+          />
+
+          <AddPersonAutoSendCard
+            title="Arm anniversary auto-send"
+            enabled={autoSendAnniversary && canEnableAutoSend}
+            disabled={!canEnableAutoSend || !hasAnniversary}
+            onToggle={() => setAutoSendAnniversary((current) => !current)}
+            body={freeTierBody}
           />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}

@@ -13,9 +13,13 @@ import {
 import { EMPTY_PERSON_DRAFT } from '../../src/features/vault/domain/types';
 import { getVaultCardTheme, personInitials } from '../../src/features/vault/domain/vaultCardTheme';
 import {
+  AUTO_SEND_DELIVERY_COPY,
   filterVaultPeople,
+  formatArmedOccasions,
+  formatPackSummary,
   getPersonNextOccasion,
 } from '../../src/features/vault/domain/vaultOccasion';
+import type { AutoSendPack } from '../../src/features/vault/domain/types';
 
 describe('tierLimits', () => {
   it('caps people by subscription tier', () => {
@@ -63,6 +67,14 @@ describe('personRules', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('requires anniversary when auto-send anniversary enabled', () => {
+    const result = validatePersonDraft(
+      { ...EMPTY_PERSON_DRAFT, personName: 'Sam', relationshipType: 'partner' },
+      { autoSendBirthday: false, autoSendAnniversary: true },
+    );
+    expect(result.ok).toBe(false);
+  });
+
   it('formats dates and computes days until birthday', () => {
     expect(formatPersonDate({ month: 9, day: 12 })).toBe('12 Sep');
     const days = daysUntilPersonDate(
@@ -99,8 +111,13 @@ describe('vaultOccasion', () => {
         personName: 'Julian',
         relationshipType: 'friend',
         birthday: { month: 9, day: 6 },
+        anniversary: null,
         whatsapp: null,
+        email: null,
         autoSendBirthday: false,
+        autoSendAnniversary: false,
+        pack: null,
+        lastCreationId: null,
         createdAt: '',
         updatedAt: '',
       },
@@ -111,6 +128,43 @@ describe('vaultOccasion', () => {
     expect(occasion.headline).toContain('Birthday');
   });
 
+  it('picks nearer occasion between birthday and anniversary', () => {
+    const base = {
+      id: '1',
+      userId: 'u',
+      personName: 'Sam',
+      relationshipType: 'partner' as const,
+      whatsapp: null,
+      email: null,
+      autoSendBirthday: false,
+      autoSendAnniversary: false,
+      pack: null,
+      lastCreationId: null,
+      createdAt: '',
+      updatedAt: '',
+    };
+
+    const birthdaySooner = getPersonNextOccasion(
+      {
+        ...base,
+        birthday: { month: 9, day: 6 },
+        anniversary: { month: 9, day: 20 },
+      },
+      new Date('2026-09-01'),
+    );
+    expect(birthdaySooner.headline).toContain('Birthday');
+
+    const anniversarySooner = getPersonNextOccasion(
+      {
+        ...base,
+        birthday: { month: 12, day: 1 },
+        anniversary: { month: 9, day: 10 },
+      },
+      new Date('2026-09-01'),
+    );
+    expect(anniversarySooner.headline).toContain('Anniversary');
+  });
+
   it('filters people by search query', () => {
     const people = [
       {
@@ -119,8 +173,13 @@ describe('vaultOccasion', () => {
         personName: 'Eleanor Vance',
         relationshipType: 'partner' as const,
         birthday: null,
+        anniversary: null,
         whatsapp: null,
+        email: null,
         autoSendBirthday: false,
+        autoSendAnniversary: false,
+        pack: null,
+        lastCreationId: null,
         createdAt: '',
         updatedAt: '',
       },
@@ -130,13 +189,66 @@ describe('vaultOccasion', () => {
         personName: 'Julian Smith',
         relationshipType: 'friend' as const,
         birthday: null,
+        anniversary: null,
         whatsapp: null,
+        email: null,
         autoSendBirthday: false,
+        autoSendAnniversary: false,
+        pack: null,
+        lastCreationId: null,
         createdAt: '',
         updatedAt: '',
       },
     ];
 
     expect(filterVaultPeople(people, 'julian')).toHaveLength(1);
+  });
+});
+
+describe('armed occasions copy', () => {
+  it('names birthday, anniversary, both, or none', () => {
+    expect(
+      formatArmedOccasions({ autoSendBirthday: false, autoSendAnniversary: false }),
+    ).toBe('Not armed');
+    expect(
+      formatArmedOccasions({ autoSendBirthday: true, autoSendAnniversary: false }),
+    ).toBe('Birthday');
+    expect(
+      formatArmedOccasions({ autoSendBirthday: false, autoSendAnniversary: true }),
+    ).toBe('Anniversary');
+    expect(
+      formatArmedOccasions({ autoSendBirthday: true, autoSendAnniversary: true }),
+    ).toBe('Birthday · Anniversary');
+  });
+
+  it('uses honest delivery copy instead of coming soon', () => {
+    expect(AUTO_SEND_DELIVERY_COPY).toBe(
+      'Armed for delivery when the date arrives',
+    );
+    expect(AUTO_SEND_DELIVERY_COPY.toLowerCase()).not.toContain('coming soon');
+  });
+
+  it('summarizes pack message, photos, and last-card fallback', () => {
+    const emptyPack: AutoSendPack = {
+      preferredTemplateId: null,
+      preferredTemplateType: null,
+      photoRefs: [],
+      defaultMessage: '',
+      fromName: null,
+    };
+
+    expect(formatPackSummary(null, null)).toBe(
+      'No message yet. Photos come from your last card or Create.',
+    );
+    expect(formatPackSummary(null, 'c1')).toBe('Uses last saved card for photos');
+    expect(
+      formatPackSummary(
+        { ...emptyPack, defaultMessage: 'Happy birthday', photoRefs: ['p1', 'p2'] },
+        null,
+      ),
+    ).toBe('Happy birthday · 2 photos');
+    expect(formatPackSummary({ ...emptyPack, defaultMessage: 'Hi' }, null)).toBe(
+      'Hi · Photos from last card or Create',
+    );
   });
 });

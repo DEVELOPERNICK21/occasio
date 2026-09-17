@@ -1,11 +1,11 @@
 /** Max photos when media is embedded in Firestore (Spark, pre-Blaze). */
-export const MAX_PHOTOS_BASE64 = 1;
+export const MAX_PHOTOS_BASE64 = 2;
 
 /** Max photos when using Firebase Storage (Blaze). */
 export const MAX_PHOTOS_STORAGE = 3;
 
-/** ~750 KB data URL — leaves room for other Firestore fields under 1 MB doc cap. */
-export const MAX_BASE64_DATA_URL_CHARS = 750_000;
+/** ~450 KB data URL — room for up to 2 photos under Firestore 1 MB doc cap. */
+export const MAX_BASE64_DATA_URL_CHARS = 450_000;
 
 /** Per-photo cap when uploading to Firebase Storage. */
 export const MAX_STORAGE_PHOTO_BYTES = 5 * 1024 * 1024;

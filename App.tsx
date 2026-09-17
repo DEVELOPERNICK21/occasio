@@ -9,6 +9,7 @@ import '@react-native-firebase/app';
 import { lockToPortrait } from 'react-native-orientation-turbo';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/features/auth/application/AuthProvider';
+import { BillingProvider } from './src/features/billing/application/BillingProvider';
 import { SoftAuthModal } from './src/features/auth/ui/components/SoftAuthModal';
 import { AppNavigator } from './src/shared/navigation/AppNavigator';
 import {
@@ -33,8 +34,10 @@ function App() {
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <AuthProvider>
-        <AppNavigator />
-        <SoftAuthModal />
+        <BillingProvider>
+          <AppNavigator />
+          <SoftAuthModal />
+        </BillingProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

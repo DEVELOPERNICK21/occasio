@@ -50,7 +50,7 @@ export function SoftAuthModal() {
       setIsSignUp(false);
       setError(null);
       setIsLoading(false);
-      passwordReset.clearResetState();
+      clearPasswordReset();
     }
   }, [visible, clearPasswordReset]);
 
@@ -118,10 +118,10 @@ export function SoftAuthModal() {
           <View style={styles.sheetTop}>
             <ModalCloseButton onPress={handleClose} accessibilityLabel="Close sign in" />
           </View>
-          <Text style={styles.eyebrow}>Sign in</Text>
+          <Text style={styles.eyebrow}>{isSignUp ? 'Create account' : 'Sign in'}</Text>
           <Text style={styles.title}>Continue to {gatedActionLabel(action)}</Text>
           <Text style={styles.body}>
-            Create and share stay free. Sign in with Google or email — no SMS charges.
+            Create and share stay free. Google or email — no SMS charges.
           </Text>
 
           {step === 'choose' ? (
@@ -137,6 +137,17 @@ export function SoftAuthModal() {
                 label="Continue with email"
                 variant="secondary"
                 onPress={() => {
+                  setIsSignUp(false);
+                  setStep('email');
+                  setError(null);
+                }}
+                disabled={isLoading}
+              />
+              <Button
+                label="Create account"
+                variant="ghost"
+                onPress={() => {
+                  setIsSignUp(true);
                   setStep('email');
                   setError(null);
                 }}

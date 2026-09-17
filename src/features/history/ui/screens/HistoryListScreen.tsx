@@ -18,9 +18,10 @@ import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { HistoryStackParamList, MainTabParamList } from '../../../../shared/navigation/types';
 import { getTemplateTheme } from '../../../create/domain/templateTheme';
 import type { TemplateType } from '../../../create/domain/types';
-import { useAuth } from '../../../auth/application/useAuth';
-import { GuestGateScreen } from '../../../auth/ui/screens/GuestGateScreen';
+import { useAuth, useRequireAuth } from '../../../auth/application/useAuth';
+import { GuestGateScreen } from '../../../../shared/ui/GuestGateScreen';
 import { useHistory } from '../../application/useHistory';
+import { shareMessage } from '../../../create/domain/shareLink';
 import {
   filterHistoryEntries,
   historyStatusHeadline,
@@ -65,7 +66,7 @@ function HistoryListContent({ navigation }: ListProps) {
     }
     try {
       await Share.share({
-        message: `A wish for ${entry.recipientName}: ${entry.shareUrl}`,
+        message: `${shareMessage(entry.recipientName, '')} ${entry.shareUrl}`,
         url: entry.shareUrl,
       });
     } catch {
@@ -174,6 +175,7 @@ function HistoryListContent({ navigation }: ListProps) {
 
 export function HistoryListScreen(props: ListProps) {
   const { isSignedIn, isLoading } = useAuth();
+  const { requireAuth } = useRequireAuth();
 
   if (isLoading) {
     return <SessionBootSkeleton withTabBar />;
@@ -184,7 +186,8 @@ export function HistoryListScreen(props: ListProps) {
       <GuestGateScreen
         title="History"
         message="Past cards and share links, synced when you sign in."
-        action="history_sync"
+        isSignedIn={false}
+        onSignIn={() => requireAuth('history_sync', () => undefined)}
       />
     );
   }

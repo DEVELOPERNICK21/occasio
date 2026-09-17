@@ -15,9 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pageUrl = shareUrlForSlug(slug);
 
   if (result.kind === 'card') {
+    const from = result.card.fromName?.trim();
     const description =
       result.card.message ??
-      `Someone sent ${result.card.recipientName} a wish on Occasio.`;
+      (from
+        ? `${from} sent ${result.card.recipientName} a wish on Occasio.`
+        : `Someone sent ${result.card.recipientName} a wish on Occasio.`);
     const title = `A wish for ${result.card.recipientName}`;
 
     return {
@@ -55,5 +58,5 @@ export default async function RecipientCardPage({ params }: Props) {
     notFound();
   }
 
-  return <RecipientCardView card={result.card} />;
+  return <RecipientCardView card={result.card} slug={slug} />;
 }

@@ -853,6 +853,58 @@ body {
   }
 }
 
+@keyframes wish-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wish-reveal-photo {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.wish-reveal {
+  opacity: 0;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.wish-reveal--photo {
+  animation-name: wish-reveal-photo;
+  animation-duration: 0.7s;
+  animation-delay: 0s;
+}
+
+.wish-reveal--occasion {
+  animation-name: wish-reveal-up;
+  animation-duration: 0.55s;
+  animation-delay: 0.65s;
+}
+
+.wish-reveal--name {
+  animation-name: wish-reveal-up;
+  animation-duration: 0.6s;
+  animation-delay: 1.2s;
+}
+
+.wish-reveal--message {
+  animation-name: wish-reveal-up;
+  animation-duration: 0.65s;
+  animation-delay: 1.85s;
+}
+
 .wish-card-root {
   position: relative;
   width: 100%;
@@ -861,8 +913,45 @@ body {
   --wish-soft: var(--accent-soft);
 }
 
+.wish-recipient-page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 3rem 1rem;
+  overflow: hidden;
+}
+
+.wish-recipient-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 24rem;
+}
+
+/* Full-viewport celebration — sits above the card like iMessage */
+.wish-screen-effect {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wish-screen-effect__lottie {
+  width: min(100vw, 28rem);
+  height: min(100vh, 40rem);
+}
+
 .wish-card {
   position: relative;
+  z-index: 1;
   overflow: hidden;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -876,6 +965,17 @@ body {
   aspect-ratio: 5 / 4;
   overflow: hidden;
   background: var(--wish-soft);
+}
+
+.wish-card-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3rem;
+  background: linear-gradient(to top, color-mix(in srgb, var(--wish-soft) 70%, transparent), transparent);
+  pointer-events: none;
 }
 
 .wish-card--compact .wish-card-hero {
@@ -907,55 +1007,125 @@ body {
   object-position: center top;
 }
 
-.wish-card-body {
-  padding: 1.5rem 1.35rem 1.65rem;
-  text-align: center;
+/* Frame: two memories — primary photo beside a taller secondary. */
+.wish-card-hero--dual {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 3px;
+  aspect-ratio: 4 / 3;
   background: var(--surface);
 }
 
+/* Frame: full photo — copy sits over the image, message reads below. */
+.wish-card-hero--full {
+  aspect-ratio: 4 / 5;
+}
+
+.wish-card-hero--full::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(28, 25, 20, 0.62) 0%,
+    rgba(28, 25, 20, 0.15) 45%,
+    rgba(28, 25, 20, 0) 70%
+  );
+}
+
+.wish-card-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  padding: 1.35rem 1.35rem 1.5rem;
+  text-align: center;
+}
+
+.wish-card-overlay .wish-card-greeting,
+.wish-card-overlay .wish-card-name {
+  color: #fff;
+}
+
+.wish-card-body--quiet {
+  padding-top: 1.25rem;
+}
+
+.wish-card-body {
+  padding: 1.5rem 1.5rem 2rem;
+  text-align: center;
+  background: var(--wish-soft);
+}
+
 .wish-card--plain .wish-card-body {
-  padding-top: 1.75rem;
+  padding-top: 2rem;
   background: var(--wish-soft);
 }
 
 .wish-card-icon {
-  display: block;
-  width: 1.35rem;
-  height: 1.35rem;
-  margin: 0 auto 0.65rem;
-  color: var(--wish-accent);
-  animation: wish-fade-up 0.45s ease 0.1s both;
+  display: none;
 }
 
 .wish-card-greeting {
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-size: 1.375rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.4;
   color: var(--wish-accent);
   animation: wish-fade-up 0.45s ease 0.18s both;
 }
 
+.wish-card-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: min(72%, 14rem);
+  margin: 0.65rem auto 0.85rem;
+}
+
+.wish-card-divider::before,
+.wish-card-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.wish-card-divider__spark {
+  width: 0.375rem;
+  height: 0.375rem;
+  background: var(--wish-accent);
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
+
 .wish-card-name {
-  margin-top: 0.15rem;
+  margin-top: 0;
   font-family: var(--font-display-serif), Georgia, serif;
-  font-size: 1.75rem;
-  line-height: 1.15;
+  font-size: 2.125rem;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   font-weight: 600;
-  color: var(--wish-accent-secondary);
+  color: var(--ink, #2a2220);
   animation: wish-fade-up 0.48s ease 0.26s both;
 }
 
 .wish-card--compact .wish-card-name {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
 }
 
 .wish-card-message {
   margin-top: 1rem;
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-size: 0.9375rem;
-  font-style: italic;
-  line-height: 1.55;
+  max-width: 20rem;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
   color: var(--ink-soft);
   animation: wish-fade-up 0.48s ease 0.34s both;
 }
@@ -963,19 +1133,75 @@ body {
 .wish-card-placeholder {
   margin-top: 1rem;
   font-size: 0.875rem;
-  font-style: italic;
+  font-style: normal;
   color: var(--muted);
   animation: wish-fade-up 0.48s ease 0.34s both;
 }
 
 .wish-card-signoff {
-  margin-top: 1.25rem;
-  font-size: 0.6875rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 1.35rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
   animation: wish-fade-up 0.48s ease 0.42s both;
+}
+
+.wish-reaction {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.wish-reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.wish-reaction-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.wish-reaction-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.wish-reaction-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.wish-reaction-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.wish-reaction-count {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 .wish-card-replay {
@@ -1010,7 +1236,141 @@ body {
   .wish-card-name,
   .wish-card-message,
   .wish-card-placeholder,
-  .wish-card-signoff {
+  .wish-card-signoff,
+  .wish-reveal {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
+
+  .wish-screen-effect {
+    display: none !important;
+  }
+
+  .story-balloon {
+    transition: none !important;
+  }
+
+  .story-balloon.is-popped {
+    opacity: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* Interactive recipient story (Phase A) */
+.story-progress {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.story-progress__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+}
+
+.story-progress__dot.is-on {
+  background: var(--accent);
+}
+
+.story-skip {
+  display: block;
+  margin: 1rem auto 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.story-scene-title {
+  margin: 0 0 0.75rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.story-scene-sub {
+  margin: 0 0 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.story-reveal-line {
+  margin: 1rem 0 1.25rem;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.story-balloons__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem auto 1.25rem;
+  max-width: 16rem;
+}
+
+.story-balloon {
+  aspect-ratio: 3 / 4;
+  border: none;
+  border-radius: 999px 999px 48% 48%;
+  background: color-mix(in srgb, var(--accent) 55%, var(--bg));
+  box-shadow: inset 0 -8px 16px color-mix(in srgb, var(--ink) 12%, transparent);
+  cursor: pointer;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.story-balloon:nth-child(2) {
+  background: color-mix(in srgb, var(--accent) 35%, var(--secondary, var(--accent-soft)));
+}
+
+.story-balloon:nth-child(3) {
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--accent));
+}
+
+.story-balloon:nth-child(4) {
+  background: color-mix(in srgb, var(--secondary, var(--accent)) 40%, var(--bg));
+}
+
+.story-balloon.is-popped {
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+}
+
+.story-balloon:disabled {
+  cursor: default;
+}
+
+.landing-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.story-polaroid-stack {
+  touch-action: none;
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0 1.25rem;
+  min-height: 18rem;
+  user-select: none;
+}
+
+.story-polaroid {
+  width: min(100%, 15rem);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background: var(--surface, #fff);
+  border: 10px solid #fff;
+  border-bottom-width: 2.5rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--ink) 16%, transparent);
 }

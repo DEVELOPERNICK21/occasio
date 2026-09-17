@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -16,28 +16,43 @@ import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events
 import { Text } from '../../../../shared/ui/Text';
 import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import { useTemplateCatalog } from '../../application/useTemplateCatalog';
 import { validatePickedPhoto } from '../../domain/photoValidation';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { getCreateStep } from '../createSteps';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'AddPhotos'>;
 
-const maxPhotos = env.useBase64Media ? MAX_PHOTOS_BASE64 : MAX_PHOTOS_STORAGE;
+const environmentMaxPhotos = env.useBase64Media
+  ? MAX_PHOTOS_BASE64
+  : MAX_PHOTOS_STORAGE;
 const photoMode = env.useBase64Media ? 'base64' : 'storage';
-const CREATE_STEPS = 4;
 
 export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
+  const { getById } = useTemplateCatalog();
   const { pickPhoto, picking } = usePhotoPicker();
   const [validationError, setValidationError] = useState<string | null>(null);
+  const template = draft.templateId ? getById(draft.templateId) : null;
+  const maxPhotos = Math.min(
+    template?.photoSlots ?? environmentMaxPhotos,
+    environmentMaxPhotos,
+  );
+
+  useEffect(() => {
+    if (draft.photoUris.length > maxPhotos) {
+      setPhotoUris(draft.photoUris.slice(0, maxPhotos));
+    }
+  }, [draft.photoUris, maxPhotos, setPhotoUris]);
 
   const handlePick = async (slotIndex: number) => {
     const picked = await pickPhoto();
     if (!picked) return;
 
-    const currentCount = draft.photoUris.filter(Boolean).length;
+    const currentCount = draft.photoUris.slice(0, maxPhotos).filter(Boolean).length;
     const validation = validatePickedPhoto({
       uri: picked.uri,
       currentCount,
@@ -56,7 +71,9 @@ export function AddPhotosScreen({ navigation }: Props) {
     const next = [...draft.photoUris];
     next[slotIndex] = picked.uri;
     setPhotoUris(next.filter(Boolean).slice(0, maxPhotos));
-    trackEvent(AnalyticsEvents.photosAdded, { count: next.filter(Boolean).length });
+    trackEvent(AnalyticsEvents.photosAdded, {
+      count: next.filter(Boolean).slice(0, maxPhotos).length,
+    });
   };
 
   const removePhoto = (slotIndex: number) => {
@@ -66,21 +83,26 @@ export function AddPhotosScreen({ navigation }: Props) {
   };
 
   const slots = Array.from({ length: maxPhotos }, (_, i) => i);
-  const filledCount = draft.photoUris.filter(Boolean).length;
+  const filledCount = draft.photoUris.slice(0, maxPhotos).filter(Boolean).length;
+  const isQuickCreate = !draft.audience;
 
   return (
     <Screen
       title="Photos"
       subtitle={
-        env.useBase64Media ? 'Add 1 photo' : `Add 1–${maxPhotos} photos`
+        isQuickCreate
+          ? 'Add their photo.'
+          : `Add ${maxPhotos === 1 ? '1 photo' : `1–${maxPhotos} photos`} — you'll pick a frame next.`
       }
-      step={{ current: 2, total: CREATE_STEPS }}
+      step={getCreateStep('photos', isQuickCreate)}
       onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
           label="Next"
           disabled={draft.photoUris.length < 1 || picking}
-          onPress={() => navigation.navigate('Details')}
+          onPress={() =>
+            navigation.navigate(draft.templateId ? 'Details' : 'TemplateRecommend')
+          }
         />
       }
     >

@@ -240,9 +240,7 @@ function TabPressable({
 export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarProps) {
   const focusedRoute = state.routes[state.index];
   const tabBarStyle = descriptors[focusedRoute.key]?.options.tabBarStyle as ViewStyle | undefined;
-  if (StyleSheet.flatten(tabBarStyle)?.display === 'none') {
-    return null;
-  }
+  const isHidden = StyleSheet.flatten(tabBarStyle)?.display === 'none';
 
   const insets = useSafeAreaInsets();
   const [barWidth, setBarWidth] = useState(0);
@@ -274,6 +272,10 @@ export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarP
       { scale: bubbleScale.value },
     ],
   }));
+
+  if (isHidden) {
+    return null;
+  }
 
   return (
     <View

@@ -69,8 +69,9 @@ export function formatBirthdayInput(monthRaw: string, dayRaw: string): string {
 
 export function validatePersonDraft(
   draft: PersonDraft,
-  options: { autoSendBirthday: boolean },
+  options: { autoSendBirthday: boolean; autoSendAnniversary?: boolean },
 ): PersonValidationResult {
+  const autoSendAnniversary = options.autoSendAnniversary ?? false;
   const personName = draft.personName.trim();
   if (personName.length < 1 || personName.length > 80) {
     return { ok: false, error: 'Enter a name (1–80 characters).' };
@@ -92,11 +93,29 @@ export function validatePersonDraft(
     return { ok: false, error: 'Add a birthday before enabling auto-send.' };
   }
 
+  const anniversary = parsePersonDate(draft.anniversaryMonth, draft.anniversaryDay);
+  if (
+    (draft.anniversaryMonth.trim() || draft.anniversaryDay.trim()) &&
+    anniversary === null
+  ) {
+    return {
+      ok: false,
+      error: 'Anniversary must be a valid month (1–12) and day (1–31).',
+    };
+  }
+
+  if (autoSendAnniversary && !anniversary) {
+    return { ok: false, error: 'Add an anniversary before enabling auto-send.' };
+  }
+
   const whatsappRaw = draft.whatsapp.trim();
   const whatsapp = whatsappRaw ? normalizeIndiaPhone(whatsappRaw) : null;
   if (whatsappRaw && !whatsapp) {
     return { ok: false, error: 'Enter a valid WhatsApp number or leave blank.' };
   }
+
+  const emailRaw = draft.email.trim();
+  const email = emailRaw || null;
 
   return {
     ok: true,
@@ -104,8 +123,11 @@ export function validatePersonDraft(
       personName,
       relationshipType: draft.relationshipType as RelationshipType,
       birthday,
+      anniversary,
       whatsapp,
+      email,
       autoSendBirthday: options.autoSendBirthday,
+      autoSendAnniversary,
     },
   };
 }

@@ -7,14 +7,14 @@ type Props = {
   onPress: () => void;
 };
 
-/** Shortcut CTA — starts a birthday draft; occasion grid picks other templates. */
+/** Fast path — birthday + Full photo frame, starts at photos. */
 export function CreateWishPill({ onPress }: Props) {
   return (
     <View style={styles.shadowShell}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Quick birthday wish"
-        accessibilityHint="Starts a birthday card. Use the grid above for other occasions."
+        accessibilityHint="Starts a birthday card with one photo. Skip choosing who and a frame."
         onPress={onPress}
         style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
       >

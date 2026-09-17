@@ -82,9 +82,11 @@ Full patterns: `data-flow.md` · schemas: `api-contracts.md`
 
 ## Current focus
 
-**Phase 4 — Create:** image picker, real upload, Functions, paywall modal.
+**Shipaton 2026** (deadline **30 Sep 2026**): verify RevenueCat purchase on device → Play production (US) → Devpost. Auto-send engine shipped; E2E verification + real WA/SMS/email providers remain.
 
-Build order: create → recipient web → auth/vault/history → billing → auto-send.
+Plan: [`docs/superpowers/plans/2026-09-12-shipaton-sprint.md`](./docs/superpowers/plans/2026-09-12-shipaton-sprint.md) · [`billing-blueprint.md`](./docs-site/content/billing-blueprint.md) · [`shipaton-blueprint.md`](./docs-site/content/shipaton-blueprint.md).
+
+Template system MVP is implemented; resume polish after Shipaton if needed.
 
 ## What NOT to do
 

@@ -3,7 +3,7 @@ title: API & Cloud Functions contracts
 description: HTTPS/callable contracts between Occasio clients and backend (Phase 3).
 phase: Phase 3 — Technical
 status: Draft v1
-updated: 2026-08-31
+updated: 2026-09-13
 ---
 
 Clients talk to **Firestore** for reads where rules allow; **Cloud Functions** for privileged writes (share link creation, dispatch, billing webhooks).
@@ -55,6 +55,13 @@ Create a shareable card (guest or authed).
 }
 ```
 
+Server also persists on the creation document (not echoed in the response body today):
+
+| Field | Type | Notes |
+|---|---|---|
+| `experienceMode` | `'story' \| 'classic'` | Set server-side from `templateType` (`birthday` / `anniversary` → `story`) |
+| `experienceVersion` | number | `1` for Phase A packs |
+
 **Errors**
 
 | Code | HTTP | Meaning |
@@ -90,9 +97,105 @@ Recipient view metadata (no auth).
 
 **Errors:** `NOT_FOUND` 404 · `EXPIRED` 410
 
-## `POST /v1/scheduled-sends/:id/approve` | `/cancel`
+## `POST /v1/scheduled-sends/:id/approve`
 
-Sender review window actions (auth required).
+Sender approves a send in `review`. **Auth required** (`Authorization: Bearer <Firebase ID token>`). Owner only.
+
+Requires the generated creation to have ≥1 `photoRef` or `mediaUrl`. Otherwise **400 `VALIDATION_ERROR`** (`photos_required`) and the send stays `review`.
+
+On success the send moves `review` → `approved`, then `dispatchScheduledSend` runs:
+
+- If `OCCASIO_AUTOSEND_DISPATCH` is **not** `true` (default), channel calls are skipped and the send stays `approved`. `shareUrl` from generation is still returned so the client can open the system share sheet.
+- If `OCCASIO_AUTOSEND_DISPATCH=true`, mock providers run **whatsapp → sms → email** using `relationships.contactChannel` (`whatsapp` for WA and SMS unless `phone` is set; `email` for email). First success → `sent` + FCM `autosend_sent`. All fail → `failed` + `lastError`.
+
+Set `OCCASIO_MOCK_DELIVERY_FAIL=whatsapp,sms` (comma-separated channels) to force mock failures and test fallback.
+
+**Response 200**
+```json
+{
+  "ok": true,
+  "id": "uid_rel_birthday_2026",
+  "status": "sent",
+  "shareUrl": "https://occasio.app/c/x7k2m9",
+  "deliveryChannelUsed": "whatsapp"
+}
+```
+
+`status` may be `approved` (dispatch flag off), `sent`, or `failed`.
+
+**Errors**
+
+| Code | HTTP | Meaning |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Missing/invalid Bearer token |
+| `FORBIDDEN` | 403 | Not the send owner |
+| `NOT_FOUND` | 404 | Unknown send id |
+| `VALIDATION_ERROR` | 400 | No photos on the creation (stays `review`) |
+| `CONFLICT` | 409 | Send is not in `review` |
+| `INTERNAL` | 500 | Retry |
+
+## `POST /v1/scheduled-sends/:id/cancel`
+
+Cancels a send in `review` only (`review` → `cancelled`). Same auth as approve. Does not dispatch.
+
+**Response 200**
+```json
+{ "ok": true, "id": "uid_rel_birthday_2026", "status": "cancelled" }
+```
+
+**Errors:** same `UNAUTHORIZED` / `FORBIDDEN` / `NOT_FOUND` / `CONFLICT` as approve.
+
+## `POST /v1/internal/autosend/run` (cron — secret only)
+
+Daily auto-send job. Also invoked by Cloud Scheduler export `autosendDaily` at **06:00 Asia/Kolkata**.
+
+**Auth:** header `x-occasio-cron-secret` must match `OCCASIO_CRON_SECRET`. Missing env → **503**; mismatch → **401**.
+
+**Request body (optional)**
+```json
+{ "asOf": "2026-09-13T00:30:00.000Z" }
+```
+
+**Response 200**
+```json
+{
+  "ok": true,
+  "asOf": "2026-09-13T00:30:00.000Z",
+  "matched": 1,
+  "created": 1,
+  "skipped": 0,
+  "failed": 0,
+  "expiredReviews": 0,
+  "autoDispatched": 0,
+  "incompletePack": 0,
+  "approvedRetried": 0
+}
+```
+
+**Flow**
+
+1. Match armed relationships (birthday + anniversary) for today's IST month/day.
+2. Paid gate via `users/{uid}.subscriptionTier` (`personal` \| `family`; missing → `free` → `failed` / `tier`). Dev bypass: `OCCASIO_AUTOSEND_ALLOW_FREE=true`.
+3. Idempotent `scheduled_sends` doc (`userId_relationshipId_occasionType_year`) → generate creation → `review` + FCM `autosend_review`.
+4. Sweeper: expired `review` rows (see below).
+
+## Deadline sweeper (same cron)
+
+After generate→review, the cron sweeps `scheduled_sends` in `review` whose `reviewDeadline` is in the past:
+
+- Creation has ≥1 photo → auto-approve → `dispatchScheduledSend` (no-ops channels unless `OCCASIO_AUTOSEND_DISPATCH=true`)
+- Otherwise → `failed` + `lastError: 'incomplete_pack'` (no photo-less dispatch)
+
+When dispatch is enabled, the sweeper also retries existing `approved` sends so turning the flag on can complete earlier no-ops.
+
+## FCM (auto-send)
+
+| Type | When | Payload |
+|---|---|---|
+| `autosend_review` | Cron enters `review` | `sendId`, person/occasion in notification body |
+| `autosend_sent` | Dispatch success | `sendId`, optional `shareUrl` — client opens system share sheet |
+
+Client registers tokens on `users/{uid}.fcmTokens` (dedupe). Invalid tokens pruned on FCM error.
 
 ## `POST /v1/webhooks/revenuecat`
 
@@ -106,7 +209,8 @@ Server-to-server subscription updates — never called from client.
 | `relationships` | own | via rules + validation |
 | `creations` | **server only** (Admin SDK) | **deny all clients** |
 | `scheduled_sends` | own | approve/cancel via Function |
+| `users/{uid}.fcmTokens` | own | client append (tier mirror via billing) |
 
 ## Analytics events (Phase 4)
 
-`card_share_started` · `card_shared` · `upload_failed` · `paywall_shown` · `vault_save_prompt_tapped`
+`card_share_started` · `card_shared` · `upload_failed` · `paywall_shown` · `vault_save_prompt_tapped` · `autosend_*` · `subscribe_success`

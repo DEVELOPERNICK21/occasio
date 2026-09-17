@@ -2,7 +2,7 @@ import { env, getApiBaseUrl } from '../../../shared/config/env';
 import { httpClient } from '../../../shared/api/httpClient';
 import { HttpError } from '../../../shared/api/errors';
 import { computeShareLinkExpiresAt } from '../domain/shareLink';
-import { useSparkBackend } from './backendMode';
+import { isSparkBackend } from './backendMode';
 import { createShareLinkSpark } from './sparkCreationRepository';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from './types';
@@ -60,7 +60,7 @@ export async function createShareLink(
     return mockCreation(draft);
   }
 
-  if (useSparkBackend()) {
+  if (isSparkBackend()) {
     return createShareLinkSpark(draft, photoRefs, mediaUrls);
   }
 
@@ -70,7 +70,9 @@ export async function createShareLink(
       '/v1/creations',
       {
         templateType: draft.templateType,
+        templateId: draft.templateId,
         recipientName: draft.recipientName.trim(),
+        fromName: draft.fromName.trim(),
         message: draft.message.trim(),
         photoRefs,
       },

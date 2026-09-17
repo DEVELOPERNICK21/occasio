@@ -8,6 +8,7 @@ import { CalendarDays } from 'lucide-react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { useAuth } from '../../../auth/application/useAuth';
+import { usePaywall } from '../../../billing/application/usePaywall';
 import { useHistory } from '../../../history/application/useHistory';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { Text } from '../../../../shared/ui/Text';
@@ -18,12 +19,13 @@ import type { CreateStackParamList, MainTabParamList } from '../../../../shared/
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { MilestoneCard } from '../components/MilestoneCard';
 import { CreateWishPill } from '../components/CreateWishPill';
-import { TemplateOptionCard } from '../components/TemplateOptionCard';
+import { AudienceCard } from '../components/AudienceCard';
 import { UpcomingOccasionCard } from '../components/UpcomingOccasionCard';
 import { VaultNudgeCard } from '../components/VaultNudgeCard';
 import { getTemplateTheme } from '../../domain/templateTheme';
-import { TEMPLATE_OPTIONS } from '../../domain/templates';
-import type { TemplateType } from '../../domain/types';
+import { AUDIENCE_OPTIONS } from '../../domain/audienceOccasion';
+import { freeQuotaNotice } from '../../domain/quota';
+import type { Audience } from '../../domain/templateSchema';
 import {
   countWishesThisMonth,
   getCreateHomeSubtitle,
@@ -45,7 +47,8 @@ export function CreateHomeScreen({ navigation }: Props) {
   useScrollToTop(scrollRef);
 
   const { isSignedIn } = useAuth();
-  const { startWish } = useCreateDraftContext();
+  const { tier } = usePaywall();
+  const { startFromAudience, startQuickCreate } = useCreateDraftContext();
   const { people, isLoading: vaultLoading } = useVaultPeople(isSignedIn);
   const { entries, isLoading: historyLoading } = useHistory(isSignedIn);
 
@@ -53,11 +56,15 @@ export function CreateHomeScreen({ navigation }: Props) {
     () => getUpcomingOccasionsFromVault(people, 2),
     [people],
   );
-  const milestone = useMemo(() => {
-    const wishCount =
-      isSignedIn && !historyLoading ? countWishesThisMonth(entries) : 0;
-    return getMilestoneCardContent(wishCount, isSignedIn, people.length);
-  }, [entries, historyLoading, isSignedIn, people.length]);
+  const wishCount = useMemo(
+    () => (isSignedIn && !historyLoading ? countWishesThisMonth(entries) : 0),
+    [entries, historyLoading, isSignedIn],
+  );
+  const milestone = useMemo(
+    () => getMilestoneCardContent(wishCount, isSignedIn, people.length),
+    [isSignedIn, people.length, wishCount],
+  );
+  const quotaNotice = freeQuotaNotice(wishCount, tier);
 
   const subtitle = useMemo(
     () => getCreateHomeSubtitle(isSignedIn, upcoming),
@@ -80,23 +87,28 @@ export function CreateHomeScreen({ navigation }: Props) {
     trackEvent(AnalyticsEvents.createStarted);
   }, []);
 
-  const beginWish = (templateType: TemplateType, recipientName = '') => {
+  const pickAudience = (audience: Audience) => {
     triggerCardHaptic();
-    startWish({ templateType, recipientName });
-    trackEvent(AnalyticsEvents.templateSelected, { templateType });
-    navigation.navigate('AddPhotos');
-  };
-
-  const pickTemplate = (templateType: TemplateType) => {
-    beginWish(templateType);
+    startFromAudience(audience);
+    trackEvent(AnalyticsEvents.audienceSelected, {
+      audience,
+      source: 'create_home',
+    });
+    navigation.navigate('Occasion');
   };
 
   const handleQuickWish = () => {
-    beginWish('birthday');
+    triggerCardHaptic();
+    startQuickCreate();
+    trackEvent(AnalyticsEvents.quickCreateStarted);
+    navigation.navigate('AddPhotos');
   };
 
   const handleSendCard = (personName: string) => {
-    beginWish('birthday', personName);
+    triggerCardHaptic();
+    startQuickCreate(personName);
+    trackEvent(AnalyticsEvents.quickCreateStarted, { source: 'vault' });
+    navigation.navigate('AddPhotos');
   };
 
   const handleOpenVaultPerson = (personId: string) => {
@@ -126,19 +138,23 @@ export function CreateHomeScreen({ navigation }: Props) {
 
   return (
     <Screen title="Create a wish" subtitle={subtitle} scrollRef={scrollRef}>
+      <Text style={styles.prompt}>Who is this for?</Text>
+      <Text style={styles.promptHint}>Start with the person — the design follows.</Text>
       <View style={styles.grid}>
-        {TEMPLATE_OPTIONS.map((template) => (
-          <TemplateOptionCard
-            key={template.id}
-            template={template}
-            theme={getTemplateTheme(template.id)}
-            onPress={() => pickTemplate(template.id)}
+        {AUDIENCE_OPTIONS.map((option) => (
+          <AudienceCard
+            key={option.id}
+            audience={option.id}
+            label={option.label}
+            cue={option.cue}
+            onPress={() => pickAudience(option.id)}
           />
         ))}
       </View>
 
       <View style={styles.engagementSection}>
         <CreateWishPill onPress={handleQuickWish} />
+        {quotaNotice ? <Text style={styles.quota}>{quotaNotice}</Text> : null}
 
         {showVaultNudge ? (
           <VaultNudgeCard
@@ -267,12 +283,32 @@ function UpcomingSection({
 }
 
 const styles = StyleSheet.create({
+  prompt: {
+    marginTop: spacing.md,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightSemibold,
+    color: colors.ink,
+  },
+  promptHint: {
+    marginTop: spacing.xs,
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.4,
+    color: colors.muted,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     rowGap: spacing.sm,
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
+  },
+  quota: {
+    marginTop: -spacing.xs,
+    textAlign: 'center',
+    fontSize: typography.sizeXs,
+    lineHeight: typography.sizeXs * 1.4,
+    color: colors.muted,
+    paddingHorizontal: spacing.md,
   },
   engagementSection: {
     marginTop: spacing.lg,

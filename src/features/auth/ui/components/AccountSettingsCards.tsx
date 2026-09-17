@@ -13,9 +13,16 @@ import { AccountToggle } from './AccountToggle';
 type SubscriptionProps = {
   tier: SubscriptionTier;
   onManagePlan: () => void;
+  onRestorePurchases?: () => void;
+  isRestoring?: boolean;
 };
 
-export function AccountSubscriptionCard({ tier, onManagePlan }: SubscriptionProps) {
+export function AccountSubscriptionCard({
+  tier,
+  onManagePlan,
+  onRestorePurchases,
+  isRestoring = false,
+}: SubscriptionProps) {
   return (
     <View style={styles.card}>
       <View style={[styles.cardHeader, styles.cardHeaderSpread]}>
@@ -48,8 +55,22 @@ export function AccountSubscriptionCard({ tier, onManagePlan }: SubscriptionProp
         onPress={onManagePlan}
         style={({ pressed }) => [styles.manageButton, pressed && styles.pressed]}
       >
-        <Text style={styles.manageLabel}>Manage Plan</Text>
+        <Text style={styles.manageLabel}>
+          {tier === 'free' ? 'See Occasio Pro' : 'Manage subscription'}
+        </Text>
       </Pressable>
+      {onRestorePurchases ? (
+        <Pressable
+          accessibilityRole="button"
+          disabled={isRestoring}
+          onPress={onRestorePurchases}
+          style={({ pressed }) => [styles.restoreButton, pressed && styles.pressed]}
+        >
+          <Text style={styles.restoreLabel}>
+            {isRestoring ? 'Restoring…' : 'Restore purchases'}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -276,6 +297,20 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
     color: colors.white,
+  },
+  restoreButton: {
+    minHeight: 44,
+    marginTop: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restoreLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.inkSoft,
   },
   toggleRow: {
     flexDirection: 'row',

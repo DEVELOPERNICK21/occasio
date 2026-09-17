@@ -31,6 +31,22 @@ export function shareLinkTtlDays(
   return SHARE_LINK_TTL_DAYS.paid;
 }
 
+/**
+ * Addressed to the person receiving it, not describing the app. Kept short so
+ * chat previews are not pushed out of view.
+ */
+export function shareMessage(recipientName: string, fromName: string): string {
+  const to = recipientName.trim();
+  const from = fromName.trim();
+  if (to && from) {
+    return `${to}, ${from} made you something. Open it when you have a minute.`;
+  }
+  if (to) {
+    return `${to}, I made you something. Open it when you have a minute.`;
+  }
+  return 'I made you something. Open it when you have a minute.';
+}
+
 export function computeShareLinkExpiresAt(
   createdAt: Date,
   tier: SubscriptionTier = 'free',

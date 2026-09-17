@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddPersonScreen } from '../../features/vault/ui/screens/AddPersonScreen';
 import { PersonDetailScreen } from '../../features/vault/ui/screens/PersonDetailScreen';
+import { ScheduledSendReviewScreen } from '../../features/vault/ui/screens/ScheduledSendReviewScreen';
 import { VaultListScreen } from '../../features/vault/ui/screens/VaultListScreen';
 import type { VaultStackParamList } from './types';
 
@@ -12,6 +13,7 @@ export function VaultNavigator() {
       <Stack.Screen name="VaultList" component={VaultListScreen} />
       <Stack.Screen name="AddPerson" component={AddPersonScreen} />
       <Stack.Screen name="PersonDetail" component={PersonDetailScreen} />
+      <Stack.Screen name="ScheduledSendReview" component={ScheduledSendReviewScreen} />
     </Stack.Navigator>
   );
 }

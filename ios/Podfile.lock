@@ -1215,6 +1215,9 @@ PODS:
   - Firebase/Firestore (12.10.0):
     - Firebase/CoreOnly
     - FirebaseFirestore (~> 12.10.0)
+  - Firebase/Messaging (12.10.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 12.10.0)
   - Firebase/Storage (12.10.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 12.10.0)
@@ -1257,6 +1260,20 @@ PODS:
     - gRPC-Core (~> 1.69.0)
     - leveldb-library (~> 1.22)
     - nanopb (~> 3.30910.0)
+  - FirebaseInstallations (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+    - FirebaseInstallations (~> 12.10.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
   - FirebaseSharedSwift (12.10.0)
   - FirebaseStorage (12.10.0):
     - FirebaseAppCheckInterop (~> 12.10.0)
@@ -1265,6 +1282,9 @@ PODS:
     - FirebaseCoreExtension (~> 12.10.0)
     - GoogleUtilities/Environment (~> 8.1)
     - GTMSessionFetcher/Core (< 6.0, >= 3.4)
+  - GoogleDataTransport (10.1.1):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
   - GoogleSignIn (8.0.0):
     - AppAuth (< 2.0, >= 1.7.3)
     - AppCheckCore (~> 11.0)
@@ -1394,6 +1414,30 @@ PODS:
     - hermes-engine/Pre-built (= 250829098.0.14)
   - hermes-engine/Pre-built (250829098.0.14)
   - leveldb-library (1.22.6)
+  - lottie-ios (4.6.0)
+  - lottie-react-native (7.5.0):
+    - hermes-engine
+    - lottie-ios (= 4.6.0)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -1424,6 +1468,11 @@ PODS:
   - PromisesObjC (2.4.1)
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
+  - PurchasesHybridCommon (18.33.1):
+    - RevenueCat (= 5.87.1)
+  - PurchasesHybridCommonUI (18.33.1):
+    - PurchasesHybridCommon (= 18.33.1)
+    - RevenueCatUI (= 5.87.1)
   - RCTDeprecation (0.86.0)
   - RCTRequired (0.86.0)
   - RCTSwiftUI (0.86.0)
@@ -3336,6 +3385,9 @@ PODS:
     - ReactNativeDependencies
   - ReactNativeDependencies (0.86.0)
   - RecaptchaInterop (101.0.0)
+  - RevenueCat (5.87.1)
+  - RevenueCatUI (5.87.1):
+    - RevenueCat (= 5.87.1)
   - RNCAsyncStorage (2.2.0):
     - hermes-engine
     - RCTRequired
@@ -3429,6 +3481,31 @@ PODS:
     - Yoga
   - RNFBFirestore (23.8.8):
     - Firebase/Firestore (= 12.10.0)
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNFBApp
+    - Yoga
+  - RNFBMessaging (23.8.8):
+    - Firebase/Messaging (= 12.10.0)
+    - FirebaseCoreExtension
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3571,6 +3648,12 @@ PODS:
     - ReactNativeDependencies
     - TOCropViewController (~> 2.8.0)
     - Yoga
+  - RNPaywalls (10.9.0):
+    - PurchasesHybridCommonUI (= 18.33.1)
+    - React-Core
+  - RNPurchases (10.9.0):
+    - PurchasesHybridCommon (= 18.33.1)
+    - React-Core
   - RNReactNativeHapticFeedback (3.0.0):
     - hermes-engine
     - RCTRequired
@@ -3739,6 +3822,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNSound (0.13.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNSVG (15.15.5):
     - hermes-engine
     - RCTRequired
@@ -3861,6 +3966,7 @@ PODS:
 DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OrientationTurbo (from `../node_modules/react-native-orientation-turbo`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3942,13 +4048,17 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
+  - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNFBStorage (from `../node_modules/@react-native-firebase/storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
+  - RNPaywalls (from `../node_modules/react-native-purchases-ui`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -3968,8 +4078,11 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - FirebaseFirestore
     - FirebaseFirestoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
     - FirebaseSharedSwift
     - FirebaseStorage
+    - GoogleDataTransport
     - GoogleSignIn
     - GoogleUtilities
     - "gRPC-C++"
@@ -3977,10 +4090,15 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - leveldb-library
+    - lottie-ios
     - nanopb
     - PromisesObjC
     - PromisesSwift
+    - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - RecaptchaInterop
+    - RevenueCat
+    - RevenueCatUI
     - TOCropViewController
 
 EXTERNAL SOURCES:
@@ -3989,6 +4107,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.14
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   OrientationTurbo:
     :path: "../node_modules/react-native-orientation-turbo"
   RCTDeprecation:
@@ -4149,6 +4269,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/auth"
   RNFBFirestore:
     :path: "../node_modules/@react-native-firebase/firestore"
+  RNFBMessaging:
+    :path: "../node_modules/@react-native-firebase/messaging"
   RNFBStorage:
     :path: "../node_modules/@react-native-firebase/storage"
   RNGestureHandler:
@@ -4157,12 +4279,18 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin"
   RNImageCropPicker:
     :path: "../node_modules/react-native-image-crop-picker"
+  RNPaywalls:
+    :path: "../node_modules/react-native-purchases-ui"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNWorklets:
@@ -4185,8 +4313,11 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: e7bbaeb00ab73011298f35ed223aa7371e212948
   FirebaseFirestore: 3c85b7fc1cbad3bcfc0ba807861aa55e0ad4af22
   FirebaseFirestoreInternal: a5120d3aea03c837ff9937c90e8a95f81e6a0706
+  FirebaseInstallations: 047343aa91fd6a1ebfa3eb374ddecf36a8aaddfd
+  FirebaseMessaging: ed18fb50634e6e85b5d3e77e628c21e2c928cc53
   FirebaseSharedSwift: 3d1e448b7202e36821a492941c84592d1308ea14
   FirebaseStorage: dd2dcbd47f603777206c04d2bd837e5f47ca3f4d
+  GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
   GoogleSignIn: ce8c89bb9b37fb624b92e7514cc67335d1e277e4
   GoogleUtilities: 4e0c2ad9fa0d0d18b5c4df8bf57b461cba35b0bb
   "gRPC-C++": cc207623316fb041a7a3e774c252cf68a058b9e8
@@ -4195,10 +4326,14 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 2072a398f835517138a14d51b32c39e01709862b
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
+  lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
+  lottie-react-native: 05da779a370ea951bdf6ec01887333c1adc354fd
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   OrientationTurbo: 227b0cd884c034ec1c168c5ac1fc743d891022ea
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
+  PurchasesHybridCommon: 10fa5043609584e834a84b4641f9c1166e69ea55
+  PurchasesHybridCommonUI: 72905af114e6f8f0d089b3b09bb9442ba053a933
   RCTDeprecation: 2a74a2c57675e64419bd89078efde81f7c1de90b
   RCTRequired: 30451112e6fef4e6f31b4e7eee0845156e35e4b0
   RCTSwiftUI: 5aaf0b07e747ba749dc6acc94d8bd41eea4b570f
@@ -4274,18 +4409,24 @@ SPEC CHECKSUMS:
   ReactCommon: d5c1bb4427bf51c443de5926aac332c89ddd9363
   ReactNativeDependencies: fa0a54b3f5319ae0e3b9aff32bfee7a424b88e66
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  RevenueCat: 7d45133f048270481facf0f7b02530e503a01620
+  RevenueCatUI: 9e9a56493980e8186af3344022a81835b4553413
   RNCAsyncStorage: d90e523830fa7705f8c61632479abde871bc792f
   RNCClipboard: 7a7d4557bfd3370b35c99dfecd92ae7b9fc4948a
   RNFBApp: 7b9f35bc79fcd15ba62d56d80587aa8822d584f1
   RNFBAuth: 7d520e51984dd919d8a564f2b5b58840a9db6cf9
   RNFBFirestore: 0bbf62a17176f7b99477fc70a34894d24f9b0e21
+  RNFBMessaging: 95cc76dd8644590e7294163a66593a2c650bbfdd
   RNFBStorage: c35d35ab42b1cbd7662ccda6c4c6306ec73dc5ed
   RNGestureHandler: 85a831012468d1b9af177debae2030d64b4bb610
   RNGoogleSignin: 39af434acc3c2f0f4339851925ca8af91699f765
   RNImageCropPicker: 5c9c8bef4c72d3f451b499aa0ecd90a644ea1bbd
+  RNPaywalls: fa9e27ed808695b22c63f51ae785cb5417eb63e8
+  RNPurchases: 4a47b7ae0cc9f29bb8734a4536e44806d3a68d25
   RNReactNativeHapticFeedback: 9dc72312c12cb53ee240b5b7aae1e167f3d940a6
   RNReanimated: c57ef141c7843c2849531e7556236d7223b7db1a
   RNScreens: b2e46935230f4877eed4985c259e52bbe0b03aa7
+  RNSound: 17a509f661761134a5638d4c4e4b233a92718757
   RNSVG: 394cfd0518613b144c65ffe69045f827b78a7a7c
   RNWorklets: 479a8693aef79a20a12a83c6d97858b3a58faecb
   TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888

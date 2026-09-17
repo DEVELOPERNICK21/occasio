@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { CardWashBackground } from '../../../../shared/ui/CardWashBackground';
@@ -28,36 +29,66 @@ function MilestoneHeadline({ headline, highlight }: { headline: string; highligh
 /** Progress card — real counts only; no upgrade pressure or inflated metrics. */
 export function MilestoneCard({ eyebrow, headline, headlineHighlight, body }: Props) {
   return (
-    <View style={styles.card}>
-      <CardWashBackground
-        variant="milestone"
-        primary={colors.accentSoft}
-        secondary={colors.secondary}
-      />
-      <View style={styles.copy}>
-        <Text style={styles.eyebrow}>{eyebrow}</Text>
-        <MilestoneHeadline headline={headline} highlight={headlineHighlight} />
-        <Text style={styles.body}>{body}</Text>
+    <View style={styles.shadowShell}>
+      <View style={styles.card}>
+        <CardWashBackground
+          variant="milestone"
+          primary={colors.accentSoft}
+          secondary={colors.secondary}
+        />
+        <View style={styles.copy}>
+          <View style={styles.eyebrowRow}>
+            <View style={styles.iconWrap}>
+              <Sparkles
+                size={14}
+                color={colors.accent}
+                strokeWidth={2}
+                absoluteStrokeWidth
+              />
+            </View>
+            <Text style={styles.eyebrow}>{eyebrow}</Text>
+          </View>
+          <MilestoneHeadline headline={headline} highlight={headlineHighlight} />
+          <Text style={styles.body}>{body}</Text>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  shadowShell: {
+    borderRadius: radius.lg,
+    ...shadow.card,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+  },
   card: {
-    marginTop: spacing.md,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
-    ...shadow.card,
-    shadowOpacity: 0.06,
   },
   copy: {
     zIndex: 1,
     padding: spacing.md,
     gap: spacing.xs,
+  },
+  eyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: 2,
+  },
+  iconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    backgroundColor: colors.sidebar,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   eyebrow: {
     fontSize: typography.sizeXs,

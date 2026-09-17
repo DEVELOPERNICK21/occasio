@@ -17,6 +17,30 @@ export function formatOccasionCountdown(daysUntil: number): string {
   return `${daysUntil} days`;
 }
 
+/**
+ * Gentle prompt for an upcoming date — invitation, not guilt.
+ * (Avoid "don't forget" / countdown pressure.)
+ */
+export function upcomingOccasionPrompt(
+  personName: string,
+  daysUntil: number,
+): string {
+  const first = personName.trim().split(/\s+/)[0] || 'them';
+  if (daysUntil === 0) {
+    return `A small wish for ${first} would mean a lot today.`;
+  }
+  if (daysUntil === 1) {
+    return `Tomorrow is ${first}'s day — a photo and a few words go far.`;
+  }
+  if (daysUntil <= 7) {
+    return `${first}'s birthday is close. Start a card when you have a minute.`;
+  }
+  if (daysUntil <= 30) {
+    return `Plenty of time — a card for ${first} can wait until it feels right.`;
+  }
+  return `Save the date for ${first}. When you are ready, start here.`;
+}
+
 export function getUpcomingOccasionsFromVault(
   people: VaultPerson[],
   max = 2,
@@ -75,7 +99,7 @@ export function getMilestoneCardContent(
     return {
       eyebrow: 'Getting started',
       headline: 'Your first wish takes about two minutes',
-      body: 'Pick an occasion, add a photo, and share a link — no account required.',
+      body: 'Start with who it is for, add a photo, and share a link — no account required.',
     };
   }
 
@@ -121,7 +145,7 @@ export function getCreateHomeSubtitle(
   upcoming: readonly UpcomingOccasion[],
 ): string {
   if (!isSignedIn) {
-    return 'Pick an occasion — share a personal link in minutes. No account needed.';
+    return 'Start with the person — share a private link in minutes. No account needed.';
   }
 
   const nearestDays = upcoming[0]?.daysUntil;
@@ -129,7 +153,7 @@ export function getCreateHomeSubtitle(
     return 'Someone you care about has a date coming up. A small gesture goes far.';
   }
 
-  return 'Pick the occasion, then add photos and your message.';
+  return 'Start with the person, then the moment, a photo, and your words.';
 }
 
 export type VaultNudgeContent = {

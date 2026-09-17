@@ -25,7 +25,8 @@ Guest can **create and share without signing in**. Sign-in is required only for 
 | `domain/` | `GatedAction`, `email.ts` validation, `mapUser` / `formatAuthIdentity` |
 | `data/` | `authRepository` — Firebase Auth + Google Sign-In only (no React) |
 | `application/` | `AuthProvider`, `useAuth`, `useRequireAuth` |
-| `ui/` | `SoftAuthModal`, `AccountScreen`, `GuestGateScreen` |
+| `ui/` | `SoftAuthModal`, `AccountScreen` |
+| `shared/ui/` | `GuestGateScreen` (Vault/History gates — no cross-feature ui imports) |
 
 **No Firebase imports in `ui/`.** Session flows through `AuthProvider`.
 
@@ -105,7 +106,8 @@ src/features/auth/
   data/authRepository.ts, authErrors.ts, googleSignIn.ts
   application/AuthProvider.tsx, useAuth.ts
   ui/components/SoftAuthModal.tsx
-  ui/screens/AccountScreen.tsx, GuestGateScreen.tsx
+  ui/screens/AccountScreen.tsx
+src/shared/ui/GuestGateScreen.tsx
 ```
 
 Wired in `App.tsx` → `AuthProvider` + `SoftAuthModal`.

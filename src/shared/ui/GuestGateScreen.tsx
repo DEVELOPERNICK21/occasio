@@ -1,32 +1,32 @@
 import { StyleSheet, View } from 'react-native';
-import { Screen } from '../../../../shared/ui/Screen';
-import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
-import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import { useRequireAuth } from '../../application/useAuth';
-import type { GatedAction } from '../../domain/types';
+import { Screen } from './Screen';
+import { ScreenHeaderAction } from './ScreenHeaderAction';
+import { Text } from './Text';
+import { colors, radius, spacing, typography } from '../theme/tokens';
 
 type Props = {
   title: string;
   message: string;
-  action: GatedAction;
+  isSignedIn: boolean;
+  onSignIn: () => void;
   signedInMessage?: string;
 };
 
-/** Placeholder for Vault / History until those features ship. */
-export function GuestGateScreen({ title, message, action, signedInMessage }: Props) {
-  const { requireAuth, isSignedIn } = useRequireAuth();
-
+/** Shared gate for tabs that require sign-in — no feature ui imports. */
+export function GuestGateScreen({
+  title,
+  message,
+  isSignedIn,
+  onSignIn,
+  signedInMessage,
+}: Props) {
   return (
     <Screen
       title={title}
       subtitle={isSignedIn ? signedInMessage : 'Sign in to unlock'}
       headerAction={
         isSignedIn ? undefined : (
-          <ScreenHeaderAction
-            label="Sign in"
-            onPress={() => requireAuth(action, () => undefined)}
-          />
+          <ScreenHeaderAction label="Sign in / Create" onPress={onSignIn} />
         )
       }
     >

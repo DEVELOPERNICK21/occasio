@@ -27,10 +27,22 @@ import {
 type Props = {
   user: AuthUser;
   tier?: SubscriptionTier;
+  hasPro?: boolean;
+  isRestoring?: boolean;
+  onRestorePurchases?: () => void;
+  onManagePlan?: () => void;
   onSignOut: () => void;
 };
 
-export function AccountHomeScreen({ user, tier = 'free', onSignOut }: Props) {
+export function AccountHomeScreen({
+  user,
+  tier = 'free',
+  hasPro = false,
+  isRestoring = false,
+  onRestorePurchases,
+  onManagePlan,
+  onSignOut,
+}: Props) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
 
@@ -40,9 +52,16 @@ export function AccountHomeScreen({ user, tier = 'free', onSignOut }: Props) {
   const [marketInsights, setMarketInsights] = useState(false);
 
   const handleManagePlan = () => {
+    if (onManagePlan) {
+      onManagePlan();
+      return;
+    }
+
     Alert.alert(
-      'Manage plan',
-      'Store billing is coming soon. You are on the Free tier for now.',
+      hasPro || tier !== 'free' ? 'Your plan' : 'Upgrade',
+      hasPro || tier !== 'free'
+        ? 'Manage or cancel your subscription in the store.'
+        : 'Open Create and generate a link to see Occasio Pro plans.',
     );
   };
 
@@ -68,7 +87,12 @@ export function AccountHomeScreen({ user, tier = 'free', onSignOut }: Props) {
 
         <Text style={styles.bio}>{profileBio(user)}</Text>
 
-        <AccountSubscriptionCard tier={tier} onManagePlan={handleManagePlan} />
+        <AccountSubscriptionCard
+          tier={tier}
+          onManagePlan={handleManagePlan}
+          onRestorePurchases={onRestorePurchases}
+          isRestoring={isRestoring}
+        />
 
         <AccountNotificationsCard
           momentAlerts={momentAlerts}

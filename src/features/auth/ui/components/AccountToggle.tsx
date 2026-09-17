@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, radius } from '../../../../shared/theme/tokens';
 
 type Props = {
   value: boolean;

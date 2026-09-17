@@ -1,4 +1,5 @@
 import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
+import { defaultExperienceMode } from '@/lib/experience/resolveExperience';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
 import { generateShareSlug } from '@/lib/shareSlug';
@@ -8,7 +9,10 @@ const GUEST_LINK_TTL_DAYS_DEV = 3;
 
 export type CreateCreationInput = {
   templateType: string;
+  /** Frame the sender picked — the recipient page renders the same one. */
+  templateId: string | null;
   recipientName: string;
+  fromName: string;
   message: string;
   photoRefs: string[];
   mediaUrls?: string[];
@@ -115,7 +119,9 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
 
   const input = body as Partial<CreateCreationInput>;
   const templateType = input.templateType?.trim();
+  const templateId = input.templateId?.trim() || null;
   const recipientName = input.recipientName?.trim() ?? '';
+  const fromName = input.fromName?.trim() ?? '';
   const message = input.message?.trim() ?? '';
   const photoRefs = input.photoRefs;
   const mediaUrls = input.mediaUrls ?? [];
@@ -125,6 +131,12 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   }
   if (recipientName.length < 1 || recipientName.length > 80) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Recipient name is required');
+  }
+  if (fromName.length > 80) {
+    throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Sender name is too long');
+  }
+  if (templateId && !/^[A-Za-z0-9_-]{1,16}$/.test(templateId)) {
+    throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Invalid template id');
   }
   if (message.length > 500) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Message is too long');
@@ -142,7 +154,9 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
 
   return {
     templateType,
+    templateId,
     recipientName,
+    fromName,
     message,
     photoRefs,
     mediaUrls,
@@ -163,13 +177,18 @@ export async function createCreation(
   const ref = db.collection('creations').doc();
   await ref.set({
     templateType: input.templateType,
+    templateId: input.templateId ?? null,
     recipientName: input.recipientName,
+    fromName: input.fromName || null,
     message: input.message,
     photoRefs: input.photoRefs,
     mediaUrls: input.mediaUrls ?? [],
+    experienceMode: defaultExperienceMode(input.templateType),
+    experienceVersion: 1,
     shareSlug,
     watermarked: true,
     viewCount: 0,
+    reactionCount: 0,
     createdAt: Timestamp.fromDate(createdAt),
     expiresAt: Timestamp.fromDate(expiresAt),
     userId: null,
@@ -218,9 +237,16 @@ export async function lookupCardBySlug(slug: string): Promise<CardLookupResult> 
       recipientName,
       message: (doc.message as string | null) ?? null,
       templateType: (doc.templateType as string) ?? 'birthday',
+      templateId: (doc.templateId as string | null) ?? null,
       fromName: (doc.fromName as string | null) ?? null,
       isDemo: false,
       mediaUrls: (doc.mediaUrls as string[] | undefined) ?? [],
+      reactionCount: (doc.reactionCount as number | undefined) ?? 0,
+      experienceMode:
+        doc.experienceMode === 'story' || doc.experienceMode === 'classic'
+          ? doc.experienceMode
+          : null,
+      experienceVersion: (doc.experienceVersion as number | undefined) ?? null,
     },
   };
 }
@@ -246,4 +272,27 @@ export async function recordCardView(slug: string): Promise<void> {
   await snapshot.docs[0]!.ref.update({
     viewCount: FieldValue.increment(1),
   });
+}
+
+/** Recipient tapped the heart. Returns the new count, or null when unavailable. */
+export async function recordCardReaction(slug: string): Promise<number | null> {
+  if (!isFirebaseAdminConfigured()) return null;
+
+  const db = getAdminFirestore();
+  const snapshot = await db
+    .collection('creations')
+    .where('shareSlug', '==', slug)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) return null;
+
+  const doc = snapshot.docs[0]!;
+  const expiresAt = doc.data().expiresAt as Timestamp | undefined;
+  if (expiresAt && expiresAt.toDate() < new Date()) {
+    return null;
+  }
+
+  await doc.ref.update({ reactionCount: FieldValue.increment(1) });
+  return ((doc.data().reactionCount as number | undefined) ?? 0) + 1;
 }

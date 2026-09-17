@@ -1,26 +1,38 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Field } from '../../../../shared/ui/Field';
 import { TextInput } from '../../../../shared/ui/TextInput';
+import { useAuth } from '../../../auth/application/useAuth';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { getCreateStep } from '../createSteps';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Details'>;
 
-const CREATE_STEPS = 4;
 const MESSAGE_MAX = 280;
 
 export function DetailsScreen({ navigation }: Props) {
-  const { draft, setRecipientName, setMessage } = useCreateDraftContext();
+  const { user } = useAuth();
+  const { draft, setRecipientName, setFromName, setMessage } =
+    useCreateDraftContext();
+
+  useEffect(() => {
+    if (draft.fromName.trim()) return;
+    const accountName = user?.displayName?.trim();
+    if (accountName) {
+      setFromName(accountName);
+    }
+  }, [draft.fromName, setFromName, user?.displayName]);
 
   return (
     <Screen
-      title="Details"
-      subtitle="Who is this for?"
-      step={{ current: 3, total: CREATE_STEPS }}
+      title="Your words"
+      subtitle="Their name and a line from you."
+      step={getCreateStep('details', !draft.audience)}
       onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
@@ -37,6 +49,16 @@ export function DetailsScreen({ navigation }: Props) {
             placeholderTextColor={colors.muted}
             value={draft.recipientName}
             onChangeText={setRecipientName}
+            style={styles.input}
+            autoCapitalize="words"
+          />
+        </Field>
+        <Field label="From" hint="Signs the card so they know who sent it">
+          <TextInput
+            placeholder="Your name"
+            placeholderTextColor={colors.muted}
+            value={draft.fromName}
+            onChangeText={setFromName}
             style={styles.input}
             autoCapitalize="words"
           />

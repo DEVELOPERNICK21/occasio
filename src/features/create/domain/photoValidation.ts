@@ -34,7 +34,7 @@ export function validatePickedPhoto(
       valid: false,
       message:
         input.mode === 'base64'
-          ? 'Only one photo is allowed for your card.'
+          ? `You can add up to ${maxPhotos} photos.`
           : `You can add up to ${maxPhotos} photos.`,
     };
   }

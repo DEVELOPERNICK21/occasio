@@ -1,4 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useMemo } from 'react';
 import { Alert, Share, StyleSheet, View } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -8,7 +10,14 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { PersonDetailSkeleton } from '../../../../shared/ui/SkeletonLayouts';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import type { HistoryStackParamList } from '../../../../shared/navigation/types';
+import type {
+  HistoryStackParamList,
+  LinkCreationParam,
+  MainTabParamList,
+} from '../../../../shared/navigation/types';
+import { useRequireAuth, useAuth } from '../../../auth/application/useAuth';
+import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
+import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useHistory } from '../../application/useHistory';
 import { templateLabel } from '../../domain/display';
 import {
@@ -16,10 +25,17 @@ import {
   isHistoryEntryExpired,
 } from '../../domain/historyRules';
 
-type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryDetail'>;
+type Props = CompositeScreenProps<
+  NativeStackScreenProps<HistoryStackParamList, 'HistoryDetail'>,
+  BottomTabScreenProps<MainTabParamList>
+>;
 
 export function HistoryDetailScreen({ navigation, route }: Props) {
   const { entries, isLoading } = useHistory(true);
+  const { isSignedIn } = useAuth();
+  const { requireAuth } = useRequireAuth();
+  const { people } = useVaultPeople(isSignedIn);
+  const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
   const entry = useMemo(
     () => entries.find((item) => item.id === route.params.entryId),
     [entries, route.params.entryId],
@@ -69,6 +85,52 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
     }
   };
 
+  const linkCreation: LinkCreationParam = {
+    creationId: entry.creationId,
+    templateType: entry.templateType,
+    templateId: null,
+    photoRefs: [],
+    message: entry.message.trim(),
+    fromName: null,
+  };
+
+  const goPickPersonInVault = () => {
+    navigation.navigate('VaultTab', {
+      screen: 'VaultList',
+      params: { linkCreation },
+    });
+  };
+
+  const handleSaveForAutoSend = () => {
+    requireAuth('autosend_enable', () => {
+      if (people.length === 0 || people.length > 2) {
+        goPickPersonInVault();
+        return;
+      }
+
+      Alert.alert(
+        'Save for auto-send',
+        'Choose who this card is for.',
+        [
+          ...people.map((person) => ({
+            text: person.personName,
+            onPress: () => {
+              void link(person.id, linkCreation).then((ok) => {
+                if (ok) {
+                  Alert.alert(
+                    'Saved for auto-send',
+                    `We'll use this card for ${person.personName}.`,
+                  );
+                }
+              });
+            },
+          })),
+          { text: 'Cancel', style: 'cancel' as const },
+        ],
+      );
+    });
+  };
+
   return (
     <Screen
       title={entry.recipientName}
@@ -102,6 +164,15 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
           disabled={expired}
         />
         <Button label="Copy link" variant="secondary" onPress={handleCopy} disabled={expired} />
+        {entry.creationId ? (
+          <Button
+            label="Save for auto-send"
+            variant="secondary"
+            loading={isLinking}
+            onPress={handleSaveForAutoSend}
+          />
+        ) : null}
+        {linkError ? <Text style={styles.expired}>{linkError}</Text> : null}
         <Button label="Back" variant="ghost" onPress={() => navigation.goBack()} />
       </ScreenActions>
     </Screen>

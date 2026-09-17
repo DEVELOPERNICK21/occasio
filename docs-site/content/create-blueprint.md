@@ -3,21 +3,27 @@ title: Feature blueprint — Create
 description: Phase 4 mini-PRD, entities, acceptance criteria, and analytics for the create flow.
 phase: Phase 4 — Build
 status: In progress
-updated: 2026-08-31
+updated: 2026-09-07
 ---
 
 ## Goal
 
-Guest or signed-in user completes **Template → Photos → Details → Preview → Share link** in under ~3 minutes.
+Guest or signed-in user completes **Home occasion → Who → Layout → Photos → Details → Preview → Share** in under ~3 minutes (Quick birthday wish skips Who/Recommend).
 
-## Screens (implemented scaffold)
+**Active slice:** [Template system MVP](/docs/template-system-blueprint) — data-driven layouts after home selection (Who → Recommend). Create Home grid stays as-is.
+
+## Screens (implemented)
 
 | Screen | Route | Status |
 |---|---|---|
-| Template picker | `CreateTab` → `TemplatePicker` | ✅ UI scaffold |
-| Add photos | `AddPhotos` | ✅ gallery + camera (`react-native-image-picker`) |
+| Create home | `CreateHome` | ✅ same occasion grid + Quick birthday wish; grid → Who/Recommend |
+| Who for | `WhoFor` | ✅ after home occasion pick (skipped for Mother’s/Father’s Day) |
+| Occasion | `Occasion` | ✅ alternate entry when occasion not pre-set |
+| Template recommend | `TemplateRecommend` | ✅ ranked layouts (3–5) |
+| Template picker (legacy) | `TemplatePicker` | ⚠️ route kept |
+| Add photos | `AddPhotos` | ✅ gallery + camera; enforces template `photoSlots` |
 | Details | `Details` | ✅ |
-| Preview | `Preview` | ✅ photo + message preview |
+| Preview | `Preview` | ✅ `TemplateRenderer` |
 | Share success | `ShareSuccess` | ✅ native share sheet |
 
 ## Domain

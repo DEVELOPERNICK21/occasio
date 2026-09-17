@@ -3,57 +3,23 @@ import type { TemplateType } from './types';
 export type TemplateOption = {
   id: TemplateType;
   label: string;
-  /** Single-letter fallback for accessibility / compact UI. */
-  initial: string;
-  /** Picker tile — warm emoji mark (occasion picker only). */
-  emoji: string;
-  /** Short line under the label on the picker grid. */
-  tagline: string;
 };
 
+/**
+ * Display labels for every occasion the app has ever written to a draft.
+ * Legacy values stay so old history entries and share links keep their label —
+ * the create flow only offers the occasions in `OCCASION_OPTIONS`.
+ */
 export const TEMPLATE_OPTIONS: TemplateOption[] = [
-  {
-    id: 'birthday',
-    label: 'Birthday',
-    initial: 'B',
-    emoji: '🎂',
-    tagline: 'Celebrate their day',
-  },
-  {
-    id: 'anniversary',
-    label: 'Anniversary',
-    initial: 'A',
-    emoji: '💍',
-    tagline: 'Mark the date',
-  },
-  {
-    id: 'sorry',
-    label: 'Sorry',
-    initial: 'S',
-    emoji: '💐',
-    tagline: 'Make it right',
-  },
-  {
-    id: 'proposal',
-    label: 'Proposal',
-    initial: 'P',
-    emoji: '✨',
-    tagline: 'Big moment',
-  },
-  {
-    id: 'mothers_day',
-    label: "Mother's Day",
-    initial: 'M',
-    emoji: '🌸',
-    tagline: 'For mom',
-  },
-  {
-    id: 'fathers_day',
-    label: "Father's Day",
-    initial: 'F',
-    emoji: '🌿',
-    tagline: 'For dad',
-  },
+  { id: 'birthday', label: 'Birthday' },
+  { id: 'anniversary', label: 'Anniversary' },
+  { id: 'sorry', label: 'Sorry' },
+  { id: 'proposal', label: 'Proposal' },
+  { id: 'mothers_day', label: "Mother's Day" },
+  { id: 'fathers_day', label: "Father's Day" },
+  { id: 'thank_you', label: 'Thank you' },
+  { id: 'congratulations', label: 'Congratulations' },
+  { id: 'just_because', label: 'Just because' },
 ];
 
 export function templateLabel(templateType: TemplateType | null): string {
@@ -69,6 +35,12 @@ export function wishGreeting(templateType: TemplateType | null): string {
       return 'For you,';
     case 'anniversary':
       return 'Happy anniversary,';
+    case 'thank_you':
+      return 'Thank you,';
+    case 'congratulations':
+      return 'Congratulations,';
+    case 'just_because':
+      return 'For you,';
     default:
       return `Happy ${templateLabel(templateType)},`;
   }

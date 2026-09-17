@@ -1,23 +1,40 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
+import { useAuth } from '../../../auth/application/useAuth';
+import { usePaywall } from '../../../billing/application/usePaywall';
+import { useHistory } from '../../../history/application/useHistory';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
+import { countWishesThisMonth } from '../../domain/createHome';
+import { isInteractiveExperience } from '../../domain/experienceMode';
+import { freeQuotaNotice } from '../../domain/quota';
 import { CardPreviewStage } from '../components/CardPreviewStage';
-import { PaywallModal } from '../components/PaywallModal';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
+import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
-import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
+import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import { getCreateStep } from '../createSteps';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
   const { draft } = useCreateDraftContext();
-  const { generate, isLoading, error, paywallRequired } = useCreateShareLink();
-  const [paywallOpen, setPaywallOpen] = useState(false);
+  const { isSignedIn } = useAuth();
+  const { entries } = useHistory(isSignedIn);
+  const { open: openPaywall, isConfigured, tier, error: billingError } = usePaywall();
+  const cardsCreatedThisMonth = useMemo(
+    () => (isSignedIn ? countWishesThisMonth(entries) : 0),
+    [entries, isSignedIn],
+  );
+  const { generate, isLoading, error, paywallRequired, reset } = useCreateShareLink({
+    cardsCreatedThisMonth,
+    tier,
+  });
+  const quotaNotice = freeQuotaNotice(cardsCreatedThisMonth, tier);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.previewOpened, {
@@ -26,15 +43,54 @@ export function PreviewScreen({ navigation }: Props) {
   }, [draft.templateType]);
 
   useEffect(() => {
-    if (paywallRequired) {
-      setPaywallOpen(true);
-      trackEvent(AnalyticsEvents.paywallShown);
+    if (!paywallRequired) {
+      return;
     }
-  }, [paywallRequired]);
+
+    if (!isConfigured) {
+      Alert.alert(
+        'Upgrade needed',
+        'Billing is not ready yet. Add your RevenueCat offering (monthly / yearly / lifetime) and rebuild.',
+      );
+      reset();
+      return;
+    }
+
+    void openPaywall().then((result) => {
+      reset();
+      if (result === 'purchased' || result === 'restored') {
+        void generate(draft).then((created) => {
+          if (!created) return;
+          trackEvent(AnalyticsEvents.cardShared, { shareSlug: created.shareSlug });
+          navigation.navigate('ShareSuccess', {
+            shareUrl: created.shareUrl,
+            expiresAt: created.expiresAt,
+            creationId: created.creationId,
+            shareSlug: created.shareSlug,
+          });
+        });
+      }
+    });
+  }, [
+    paywallRequired,
+    isConfigured,
+    openPaywall,
+    reset,
+    generate,
+    draft,
+    navigation,
+  ]);
 
   const handleGenerate = async () => {
     if (paywallRequired) {
-      setPaywallOpen(true);
+      if (!isConfigured) {
+        Alert.alert(
+          'Upgrade needed',
+          'Billing is not ready yet. Configure RevenueCat products and try again.',
+        );
+        return;
+      }
+      await openPaywall();
       return;
     }
 
@@ -53,36 +109,46 @@ export function PreviewScreen({ navigation }: Props) {
   };
 
   return (
-    <>
-      <Screen
-        title="Preview"
-        subtitle="How it will look"
-        step={{ current: 4, total: 4 }}
-        onBack={() => navigation.goBack()}
-        headerAction={
-          <ScreenHeaderAction
-            label={isLoading ? 'Generating…' : 'Generate link'}
-            disabled={isLoading}
-            onPress={() => void handleGenerate()}
-          />
-        }
-      >
-        <CardPreviewStage
-          recipientName={draft.recipientName}
-          message={draft.message}
-          templateType={draft.templateType}
-          photoUris={draft.photoUris}
+    <Screen
+      title="Preview"
+      subtitle="This is what they’ll open"
+      step={getCreateStep('preview', !draft.audience)}
+      onBack={() => navigation.goBack()}
+    >
+      <CardPreviewStage
+        recipientName={draft.recipientName}
+        message={draft.message}
+        occasion={draft.occasion}
+        templateType={draft.templateType}
+        templateId={draft.templateId}
+        photoUris={draft.photoUris}
+        fromName={draft.fromName}
+      />
+      {isLoading ? (
+        <ActivityIndicator style={styles.loader} color={colors.accent} />
+      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {billingError ? <Text style={styles.error}>{billingError}</Text> : null}
+
+      <ScreenActions>
+        <Button
+          label={isLoading ? 'Creating link…' : 'Create the link'}
+          disabled={isLoading}
+          onPress={() => void handleGenerate()}
         />
-        {isLoading ? (
-          <ActivityIndicator style={styles.loader} color={colors.accent} />
-        ) : null}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+      </ScreenActions>
+
+      {isInteractiveExperience(draft.templateType) ? (
         <Text style={styles.hint}>
-          Your link will be private and unlisted — only people you share it with can open it.
+          They’ll open a short interactive experience — balloons, photos, then
+          your message.
         </Text>
-      </Screen>
-      <PaywallModal visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
-    </>
+      ) : null}
+      <Text style={styles.hint}>
+        Your link will be private and unlisted — only people you share it with can open it.
+      </Text>
+      {quotaNotice ? <Text style={styles.hint}>{quotaNotice}</Text> : null}
+    </Screen>
   );
 }
 
@@ -97,9 +163,10 @@ const styles = StyleSheet.create({
     lineHeight: typography.sizeSm * 1.4,
   },
   hint: {
-    marginTop: spacing.lg,
-    fontSize: typography.sizeSm,
+    marginTop: spacing.md,
+    fontSize: typography.sizeXs,
     color: colors.muted,
-    lineHeight: typography.sizeSm * 1.4,
+    lineHeight: typography.sizeXs * 1.5,
+    textAlign: 'center',
   },
 });

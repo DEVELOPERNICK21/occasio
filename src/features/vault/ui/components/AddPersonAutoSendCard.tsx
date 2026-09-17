@@ -1,25 +1,32 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { AUTO_SEND_DELIVERY_COPY } from '../../domain/vaultOccasion';
 
 type Props = {
+  title: string;
   enabled: boolean;
   disabled: boolean;
   onToggle: () => void;
+  body?: string;
 };
 
-export function AddPersonAutoSendCard({ enabled, disabled, onToggle }: Props) {
+export function AddPersonAutoSendCard({
+  title,
+  enabled,
+  disabled,
+  onToggle,
+  body = AUTO_SEND_DELIVERY_COPY,
+}: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.copy}>
-        <Text style={styles.title}>Auto-send this occasion</Text>
-        <Text style={styles.body}>
-          Occasio will automatically send a personalized card on this date from your
-          curated collection.
-        </Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.body}>{body}</Text>
       </View>
       <Pressable
         accessibilityRole="switch"
+        accessibilityLabel={title}
         accessibilityState={{ checked: enabled, disabled }}
         disabled={disabled}
         onPress={onToggle}

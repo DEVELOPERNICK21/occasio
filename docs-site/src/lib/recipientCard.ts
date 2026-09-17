@@ -2,9 +2,15 @@ export type RecipientCard = {
   recipientName: string;
   message: string | null;
   templateType: string;
+  /** Frame the sender chose. Null for cards made before frames shipped. */
+  templateId: string | null;
   fromName: string | null;
   isDemo: boolean;
   mediaUrls?: string[];
+  reactionCount?: number;
+  /** Interactive story vs classic card. Null on legacy docs → resolve from templateType. */
+  experienceMode?: 'story' | 'classic' | null;
+  experienceVersion?: number | null;
 };
 
 /** Parse mock slugs from the mobile app (`demo-mom-abc123`). */
@@ -25,8 +31,11 @@ export function parseDemoSlug(slug: string): RecipientCard | null {
     recipientName,
     message: null,
     templateType: "birthday",
+    templateId: null,
     fromName: null,
     isDemo: true,
+    experienceMode: "story",
+    experienceVersion: 1,
   };
 }
 
@@ -34,11 +43,31 @@ export function templateLabel(templateType: string): string {
   const labels: Record<string, string> = {
     birthday: "Birthday",
     anniversary: "Anniversary",
+    thank_you: "Thank you",
     congratulations: "Congratulations",
+    just_because: "Just because",
     sorry: "Sorry",
     proposal: "Proposal",
     mothers_day: "Mother's Day",
     fathers_day: "Father's Day",
   };
   return labels[templateType] ?? "Special wish";
+}
+
+export function wishGreeting(templateType: string): string {
+  switch (templateType) {
+    case "sorry":
+      return "Thinking of you,";
+    case "proposal":
+    case "just_because":
+      return "For you,";
+    case "anniversary":
+      return "Happy anniversary,";
+    case "thank_you":
+      return "Thank you,";
+    case "congratulations":
+      return "Congratulations,";
+    default:
+      return `Happy ${templateLabel(templateType)},`;
+  }
 }

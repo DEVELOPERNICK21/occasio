@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -23,15 +23,6 @@ export function BirthdayDateField({ value, onChangeText }: Props) {
         <View style={styles.calendarTop} />
         <Text style={styles.calendarDay}>31</Text>
       </View>
-    </View>
-  );
-}
-
-export function OccasionTypeField() {
-  return (
-    <View style={styles.select}>
-      <Text style={styles.selectValue}>Birthday</Text>
-      <Text style={styles.chevron}>⌄</Text>
     </View>
   );
 }
@@ -101,23 +92,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
     color: colors.inkSoft,
     marginTop: 2,
-  },
-  select: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...fieldBase,
-    paddingVertical: spacing.md,
-  },
-  selectValue: {
-    fontSize: typography.sizeMd,
-    color: colors.ink,
-  },
-  chevron: {
-    fontSize: typography.sizeLg,
-    lineHeight: typography.sizeLg,
-    color: colors.muted,
-    marginTop: -2,
   },
   nameInput: {
     ...fieldBase,

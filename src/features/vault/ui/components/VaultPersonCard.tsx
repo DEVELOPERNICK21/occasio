@@ -3,16 +3,23 @@ import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultCardTheme } from '../../domain/vaultCardTheme';
 import { personInitials } from '../../domain/vaultCardTheme';
-import type { PersonNextOccasion } from '../../domain/vaultOccasion';
+import {
+  AUTO_SEND_DELIVERY_COPY,
+  formatArmedOccasions,
+  type PersonNextOccasion,
+} from '../../domain/vaultOccasion';
 import type { VaultPerson } from '../../domain/types';
 
 type Props = {
   person: VaultPerson;
   theme: VaultCardTheme;
   occasion: PersonNextOccasion;
-  autoSendEnabled: boolean;
-  autoSendDisabled: boolean;
-  onAutoSendToggle: () => void;
+  autoSendBirthday: boolean;
+  autoSendAnniversary: boolean;
+  birthdayDisabled: boolean;
+  anniversaryDisabled: boolean;
+  onBirthdayToggle: () => void;
+  onAnniversaryToggle: () => void;
   onOpenVault: () => void;
   onNote: () => void;
   onMenu: () => void;
@@ -22,13 +29,21 @@ export function VaultPersonCard({
   person,
   theme,
   occasion,
-  autoSendEnabled,
-  autoSendDisabled,
-  onAutoSendToggle,
+  autoSendBirthday,
+  autoSendAnniversary,
+  birthdayDisabled,
+  anniversaryDisabled,
+  onBirthdayToggle,
+  onAnniversaryToggle,
   onOpenVault,
   onNote,
   onMenu,
 }: Props) {
+  const armedLabel = formatArmedOccasions({
+    autoSendBirthday,
+    autoSendAnniversary,
+  });
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -67,27 +82,26 @@ export function VaultPersonCard({
         </Text>
       </View>
 
-      <View style={styles.autoSendRow}>
+      <View style={styles.autoSendBlock}>
         <View style={styles.autoSendCopy}>
-          <Text style={styles.autoSendTitle}>Auto-send Wishes</Text>
-          <Text style={styles.autoSendHint}>Sends curated gift & message</Text>
+          <Text style={styles.autoSendTitle}>Auto-send</Text>
+          <Text style={styles.autoSendArmed}>{armedLabel}</Text>
+          <Text style={styles.autoSendHint}>{AUTO_SEND_DELIVERY_COPY}</Text>
         </View>
-        <Pressable
-          accessibilityRole="switch"
-          accessibilityState={{
-            checked: autoSendEnabled,
-            disabled: autoSendDisabled,
-          }}
-          disabled={autoSendDisabled}
-          onPress={onAutoSendToggle}
-          style={[
-            styles.toggle,
-            autoSendEnabled && styles.toggleOn,
-            autoSendDisabled && styles.toggleDisabled,
-          ]}
-        >
-          <View style={[styles.toggleKnob, autoSendEnabled && styles.toggleKnobOn]} />
-        </Pressable>
+        <View style={styles.armRows}>
+          <ArmToggle
+            label="Birthday"
+            enabled={autoSendBirthday}
+            disabled={birthdayDisabled}
+            onToggle={onBirthdayToggle}
+          />
+          <ArmToggle
+            label="Anniversary"
+            enabled={autoSendAnniversary}
+            disabled={anniversaryDisabled}
+            onToggle={onAnniversaryToggle}
+          />
+        </View>
       </View>
 
       <View style={styles.actions}>
@@ -96,7 +110,6 @@ export function VaultPersonCard({
           onPress={onOpenVault}
           style={styles.primaryAction}
         >
-          <Text style={styles.primaryIcon}>🔒</Text>
           <Text style={styles.primaryLabel}>Open Vault</Text>
         </Pressable>
         <Pressable
@@ -104,10 +117,44 @@ export function VaultPersonCard({
           onPress={onNote}
           style={styles.secondaryAction}
         >
-          <Text style={styles.secondaryIcon}>📝</Text>
           <Text style={styles.secondaryLabel}>Note</Text>
         </Pressable>
       </View>
+    </View>
+  );
+}
+
+function ArmToggle({
+  label,
+  enabled,
+  disabled,
+  onToggle,
+}: {
+  label: string;
+  enabled: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <View style={styles.armRow}>
+      <Text style={styles.armLabel}>{label}</Text>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityLabel={`Arm ${label.toLowerCase()} auto-send`}
+        accessibilityState={{
+          checked: enabled,
+          disabled,
+        }}
+        disabled={disabled}
+        onPress={onToggle}
+        style={[
+          styles.toggle,
+          enabled && styles.toggleOn,
+          disabled && styles.toggleDisabled,
+        ]}
+      >
+        <View style={[styles.toggleKnob, enabled && styles.toggleKnobOn]} />
+      </Pressable>
     </View>
   );
 }
@@ -186,13 +233,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
     textAlign: 'center',
   },
-  autoSendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  autoSendBlock: {
+    gap: spacing.sm,
   },
   autoSendCopy: {
-    flex: 1,
     gap: 2,
   },
   autoSendTitle: {
@@ -200,9 +244,26 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
     color: colors.ink,
   },
+  autoSendArmed: {
+    fontSize: typography.sizeSm,
+    color: colors.inkSoft,
+  },
   autoSendHint: {
     fontSize: typography.sizeXs,
     color: colors.muted,
+  },
+  armRows: {
+    gap: spacing.sm,
+  },
+  armRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 48,
+  },
+  armLabel: {
+    fontSize: typography.sizeSm,
+    color: colors.ink,
   },
   toggle: {
     width: 48,
@@ -236,14 +297,8 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: radius.full,
     backgroundColor: colors.accentHover,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-  },
-  primaryIcon: {
-    fontSize: 14,
-    lineHeight: 16,
   },
   primaryLabel: {
     fontSize: typography.sizeSm,
@@ -257,14 +312,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-  },
-  secondaryIcon: {
-    fontSize: 14,
-    lineHeight: 16,
   },
   secondaryLabel: {
     fontSize: typography.sizeSm,

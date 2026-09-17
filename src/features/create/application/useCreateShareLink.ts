@@ -5,6 +5,7 @@ import { resolveCreationMedia } from '../data/photoRefs';
 import { CreationApiError } from '../data/types';
 import { shouldShowPaywall } from '../domain/quota';
 import { canGenerateShareLink } from '../domain/creationRules';
+import type { SubscriptionTier } from '../../vault/domain/types';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from '../data/types';
 
@@ -23,12 +24,12 @@ const initialState: State = {
 };
 
 type Options = {
-  /** Until billing exists, assume free tier + 0 cards this month for guests. */
   cardsCreatedThisMonth?: number;
+  tier?: SubscriptionTier;
 };
 
 export function useCreateShareLink(options: Options = {}) {
-  const { cardsCreatedThisMonth = 0 } = options;
+  const { cardsCreatedThisMonth = 0, tier = 'free' } = options;
   const [state, setState] = useState<State>(initialState);
 
   const generate = useCallback(
@@ -42,7 +43,7 @@ export function useCreateShareLink(options: Options = {}) {
       }
 
       if (
-        shouldShowPaywall(cardsCreatedThisMonth, 'free', {
+        shouldShowPaywall(cardsCreatedThisMonth, tier, {
           bypassQuota: env.devRelaxedQuota,
         })
       ) {
@@ -78,7 +79,7 @@ export function useCreateShareLink(options: Options = {}) {
         return null;
       }
     },
-    [cardsCreatedThisMonth],
+    [cardsCreatedThisMonth, tier],
   );
 
   const reset = useCallback(() => {

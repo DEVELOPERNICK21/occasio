@@ -216,9 +216,13 @@ export function LoginScreen({ onDismiss }: Props) {
             ]}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.emailTitle}>Continue with email</Text>
+            <Text style={styles.emailTitle}>
+              {isSignUp ? 'Create your account' : 'Continue with email'}
+            </Text>
             <Text style={styles.emailBody}>
-              Sign in with your email and password, or create a new account.
+              {isSignUp
+                ? 'Choose an email and password. You can create and share cards either way.'
+                : 'Sign in with your email and password, or create a new account below.'}
             </Text>
 
             <View style={styles.formPanel}>
@@ -334,11 +338,26 @@ export function LoginScreen({ onDismiss }: Props) {
               icon={<EmailOutlineIcon />}
               variant="primary"
               onPress={() => {
+                setIsSignUp(false);
                 setStep('email');
                 setError(null);
               }}
               disabled={isLoading}
             />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Create account"
+              disabled={isLoading}
+              onPress={() => {
+                setIsSignUp(true);
+                setStep('email');
+                setError(null);
+              }}
+              hitSlop={8}
+              style={styles.createAccountWrap}
+            >
+              <Text style={styles.createAccount}>New here? Create an account</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -391,6 +410,16 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 360,
     alignSelf: 'center',
+  },
+  createAccountWrap: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  createAccount: {
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightSemibold,
+    color: 'rgba(255, 255, 255, 0.92)',
+    textDecorationLine: 'underline',
   },
   footer: {
     paddingTop: spacing.md,

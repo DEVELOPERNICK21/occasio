@@ -44,7 +44,9 @@ export async function GET(_request: Request, context: RouteContext) {
     recipientName: card.recipientName,
     message: card.message,
     templateType: card.templateType,
+    templateId: card.templateId,
     mediaUrls: card.mediaUrls ?? [],
     fromName: card.fromName,
+    reactionCount: card.reactionCount ?? 0,
   });
 }

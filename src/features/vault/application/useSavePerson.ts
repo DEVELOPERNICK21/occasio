@@ -28,7 +28,7 @@ export function useSavePerson(options: Options) {
   const save = useCallback(
     async (
       draft: PersonDraft,
-      autoSendBirthday: boolean,
+      arms: { birthday: boolean; anniversary: boolean },
     ): Promise<VaultPerson | null> => {
       if (!canAddPerson(currentCount, tier)) {
         setState({
@@ -38,9 +38,11 @@ export function useSavePerson(options: Options) {
         return null;
       }
 
-      const wantsAutoSend = autoSendBirthday && canEnableAutoSend(tier);
+      const wantsBirthday = arms.birthday && canEnableAutoSend(tier);
+      const wantsAnniversary = arms.anniversary && canEnableAutoSend(tier);
       const validation = validatePersonDraft(draft, {
-        autoSendBirthday: wantsAutoSend,
+        autoSendBirthday: wantsBirthday,
+        autoSendAnniversary: wantsAnniversary,
       });
 
       if (!validation.ok) {
@@ -53,7 +55,8 @@ export function useSavePerson(options: Options) {
       try {
         const person = await createVaultPerson({
           ...validation.input,
-          autoSendBirthday: wantsAutoSend,
+          autoSendBirthday: wantsBirthday,
+          autoSendAnniversary: wantsAnniversary,
         });
         trackEvent(AnalyticsEvents.vaultPersonAdded, {
           relationshipType: person.relationshipType,

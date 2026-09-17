@@ -1,0 +1,98 @@
+[
+  {
+    "id": "B01",
+    "title": "Letter & photo",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "elegant",
+    "layoutId": "editorial_portrait",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "With love, always." }
+    ]
+  },
+  {
+    "id": "B04",
+    "title": "Two memories",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "dual_editorial",
+    "photoSlots": 2,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday, Mom." },
+      {
+        "key": "body",
+        "role": "body",
+        "default": "Everything good in me has a little bit of you."
+      }
+    ]
+  },
+  {
+    "id": "B10",
+    "title": "Full photo",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "minimal",
+    "layoutId": "minimal_fullscreen",
+    "photoSlots": 1,
+    "quickCreate": true,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" }
+    ]
+  },
+  {
+    "id": "L06",
+    "title": "Letter & photo",
+    "category": "love",
+    "audiences": ["partner", "someone_special"],
+    "occasions": ["just_because", "anniversary"],
+    "style": "emotional",
+    "layoutId": "editorial_portrait",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Just because" },
+      {
+        "key": "body",
+        "role": "body",
+        "default": "I just wanted you to know I love you."
+      }
+    ]
+  },
+  {
+    "id": "T01",
+    "title": "Letter & photo",
+    "category": "thank_you",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": ["thank_you", "congratulations"],
+    "style": "elegant",
+    "layoutId": "editorial_portrait",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Thank you" },
+      { "key": "body", "role": "body", "default": "for being there." }
+    ]
+  }
+]

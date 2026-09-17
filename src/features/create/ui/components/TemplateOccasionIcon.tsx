@@ -5,6 +5,7 @@ import {
   Heart,
   PartyPopper,
   Shield,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react-native';
 import type { TemplateType } from '../../domain/types';
@@ -18,11 +19,14 @@ type Props = {
 
 const ICONS: Record<TemplateType, LucideIcon> = {
   birthday: Cake,
-  anniversary: PartyPopper,
+  anniversary: Heart,
   sorry: Flower2,
   proposal: Gem,
   mothers_day: Heart,
   fathers_day: Shield,
+  thank_you: Flower2,
+  congratulations: PartyPopper,
+  just_because: Sparkles,
 };
 
 export function TemplateOccasionIcon({

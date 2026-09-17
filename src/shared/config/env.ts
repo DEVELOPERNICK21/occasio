@@ -59,6 +59,12 @@ export const env = {
   useMockAuth: false,
 
   /**
+   * Skip RevenueCat — tier stays free. Use when SDK keys are not set yet.
+   * Default: false (uses RevenueCat when keys are in revenueCat.ts).
+   */
+  useMockBilling: false,
+
+  /**
    * Dev builds only (__DEV__): skip free-tier paywall and request 3-day link TTL.
    * Stripped from production release builds — never set manually to true.
    */

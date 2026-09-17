@@ -1,12 +1,17 @@
 import { canPreviewDraft } from '../../src/features/create/domain/creationRules';
 import {
   canCreateManualCard,
+  freeQuotaNotice,
   shouldShowPaywall,
 } from '../../src/features/create/domain/quota';
 import {
   computeShareLinkExpiresAt,
   shareLinkTtlDays,
+  shareMessage,
 } from '../../src/features/create/domain/shareLink';
+import {
+  effectForMoment,
+} from '../../src/features/create/domain/occasionEffects';
 import {
   isDataUrl,
   isDataUrlWithinLimit,
@@ -21,6 +26,11 @@ import {
   SHARE_SLUG_LENGTH,
 } from '../../src/features/create/domain/shareSlug';
 import { EMPTY_CREATION_DRAFT } from '../../src/features/create/domain/types';
+import { occasionToTemplateType } from '../../src/features/create/domain/audienceOccasion';
+import {
+  templateLabel,
+  wishGreeting,
+} from '../../src/features/create/domain/templates';
 import {
   countWishesThisMonth,
   formatOccasionCountdown,
@@ -30,10 +40,11 @@ import {
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
   shouldShowVaultNudge,
+  upcomingOccasionPrompt,
 } from '../../src/features/create/domain/createHome';
 
 describe('creationRules', () => {
-  it('canPreviewDraft requires template, photo, and name', () => {
+  it('canPreviewDraft requires template id, photo, and name', () => {
     expect(canPreviewDraft(EMPTY_CREATION_DRAFT)).toBe(false);
     expect(
       canPreviewDraft({
@@ -42,7 +53,34 @@ describe('creationRules', () => {
         photoUris: ['file://a.jpg'],
         recipientName: 'Mom',
       }),
+    ).toBe(false);
+    expect(
+      canPreviewDraft({
+        ...EMPTY_CREATION_DRAFT,
+        templateType: 'birthday',
+        templateId: 'B01',
+        photoUris: ['file://a.jpg'],
+        recipientName: 'Mom',
+      }),
     ).toBe(true);
+  });
+});
+
+describe('audience and occasion', () => {
+  it.each(['birthday', 'anniversary', 'thank_you', 'congratulations', 'just_because'] as const)(
+    'maps %s directly to its API template type',
+    (occasion) => {
+      expect(occasionToTemplateType(occasion)).toBe(occasion);
+    },
+  );
+
+  it('provides labels and greetings for new occasions', () => {
+    expect(templateLabel('thank_you')).toBe('Thank you');
+    expect(templateLabel('congratulations')).toBe('Congratulations');
+    expect(templateLabel('just_because')).toBe('Just because');
+    expect(wishGreeting('thank_you')).toBe('Thank you,');
+    expect(wishGreeting('congratulations')).toBe('Congratulations,');
+    expect(wishGreeting('just_because')).toBe('For you,');
   });
 });
 
@@ -61,6 +99,45 @@ describe('quota', () => {
   it('paid tiers are unlimited', () => {
     expect(canCreateManualCard(99, 'personal')).toBe(true);
     expect(canCreateManualCard(99, 'family')).toBe(true);
+  });
+
+  it('tells remaining free cards before the user starts work', () => {
+    expect(freeQuotaNotice(0, 'free')).toBe('1 free card left this month.');
+    expect(freeQuotaNotice(1, 'free')).toBe(
+      'Free card used this month — a plan unlocks more when you are ready.',
+    );
+    expect(freeQuotaNotice(0, 'personal')).toBeNull();
+  });
+});
+
+describe('occasionEffects', () => {
+  it('defaults to balloons', () => {
+    expect(effectForMoment(null)).toBe('balloons');
+  });
+
+  it('maps occasions to iMessage-style screen effects', () => {
+    expect(effectForMoment('birthday')).toBe('balloons');
+    expect(effectForMoment('anniversary')).toBe('hearts');
+    expect(effectForMoment('congratulations')).toBe('confetti');
+    expect(effectForMoment('thank_you')).toBe('sparkles');
+    expect(effectForMoment('just_because')).toBe('celebration');
+  });
+});
+
+describe('shareMessage', () => {
+  it('addresses the recipient and signs when a from name exists', () => {
+    expect(shareMessage('Priya', 'Rohan')).toBe(
+      'Priya, Rohan made you something. Open it when you have a minute.',
+    );
+  });
+
+  it('falls back gracefully when names are missing', () => {
+    expect(shareMessage('Priya', '')).toBe(
+      'Priya, I made you something. Open it when you have a minute.',
+    );
+    expect(shareMessage('', '')).toBe(
+      'I made you something. Open it when you have a minute.',
+    );
   });
 });
 
@@ -110,7 +187,7 @@ describe('base64Media', () => {
 
 describe('photoValidation', () => {
   it('caps photo count by mode', () => {
-    expect(maxPhotosForMode('base64')).toBe(1);
+    expect(maxPhotosForMode('base64')).toBe(2);
     expect(maxPhotosForMode('storage')).toBe(3);
   });
 
@@ -143,7 +220,7 @@ describe('photoValidation', () => {
   it('blocks adding when the photo limit is already reached', () => {
     const result = validatePickedPhoto({
       uri: 'file://photo.jpg',
-      currentCount: 1,
+      currentCount: 2,
       mode: 'base64',
     });
     expect(result.valid).toBe(false);
@@ -152,7 +229,7 @@ describe('photoValidation', () => {
   it('allows replacing an existing photo when at the limit', () => {
     const result = validatePickedPhoto({
       uri: 'data:image/jpeg;base64,abc',
-      currentCount: 1,
+      currentCount: 2,
       mode: 'base64',
       isReplacing: true,
     });
@@ -185,8 +262,13 @@ describe('createHome', () => {
           personName: 'Later',
           relationshipType: 'friend',
           birthday: { month: 12, day: 31 },
+          anniversary: null,
           whatsapp: null,
+          email: null,
           autoSendBirthday: false,
+          autoSendAnniversary: false,
+          pack: null,
+          lastCreationId: null,
           createdAt: '',
           updatedAt: '',
         },
@@ -196,8 +278,13 @@ describe('createHome', () => {
           personName: 'Soon',
           relationshipType: 'sibling',
           birthday: { month: 9, day: 2 },
+          anniversary: null,
           whatsapp: null,
+          email: null,
           autoSendBirthday: false,
+          autoSendAnniversary: false,
+          pack: null,
+          lastCreationId: null,
           createdAt: '',
           updatedAt: '',
         },
@@ -208,6 +295,13 @@ describe('createHome', () => {
 
     expect(upcoming).toHaveLength(1);
     expect(upcoming[0]?.personName).toBe('Soon');
+  });
+
+  it('writes a gentle upcoming prompt without guilt language', () => {
+    expect(upcomingOccasionPrompt('Abhinav', 73)).toMatch(/Save the date/);
+    expect(upcomingOccasionPrompt('Priya', 3)).toMatch(/close/);
+    expect(upcomingOccasionPrompt('Mom', 0)).toMatch(/today/i);
+    expect(upcomingOccasionPrompt('Dad', 1)).toMatch(/Tomorrow/);
   });
 
   it('counts wishes in the current month', () => {
@@ -245,7 +339,7 @@ describe('createHome', () => {
     expect(getMilestoneLine(0)).toBe('Your first wish takes about two minutes.');
     expect(getMilestoneLine(3)).toBe("You've shared 3 wishes this month.");
     expect(getMilestoneCardContent(0, false).eyebrow).toBe('Getting started');
-    expect(getMilestoneCardContent(2, true).headline).toBe("You've shared 2 wishes");
+    expect(getMilestoneCardContent(2, true).headline).toBe("You've shared 2 wishes this month");
     expect(getMilestoneCardContent(0, true, 3).headline).toBe("You're tracking 3 people");
     expect(getMilestoneCardContent(0, true, 3).headlineHighlight).toBe('3');
   });
@@ -264,7 +358,7 @@ describe('createHome', () => {
 
   it('uses urgent subtitle only when nearest occasion is within a week', () => {
     expect(getCreateHomeSubtitle(true, [])).toBe(
-      'Pick the occasion, then add photos and your message.',
+      'Start with the person, then the moment, a photo, and your words.',
     );
     expect(
       getCreateHomeSubtitle(true, [
@@ -276,7 +370,7 @@ describe('createHome', () => {
           label: "Alex's birthday",
         },
       ]),
-    ).toBe('Pick the occasion, then add photos and your message.');
+    ).toBe('Start with the person, then the moment, a photo, and your words.');
     expect(
       getCreateHomeSubtitle(true, [
         {

@@ -1,6 +1,13 @@
 import * as admin from 'firebase-admin';
 import { onRequest } from 'firebase-functions/v2/https';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import express, { type Request, type Response } from 'express';
+import { handleAutosendCronRequest, runAutosendCron } from './autosend/cron';
+import {
+  handleApproveScheduledSend,
+  handleCancelScheduledSend,
+} from './autosend/review';
+import { writeCreation } from './creations';
 
 admin.initializeApp();
 
@@ -27,19 +34,20 @@ function guestLinkTtlDays(devModeRequested = false): number {
     : GUEST_LINK_TTL_DAYS_PROD;
 }
 
-function randomSlug(length = 8): string {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let slug = '';
-  for (let i = 0; i < length; i += 1) {
-    slug += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return slug;
-}
-
 app.post('/v1/creations', async (req: Request, res: Response) => {
-  const { templateType, recipientName, message, photoRefs, devMode } = req.body as {
+  const {
+    templateType,
+    templateId,
+    recipientName,
+    fromName,
+    message,
+    photoRefs,
+    devMode,
+  } = req.body as {
     templateType?: string;
+    templateId?: string | null;
     recipientName?: string;
+    fromName?: string;
     message?: string;
     photoRefs?: string[];
     devMode?: boolean;
@@ -50,34 +58,22 @@ app.post('/v1/creations', async (req: Request, res: Response) => {
     return;
   }
 
-  const createdAt = admin.firestore.Timestamp.now();
-  const ttlDays = guestLinkTtlDays(devMode === true);
-  const expiresAt = admin.firestore.Timestamp.fromDate(
-    new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000),
-  );
-  const shareSlug = randomSlug();
-  const shareBase =
-    process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';
-
-  const docRef = db.collection('creations').doc();
-  await docRef.set({
+  const result = await writeCreation(db, {
     templateType,
+    templateId,
     recipientName: recipientName.trim(),
-    message: message?.trim() ?? '',
+    fromName,
+    message,
     photoRefs,
-    shareSlug,
-    watermarked: true,
-    viewCount: 0,
-    createdAt,
-    expiresAt,
     userId: null,
+    ttlDays: guestLinkTtlDays(devMode === true),
   });
 
   res.status(201).json({
-    creationId: docRef.id,
-    shareSlug,
-    shareUrl: `${shareBase}/c/${shareSlug}`,
-    expiresAt: expiresAt.toDate().toISOString(),
+    creationId: result.creationId,
+    shareSlug: result.shareSlug,
+    shareUrl: result.shareUrl,
+    expiresAt: result.expiresAt.toDate().toISOString(),
     watermarked: true,
   });
 });
@@ -106,8 +102,10 @@ app.get('/v1/cards/:slug', async (req: Request, res: Response) => {
     recipientName: doc.recipientName,
     message: doc.message,
     templateType: doc.templateType,
+    templateId: doc.templateId ?? null,
     mediaUrls: doc.mediaUrls ?? [],
     fromName: doc.fromName ?? null,
+    reactionCount: doc.reactionCount ?? 0,
   });
 });
 
@@ -115,4 +113,39 @@ app.post('/v1/uploads/presign', (_req: Request, res: Response) => {
   res.status(501).json({ code: 'NOT_IMPLEMENTED', message: 'R2 presign coming soon' });
 });
 
+app.post(
+  '/v1/scheduled-sends/:id/approve',
+  async (req: Request, res: Response) => {
+    await handleApproveScheduledSend(
+      req,
+      res,
+      db,
+      admin.messaging(),
+      admin.auth(),
+    );
+  },
+);
+
+app.post(
+  '/v1/scheduled-sends/:id/cancel',
+  async (req: Request, res: Response) => {
+    await handleCancelScheduledSend(req, res, db, admin.auth());
+  },
+);
+
+app.post('/v1/internal/autosend/run', async (req: Request, res: Response) => {
+  await handleAutosendCronRequest(req, res, db, admin.messaging());
+});
+
 export const api = onRequest({ region: 'asia-south1' }, app);
+
+export const autosendDaily = onSchedule(
+  {
+    schedule: '0 6 * * *',
+    timeZone: 'Asia/Kolkata',
+    region: 'asia-south1',
+  },
+  async () => {
+    await runAutosendCron(db, new Date(), admin.messaging());
+  },
+);

@@ -1,6 +1,8 @@
+import { Heart } from 'lucide-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { CardWashBackground } from '../../../../shared/ui/CardWashBackground';
+import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = {
   title: string;
@@ -9,7 +11,7 @@ type Props = {
   onPress: () => void;
 };
 
-/** High-salience Vault nudge — dark card on cream canvas; text-only (no icon — tab bar owns the wand). */
+/** Warm Vault invite — helpful, not urgent. */
 export function VaultNudgeCard({ title, body, actionLabel, onPress }: Props) {
   return (
     <Pressable
@@ -17,47 +19,90 @@ export function VaultNudgeCard({ title, body, actionLabel, onPress }: Props) {
       accessibilityLabel={`${title}. ${body}`}
       accessibilityHint={actionLabel}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.shadowShell, pressed && styles.pressed]}
     >
-      <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.body}>{body}</Text>
+      <View style={styles.card}>
+        <CardWashBackground
+          variant="upcoming"
+          primary={colors.accentSoft}
+          secondary={colors.secondary}
+        />
+        <View style={styles.row}>
+          <View style={styles.iconWrap}>
+            <Heart
+              size={18}
+              color={colors.accent}
+              fill={colors.accentSoft}
+              strokeWidth={2}
+              absoluteStrokeWidth
+            />
+          </View>
+          <View style={styles.copy}>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.body}>{body}</Text>
+            <Text style={styles.action}>{actionLabel}</Text>
+          </View>
+        </View>
       </View>
-      <Text style={styles.action}>{actionLabel} →</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.md,
+  shadowShell: {
     borderRadius: radius.lg,
-    backgroundColor: colors.ink,
-    gap: spacing.sm,
+    ...shadow.card,
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 2,
   },
   pressed: {
     opacity: 0.94,
     transform: [{ scale: 0.995 }],
   },
+  card: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  row: {
+    zIndex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'flex-start',
+  },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.sidebar,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   copy: {
+    flex: 1,
+    minWidth: 0,
     gap: spacing.xs,
   },
   title: {
     fontSize: typography.sizeMd,
     lineHeight: typography.sizeMd * 1.3,
     fontWeight: typography.weightSemibold,
-    color: colors.white,
+    color: colors.ink,
     letterSpacing: -0.2,
   },
   body: {
     fontSize: typography.sizeSm,
-    lineHeight: typography.sizeSm * 1.5,
-    color: colors.tertiary,
+    lineHeight: typography.sizeSm * 1.45,
+    color: colors.inkSoft,
   },
   action: {
+    marginTop: spacing.xs,
     fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    color: colors.secondary,
-    marginTop: spacing.xs,
+    color: colors.accent,
   },
 });

@@ -2,7 +2,7 @@ import type { CreationDraft } from './types';
 
 export function canPreviewDraft(draft: CreationDraft): boolean {
   return (
-    draft.templateType !== null &&
+    draft.templateId !== null &&
     draft.photoUris.length >= 1 &&
     draft.recipientName.trim().length > 0
   );

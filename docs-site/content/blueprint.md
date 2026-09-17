@@ -3,12 +3,12 @@ title: Blueprint tracker (Phases 0–8)
 description: Operating checklist for Occasio — status mapped to this docs site and the RN app.
 phase: Meta
 status: Living
-updated: 2026-08-31
+updated: 2026-09-13
 ---
 
 Use this as the master checklist. **Engineering work happens in the mobile app** (`src/`); docs-site records decisions and progress.
 
-**Current focus (mobile):** Phase 4 wrap-up — billing and auto-send engine next.
+**Current focus (mobile):** **Shipaton 2026** — verify RevenueCat purchase → Play production (US) → Devpost by **30 Sep 2026**. Auto-send **engine** shipped (mock dispatch; `OCCASIO_AUTOSEND_DISPATCH=false` default) — E2E verification pending (Task 11). Plan: repo `docs/superpowers/plans/2026-09-12-shipaton-sprint.md`. See [Shipaton blueprint](/docs/shipaton-blueprint) · [Billing blueprint](/docs/billing-blueprint) · [Vault blueprint](/docs/vault-blueprint).
 
 See [Solo dev playbook](/docs/playbook) for the full phase map.
 
@@ -83,6 +83,7 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 - [x] Analytics stub events
 - [x] Paywall modal UI
 - [x] Create acceptance criteria met (vault deferred → auth)
+- [x] **Template system MVP** — [Template system blueprint](/docs/template-system-blueprint) (Who → Occasion → recommend, 5 layouts, Quick Create)
 
 ### Recipient (web — in progress)
 
@@ -110,7 +111,9 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 - [x] Vault list + Add person screens
 - [x] Share success → prefilled Add person
 - [x] Person detail + delete
-- [ ] Paid tier caps from RevenueCat
+- [x] Anniversary + auto-send pack + link creation (“Save for auto-send”)
+- [x] Scheduled send inbox + review screen + FCM registration
+- [ ] Paid tier caps from RevenueCat (client mirror live; webhook optional)
 
 ### History (done)
 
@@ -121,10 +124,64 @@ Build order: **create → recipient → auth/vault/history → billing → auto-
 - [x] Link guest creations on sign-in (local queue → sync)
 - [x] Deploy Firestore rules
 
-### Other features
+### Billing (RevenueCat — Shipaton blocker)
 
-- [ ] billing
-- [ ] auto-send engine
+Mini-PRD: [Billing blueprint](/docs/billing-blueprint)
+
+- [ ] RevenueCat project + Play / App Store apps connected
+- [ ] `src/features/billing/` — domain → data → application → ui
+- [ ] Install `react-native-purchases`; SDK keys in env (public keys only)
+- [ ] Store products: Personal (+ Family optional v1) monthly/yearly
+- [ ] Wire `PaywallModal` → real purchase flow
+- [ ] `useSubscription().tier` → Vault caps + create quota + auto-send gate
+- [ ] Restore purchases on Account
+- [ ] `POST /v1/webhooks/revenuecat` in Functions (mirror tier to Firestore)
+- [ ] Domain tests: entitlement → tier mapping
+- [ ] Sandbox purchase tested Android; iOS purchase tested
+- [ ] Judge promo code or free trial documented for Devpost
+
+### Auto-send engine
+
+- [x] Scheduled dispatch (Functions cron `POST /v1/internal/autosend/run` + `autosendDaily` 06:00 IST)
+- [x] `scheduled_sends` collection + idempotency + paid tier gate (`users.subscriptionTier`)
+- [x] Review window UX in app (approve / cancel + share sheet)
+- [x] Mock WhatsApp → SMS → email fallback queue (`OCCASIO_AUTOSEND_DISPATCH` gated)
+- [x] FCM `autosend_review` / `autosend_sent` + token registration
+- [x] Firestore rules + API contracts documented
+- [ ] E2E verified on emulator/device (Task 11)
+- [ ] Real delivery providers + production dispatch flag on
+
+## Phase 4.5 — Shipaton 2026 (deadline 30 Sep 2026)
+
+Full checklist: [Shipaton blueprint](/docs/shipaton-blueprint)
+
+### Eligibility (RevenueCat rules)
+
+- [ ] First **public** store release between **1 Aug – 30 Sep 2026**
+- [ ] RevenueCat SDK powers ≥1 in-app purchase
+- [ ] App available in **United States** on Play and/or App Store
+- [ ] Registered on [Devpost — Shipaton 2026](https://revenuecat-shipaton-2026.devpost.com/)
+
+### Engineering before submit
+
+- [x] Core create + share + recipient web
+- [x] Auth, Vault, History
+- [x] Landing page + beta link + contact email
+- [ ] RevenueCat integrated (see Billing above)
+- [ ] Production Play listing (internal test alone is not enough)
+- [ ] iOS auth + billing smoke test
+- [ ] Play App Signing SHA-1 in Firebase (auth on Play builds)
+
+### Devpost deliverables
+
+- [ ] English description + tagline
+- [ ] Public store URL
+- [ ] Demo video ≤2 min (YouTube/Vimeo, public)
+- [ ] 1024×1024 app icon
+- [ ] 1179×2556 screenshot(s), no device frame
+- [ ] RevenueCat Project ID on form
+- [ ] Promo code or trial so judges unlock premium
+- [ ] Final submit before **30 Sep 2026, 11:45pm PDT**
 
 ## Phase 5 — Security
 

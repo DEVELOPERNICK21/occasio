@@ -1,41 +1,34 @@
 'use client';
 
-import { useCallback, useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { OccasionIcon } from '@/components/OccasionIcon';
 import { getWebTemplateTheme } from '@/lib/templateThemes';
-import { templateLabel, type RecipientCard } from '@/lib/recipientCard';
+import { wishLayoutId } from '@/lib/templateLayout';
+import { wishGreeting, type RecipientCard } from '@/lib/recipientCard';
 
 type Props = {
   card: RecipientCard;
   /** Compact layout for embeds. */
   compact?: boolean;
+  replayKey?: number;
+  onReplay?: () => void;
 };
 
-function wishGreeting(templateType: string): string {
-  const label = templateLabel(templateType);
-  switch (templateType) {
-    case 'sorry':
-      return 'Thinking of you,';
-    case 'proposal':
-      return 'For you,';
-    case 'anniversary':
-      return 'Happy anniversary,';
-    default:
-      return `Happy ${label},`;
-  }
-}
-
-export function WishCard({ card, compact = false }: Props) {
-  const hasPhoto = Boolean(card.mediaUrls?.length);
-  const photoSrc = card.mediaUrls?.[0];
-  const [replayKey, setReplayKey] = useState(0);
+export function WishCard({
+  card,
+  compact = false,
+  replayKey = 0,
+  onReplay,
+}: Props) {
+  const photos = useMemo(
+    () => (card.mediaUrls ?? []).filter(Boolean),
+    [card.mediaUrls],
+  );
+  const hasPhoto = photos.length > 0;
+  const layoutId = wishLayoutId(card.templateId, photos.length);
   const theme = useMemo(() => getWebTemplateTheme(card.templateType), [card.templateType]);
   const greeting = wishGreeting(card.templateType);
   const displayName = card.recipientName.trim() || 'Someone special';
-
-  const handleReplay = useCallback(() => {
-    setReplayKey((k) => k + 1);
-  }, []);
 
   const rootStyle = {
     '--wish-accent': theme.accent,
@@ -43,50 +36,93 @@ export function WishCard({ card, compact = false }: Props) {
     '--wish-soft': theme.softBackground,
   } as CSSProperties;
 
+  const body = (
+    <div className="wish-card-body">
+      <div className="wish-reveal wish-reveal--occasion">
+        <p className="wish-card-greeting">{greeting}</p>
+        <div className="wish-card-divider" aria-hidden>
+          <span className="wish-card-divider__spark" />
+        </div>
+      </div>
+      <h1 className="wish-card-name wish-reveal wish-reveal--name">{displayName}</h1>
+      <div className="wish-reveal wish-reveal--message">
+        {card.message ? (
+          <p className="wish-card-message">{card.message}</p>
+        ) : (
+          <p className="wish-card-placeholder">A personalized wish is on its way.</p>
+        )}
+        {card.fromName ? (
+          <p className="wish-card-signoff">
+            <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--muted)' }}>
+              With love
+            </span>
+            {card.fromName}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={`wish-card-root ${compact ? 'wish-card-root--compact' : ''}`}
       data-template={card.templateType}
+      data-layout={layoutId}
       style={rootStyle}
     >
       <article
         key={replayKey}
         className={`wish-card ${compact ? 'wish-card--compact' : ''} ${hasPhoto ? 'wish-card--photo' : 'wish-card--plain'}`}
       >
-        {hasPhoto && photoSrc ? (
-          <div className="wish-card-hero">
-            {/* Base64 data URLs — next/image not suitable here */}
+        {layoutId === 'minimal_fullscreen' && hasPhoto ? (
+          <div className="wish-card-hero wish-card-hero--full wish-reveal wish-reveal--photo">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photoSrc}
-              alt=""
-              className="wish-card-photo"
-            />
+            <img src={photos[0]} alt="" className="wish-card-photo" />
+            <div className="wish-card-overlay">
+              <p className="wish-card-greeting">{greeting}</p>
+              <h1 className="wish-card-name">{displayName}</h1>
+            </div>
+          </div>
+        ) : layoutId === 'dual_editorial' ? (
+          <div className="wish-card-hero wish-card-hero--dual wish-reveal wish-reveal--photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[0]} alt="" className="wish-card-photo" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[1]} alt="" className="wish-card-photo" />
+          </div>
+        ) : hasPhoto ? (
+          <div className="wish-card-hero wish-reveal wish-reveal--photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[0]} alt="" className="wish-card-photo" />
           </div>
         ) : (
-          <div className="wish-card-hero wish-card-hero--plain" aria-hidden>
+          <div
+            className="wish-card-hero wish-card-hero--plain wish-reveal wish-reveal--photo"
+            aria-hidden
+          >
             <OccasionIcon templateType={card.templateType} className="wish-card-hero-icon" />
           </div>
         )}
 
-        <div className="wish-card-body">
-          <OccasionIcon templateType={card.templateType} className="wish-card-icon" />
-          <p className="wish-card-greeting">{greeting}</p>
-          <h1 className="wish-card-name">{displayName}</h1>
-          {card.message ? (
-            <p className="wish-card-message">{card.message}</p>
-          ) : (
-            <p className="wish-card-placeholder">A personalized wish is on its way.</p>
-          )}
-          {card.fromName ? (
-            <p className="wish-card-signoff">With love, {card.fromName}</p>
-          ) : null}
-        </div>
+        {layoutId === 'minimal_fullscreen' && hasPhoto ? (
+          <div className="wish-card-body wish-card-body--quiet wish-reveal wish-reveal--message">
+            {card.message ? (
+              <p className="wish-card-message">{card.message}</p>
+            ) : null}
+            {card.fromName ? (
+              <p className="wish-card-signoff">With love, {card.fromName}</p>
+            ) : null}
+          </div>
+        ) : (
+          body
+        )}
       </article>
 
-      <button type="button" className="wish-card-replay" onClick={handleReplay}>
-        Replay animation
-      </button>
+      {onReplay ? (
+        <button type="button" className="wish-card-replay" onClick={onReplay}>
+          Replay
+        </button>
+      ) : null}
     </div>
   );
 }

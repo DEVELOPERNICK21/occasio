@@ -23,5 +23,11 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
     }
+
+    match /scheduled_sends/{sendId} {
+      allow read: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+      allow write: if false;
+    }
   }
 }

@@ -43,7 +43,7 @@ Everything else supports these three.
 | **2 UX** | "Can users get through it?" | **Must** — flows + wireframes | ✅ Wireframes; usability optional |
 | **Stitch UI** | "What does it look like?" | **Should** — before polish | 🟡 Tokens done; you run Stitch |
 | **3 TRD + Arch** | "How does the system work?" | **Must** for solo+AI | ✅ Done + foundation hardening |
-| **4 Build** | "Ship slices" | **Must** — the product | 🟡 Create in progress |
+| **4 Build** | "Ship slices" | **Must** — the product | 🟡 Auth/Vault/History done; **billing next (Shipaton)** |
 | **5 Security** | "Don't leak data" | **Must** before real users | ❌ With auth/billing |
 | **6 QA** | "Does it break?" | **Must** before store | ❌ Later |
 | **Stitch marketing** | "Store looks honest" | **Should** at launch | ❌ After real screens |
@@ -106,3 +106,7 @@ Add features = add folders under `src/features/`, not new apps.
 **Think wide in docs, build narrow in code.**
 
 One feature slice → ship → measure → next slice.
+
+## Shipaton 2026 (Sep deadline)
+
+RevenueCat hackathon — **must ship with RC SDK + ≥1 IAP** to a public store (US) by **30 Sep 2026**. Checklist: [Shipaton blueprint](/docs/shipaton-blueprint) · [Billing blueprint](/docs/billing-blueprint).

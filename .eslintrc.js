@@ -30,11 +30,23 @@ module.exports = {
         'no-restricted-imports': [
           'error',
           {
+            paths: [
+              {
+                name: '@react-native-firebase/messaging',
+                message:
+                  'UI must not import messaging — use useFcmRegistration.',
+              },
+            ],
             patterns: [
               {
                 group: ['**/features/*/data', '**/features/*/data/*'],
                 message:
                   'UI layer must not import data directly — use application hooks.',
+              },
+              {
+                group: ['**/features/*/ui', '**/features/*/ui/*'],
+                message:
+                  'Features must not import other features\' ui — use shared/ui or application hooks.',
               },
             ],
           },

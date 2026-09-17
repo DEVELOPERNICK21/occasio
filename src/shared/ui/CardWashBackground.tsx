@@ -9,6 +9,9 @@ export type CardWashVariant =
   | 'proposal'
   | 'mothers_day'
   | 'fathers_day'
+  | 'thank_you'
+  | 'congratulations'
+  | 'just_because'
   | 'milestone'
   | 'upcoming';
 

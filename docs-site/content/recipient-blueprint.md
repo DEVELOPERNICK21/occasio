@@ -3,12 +3,12 @@ title: Feature blueprint — Recipient web
 description: Phase 4 mini-PRD for the public card view at /c/[slug].
 phase: Phase 4 — Build
 status: In progress
-updated: 2026-09-01
+updated: 2026-09-17
 ---
 
 ## Goal
 
-Recipient opens a share link (WhatsApp, SMS, etc.) and sees a calm, branded card — no login, fast load, good link previews.
+Recipient opens a share link (WhatsApp, SMS, etc.) and sees a calm, branded card — no login, fast load, good link previews. Birthday and anniversary links open an **interactive story** (balloons → photos → letter) when `experienceMode` resolves to `story`.
 
 **Route:** `https://occasio-greetings.vercel.app/c/{slug}`
 
@@ -16,7 +16,9 @@ Recipient opens a share link (WhatsApp, SMS, etc.) and sees a calm, branded card
 
 | Surface | Route | Status |
 |---|---|---|
-| Card view | `/c/[slug]` | ✅ Live |
+| Card view (classic) | `/c/[slug]` | ✅ Live |
+| Interactive story (Phase A) | `/c/[slug]` | ✅ Balloons → photo deck → letter |
+| Candle / gift beats | `/c/[slug]` | ⬜ Phase B |
 | Expired link | `/c/[slug]` (410/expired) | ✅ |
 | Not found | `/c/[slug]` (404) | ✅ Branded |
 | OG preview image | `/c/[slug]/opengraph-image` | ✅ Dynamic |
@@ -29,10 +31,13 @@ Recipient opens a share link (WhatsApp, SMS, etc.) and sees a calm, branded card
       demo slug? → parseDemoSlug
       else → Firestore Admin (lookupCardBySlug)
       fallback → OCCASIO_API_BASE/v1/cards/:slug
-  → RecipientCardView | ExpiredCardPage | notFound()
+  → RecipientCardView
+       story → StoryPlayer
+       classic → WishCard
+  → ExpiredCardPage | notFound()
 ```
 
-Create still writes via `POST /api/v1/creations` (Vercel). Recipient reads server-side only — Firestore client rules deny direct access.
+Create still writes via `POST /api/v1/creations` (Vercel), including `experienceMode` + `experienceVersion`. Recipient reads server-side only — Firestore client rules deny direct access.
 
 ## Acceptance criteria
 
@@ -41,7 +46,8 @@ Create still writes via `POST /api/v1/creations` (Vercel). Recipient reads serve
 - [x] Missing slug shows branded 404 (not generic Next.js page)
 - [x] OG image for WhatsApp / iMessage previews (`summary_large_image`)
 - [x] "Make your own" CTA → public landing `/`
-- [ ] Multi-photo carousel (deferred until Blaze + Storage)
+- [x] Interactive story Phase A (balloons / photo deck / letter) for birthday & anniversary
+- [ ] Multi-photo carousel in classic mode (deferred until Blaze + Storage)
 - [ ] Framer Motion entrance (nice-to-have)
 - [ ] Analytics: `card_viewed` (deferred)
 

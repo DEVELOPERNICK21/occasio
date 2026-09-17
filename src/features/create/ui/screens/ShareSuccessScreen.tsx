@@ -2,16 +2,26 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useEffect, useMemo, useState } from 'react';
-import { Share, StyleSheet, View } from 'react-native';
+import { Alert, Share, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
 import { useRequireAuth, useAuth } from '../../../auth/application/useAuth';
 import { useQueueGuestHistory, useRecordHistory } from '../../../history/application/useHistory';
+import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
+import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import { useTemplateCatalog } from '../../application/useTemplateCatalog';
+import { shareMessage } from '../../domain/shareLink';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import { AnimatedWishCard } from '../components/AnimatedWishCard';
+import { OccasionStickerShower } from '../components/OccasionStickerShower';
 import { ShareLinkPanel } from '../components/ShareLinkPanel';
-import type { CreateStackParamList, MainTabParamList } from '../../../../shared/navigation/types';
+import { TemplateRenderer } from '../components/TemplateRenderer';
+import type {
+  CreateStackParamList,
+  LinkCreationParam,
+  MainTabParamList,
+} from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
@@ -28,13 +38,20 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
   const { isSignedIn } = useAuth();
   const { record } = useRecordHistory();
   const { queue } = useQueueGuestHistory();
+  const { getById } = useTemplateCatalog();
+  const { people } = useVaultPeople(isSignedIn);
+  const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
   const { shareUrl, expiresAt, creationId, shareSlug } = route.params;
   const [copied, setCopied] = useState(false);
   const theme = useMemo(() => getTemplateTheme(draft.templateType), [draft.templateType]);
+  const definition = draft.templateId ? getById(draft.templateId) : null;
 
   const subtitle = draft.recipientName.trim()
     ? `${theme.label} wish for ${draft.recipientName.trim()}`
     : `Your ${theme.label.toLowerCase()} wish`;
+  const sendLabel = draft.recipientName.trim()
+    ? `Send to ${draft.recipientName.trim()}`
+    : 'Send the link';
 
   useEffect(() => {
     if (!draft.templateType) return;
@@ -71,7 +88,9 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `A wish for ${draft.recipientName}: ${shareUrl}`,
+        // Written to the recipient, and the URL sits last so chat apps attach
+        // the preview to it.
+        message: `${shareMessage(draft.recipientName, draft.fromName)} ${shareUrl}`,
         url: shareUrl,
       });
       trackEvent(AnalyticsEvents.cardShared, { channel: 'native_share' });
@@ -94,15 +113,80 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
     });
   };
 
+  const linkCreation: LinkCreationParam = {
+    creationId,
+    templateType: draft.templateType,
+    templateId: draft.templateId,
+    photoRefs: [],
+    message: draft.message.trim(),
+    fromName: draft.fromName.trim() || null,
+  };
+
+  const goPickPersonInVault = () => {
+    navigation.navigate('VaultTab', {
+      screen: 'VaultList',
+      params: { linkCreation },
+    });
+  };
+
+  const handleSaveForAutoSend = () => {
+    requireAuth('autosend_enable', () => {
+      if (people.length === 0 || people.length > 2) {
+        goPickPersonInVault();
+        return;
+      }
+
+      Alert.alert(
+        'Save for auto-send',
+        'Choose who this card is for.',
+        [
+          ...people.map((person) => ({
+            text: person.personName,
+            onPress: () => {
+              void link(person.id, linkCreation).then((ok) => {
+                if (ok) {
+                  Alert.alert(
+                    'Saved for auto-send',
+                    `We'll use this card for ${person.personName}.`,
+                  );
+                }
+              });
+            },
+          })),
+          { text: 'Cancel', style: 'cancel' as const },
+        ],
+      );
+    });
+  };
+
   return (
     <Screen title="Your link is ready" subtitle={subtitle}>
       <View style={styles.previewStage}>
-        <AnimatedWishCard
-          recipientName={draft.recipientName}
-          message={draft.message}
+        <View style={styles.cardLayer}>
+          {definition ? (
+            <TemplateRenderer
+              definition={definition}
+              occasion={draft.occasion}
+              photoUris={draft.photoUris}
+              recipientName={draft.recipientName}
+              message={draft.message}
+              fromName={draft.fromName}
+              replayKey={0}
+            />
+          ) : (
+            <AnimatedWishCard
+              recipientName={draft.recipientName}
+              message={draft.message}
+              templateType={draft.templateType}
+              photoUri={draft.photoUris[0]}
+              showReplay
+            />
+          )}
+        </View>
+        <OccasionStickerShower
+          occasion={draft.occasion}
           templateType={draft.templateType}
-          photoUri={draft.photoUris[0]}
-          showReplay
+          height={380}
         />
       </View>
 
@@ -114,6 +198,10 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
         onCopied={handleCopied}
       />
 
+      <ScreenActions>
+        <Button label={sendLabel} onPress={handleShare} />
+      </ScreenActions>
+
       <View style={[styles.nudge, { borderColor: theme.accent }]}>
         <Text style={[styles.nudgeEyebrow, { color: theme.accent }]}>
           Remember them
@@ -123,10 +211,16 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
           Keep {draft.recipientName.trim() || 'their'} date and send again next year.
         </Text>
         <Button label="Save to Vault" variant="secondary" onPress={handleSaveToVault} />
+        <Button
+          label="Save for auto-send"
+          variant="secondary"
+          loading={isLinking}
+          onPress={handleSaveForAutoSend}
+        />
+        {linkError ? <Text style={styles.nudgeError}>{linkError}</Text> : null}
       </View>
 
       <ScreenActions>
-        <Button label="Share link" onPress={handleShare} />
         <Button
           label="Create another"
           variant="ghost"
@@ -142,8 +236,19 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   previewStage: {
+    position: 'relative',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.lg,
+    overflow: 'visible',
+    width: '100%',
+    minHeight: 360,
+  },
+  cardLayer: {
+    width: '100%',
+    zIndex: 1,
+    elevation: 1,
+    alignItems: 'center',
   },
   nudge: {
     marginTop: spacing.lg,
@@ -169,5 +274,9 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     lineHeight: typography.sizeSm * 1.4,
     marginBottom: spacing.sm,
+  },
+  nudgeError: {
+    fontSize: typography.sizeSm,
+    color: colors.error,
   },
 });

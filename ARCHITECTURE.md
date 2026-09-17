@@ -74,11 +74,12 @@ Full detail: [docs-site → Client architecture](docs-site/content/architecture.
 ## Build order (mobile)
 
 1. **Foundation hardening** — ESLint boundaries, Firebase dev project, `create/data/`
-2. **Create** — real upload + share link (validates demand)
-3. **Recipient web** — thin public card page (share URL)
-4. **Auth + Vault + History**
-5. **Billing** (RevenueCat)
-6. **Auto-send** (Functions + review window in app)
+2. **Create** — real upload + share link (validates demand) ✅
+3. **Recipient web** — thin public card page ✅
+4. **Auth + Vault + History** ✅
+5. **Billing (RevenueCat)** — **Shipaton blocker** → [billing-blueprint.md](docs-site/content/billing-blueprint.md)
+6. **Shipaton submit** — production store + Devpost → [shipaton-blueprint.md](docs-site/content/shipaton-blueprint.md)
+7. **Auto-send engine** — cron + review + mock dispatch shipped (`OCCASIO_AUTOSEND_DISPATCH=false` default); E2E + real providers next → [vault-blueprint.md](docs-site/content/vault-blueprint.md)
 
 ## Run the app (main workflow)
 
@@ -107,13 +108,13 @@ Deploy docs when you want a public landing — not required to ship the mobile a
 
 ## What’s done vs not (mobile)
 
-| Done | Not yet |
+| Done | Not yet (Shipaton path) |
 |---|---|
-| Feature folder structure + ESLint boundaries | Real image picker + R2 upload |
-| Create UI scaffold (5 screens) | Auth, Vault, Billing |
-| Tab navigation shell | Auto-send backend |
-| Design tokens in RN | Functions deployed to cloud |
-| `httpClient` + Firebase RN init | RevenueCat |
-| Cloud Functions source (`POST /v1/creations`, `GET /v1/cards/:slug`) | Presign upload (501 stub) |
+| Create flow + Spark upload + share link | Play/App Store **production** (US) |
+| Auth, Vault, History + template MVP | Devpost submission assets |
+| Recipient web `/c/[slug]` | Sandbox purchase verified on device |
+| RevenueCat billing client + paywall UI + tier mirror | Production `goog_` / `appl_` keys |
+| Auto-send engine (cron, review UX, mock dispatch, FCM) | E2E verification (Task 11); real WA/SMS/email providers |
+| Domain unit tests (create, vault, auth, history, billing, functions autosend) | Production dispatch (`OCCASIO_AUTOSEND_DISPATCH=true`) |
 
-Next engineering slice: **deploy Functions + image picker + presign upload.**
+**Next:** Device-verify RC purchase (Account → See Occasio Pro) → production store → Devpost by **30 Sep 2026**. Then Task 11 E2E auto-send on emulator/device. Plan: `docs/superpowers/plans/2026-09-12-shipaton-sprint.md`.

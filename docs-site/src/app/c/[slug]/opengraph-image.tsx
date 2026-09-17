@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { fetchRecipientCard } from '@/lib/fetchRecipientCard';
-import { templateLabel } from '@/lib/recipientCard';
+import { wishGreeting } from '@/lib/recipientCard';
 
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
@@ -116,7 +116,7 @@ export default async function OpengraphImage({ params }: Props) {
                 margin: 0,
               }}
             >
-              Happy {templateLabel(card.templateType)},
+              {wishGreeting(card.templateType)}
             </p>
             <p
               style={{
@@ -142,6 +142,18 @@ export default async function OpengraphImage({ params }: Props) {
             >
               {truncate(message, 100)}
             </p>
+            {card.fromName ? (
+              <p
+                style={{
+                  fontSize: 18,
+                  color: '#6f675c',
+                  fontFamily: 'Georgia, serif',
+                  margin: '16px 0 0',
+                }}
+              >
+                With love, {card.fromName}
+              </p>
+            ) : null}
             <p
               style={{
                 fontSize: 14,

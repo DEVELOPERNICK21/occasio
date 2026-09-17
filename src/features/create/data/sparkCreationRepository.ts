@@ -49,7 +49,9 @@ export async function createShareLinkSpark(
       '/api/v1/creations',
       {
         templateType: draft.templateType,
+        templateId: draft.templateId,
         recipientName: draft.recipientName.trim(),
+        fromName: draft.fromName.trim(),
         message: draft.message.trim(),
         photoRefs,
         mediaUrls,

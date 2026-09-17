@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Audience, Occasion } from '../domain/templateSchema';
 import type { CreationDraft, TemplateType } from '../domain/types';
 
 const STORAGE_KEY = 'occasio.create.draft';
@@ -10,13 +11,37 @@ const TEMPLATE_TYPES = new Set<TemplateType>([
   'proposal',
   'mothers_day',
   'fathers_day',
+  'thank_you',
+  'congratulations',
+  'just_because',
+]);
+
+const AUDIENCES = new Set<Audience>([
+  'mom',
+  'dad',
+  'partner',
+  'friend',
+  'family',
+  'someone_special',
+]);
+
+const OCCASIONS = new Set<Occasion>([
+  'birthday',
+  'anniversary',
+  'thank_you',
+  'congratulations',
+  'just_because',
 ]);
 
 export function isCreationDraftEmpty(draft: CreationDraft): boolean {
   return (
     draft.templateType === null &&
+    (draft.templateId === null || draft.templateId.trim() === '') &&
+    draft.audience === null &&
+    draft.occasion === null &&
     draft.photoUris.length === 0 &&
     draft.recipientName.trim() === '' &&
+    draft.fromName.trim() === '' &&
     draft.message.trim() === ''
   );
 }
@@ -57,6 +82,18 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
           TEMPLATE_TYPES.has(record.templateType as TemplateType)
         ? (record.templateType as TemplateType)
         : null;
+  const templateId =
+    typeof record.templateId === 'string' && record.templateId.trim() !== ''
+      ? record.templateId
+      : null;
+  const audience =
+    typeof record.audience === 'string' && AUDIENCES.has(record.audience as Audience)
+      ? (record.audience as Audience)
+      : null;
+  const occasion =
+    typeof record.occasion === 'string' && OCCASIONS.has(record.occasion as Occasion)
+      ? (record.occasion as Occasion)
+      : null;
 
   const photoUris = Array.isArray(record.photoUris)
     ? record.photoUris.filter((uri): uri is string => typeof uri === 'string')
@@ -64,12 +101,17 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
 
   const recipientName =
     typeof record.recipientName === 'string' ? record.recipientName : '';
+  const fromName = typeof record.fromName === 'string' ? record.fromName : '';
   const message = typeof record.message === 'string' ? record.message : '';
 
   const draft: CreationDraft = {
     templateType,
+    templateId,
+    audience,
+    occasion,
     photoUris,
     recipientName,
+    fromName,
     message,
   };
 

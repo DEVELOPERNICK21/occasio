@@ -1,6 +1,5 @@
 import { MAX_PHOTOS_BASE64 } from '../../../shared/config/media';
 import { env } from '../../../shared/config/env';
-import { useSparkBackend } from './backendMode';
 import { assertDataUrlFits, toDataUrl } from './base64MediaService';
 import { uploadPhotoToStorage } from './storageService';
 import { CreationApiError } from './types';
@@ -36,7 +35,7 @@ export async function resolveCreationMedia(
     if (photoUris.length > MAX_PHOTOS_BASE64) {
       throw new CreationApiError(
         'VALIDATION_ERROR',
-        `Only ${MAX_PHOTOS_BASE64} photo is supported until Storage is enabled.`,
+        `You can add up to ${MAX_PHOTOS_BASE64} photos.`,
       );
     }
 
@@ -72,5 +71,3 @@ export async function resolveCreationMedia(
 
   return { photoRefs, mediaUrls: [] };
 }
-
-export { useSparkBackend };

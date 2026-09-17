@@ -58,6 +58,11 @@ export const navigation: NavSection[] = [
         description: "Active slice — screens, API, acceptance criteria.",
       },
       {
+        title: "Template system MVP",
+        href: "/docs/template-system-blueprint",
+        description: "Who → Occasion → recommend, data-driven layouts, Quick Create.",
+      },
+      {
         title: "Recipient web",
         href: "/docs/recipient-blueprint",
         description: "Public card view, OG previews, expired/404 states.",
@@ -76,6 +81,16 @@ export const navigation: NavSection[] = [
         title: "History feature",
         href: "/docs/history-blueprint",
         description: "Past creations, reshare — user_creations index.",
+      },
+      {
+        title: "Billing (RevenueCat)",
+        href: "/docs/billing-blueprint",
+        description: "Subscriptions, paywall wiring, tier → Vault caps.",
+      },
+      {
+        title: "Shipaton 2026",
+        href: "/docs/shipaton-blueprint",
+        description: "Store release + Devpost checklist — deadline 30 Sep 2026.",
       },
       {
         title: "API contracts",

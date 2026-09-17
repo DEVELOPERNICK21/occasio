@@ -1,15 +1,25 @@
+import type { Audience, Occasion } from './templateSchema';
+
 export type TemplateType =
   | 'birthday'
   | 'anniversary'
   | 'sorry'
   | 'proposal'
   | 'mothers_day'
-  | 'fathers_day';
+  | 'fathers_day'
+  | 'thank_you'
+  | 'congratulations'
+  | 'just_because';
 
 export type CreationDraft = {
   templateType: TemplateType | null;
+  templateId: string | null;
+  audience: Audience | null;
+  occasion: Occasion | null;
   photoUris: string[];
   recipientName: string;
+  /** Who the card is signed by — an unsigned card arrives anonymous. */
+  fromName: string;
   message: string;
 };
 
@@ -23,7 +33,11 @@ export type Creation = CreationDraft & {
 
 export const EMPTY_CREATION_DRAFT: CreationDraft = {
   templateType: null,
+  templateId: null,
+  audience: null,
+  occasion: null,
   photoUris: [],
   recipientName: '',
+  fromName: '',
   message: '',
 };

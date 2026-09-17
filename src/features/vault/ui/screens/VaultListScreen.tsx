@@ -12,30 +12,43 @@ import {
 } from '../../../../shared/ui/SkeletonLayouts';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultStackParamList } from '../../../../shared/navigation/types';
-import { useAuth } from '../../../auth/application/useAuth';
-import { GuestGateScreen } from '../../../auth/ui/screens/GuestGateScreen';
+import { useSubscription } from '../../../billing/application/useSubscription';
+import { useAuth, useRequireAuth } from '../../../auth/application/useAuth';
+import { GuestGateScreen } from '../../../../shared/ui/GuestGateScreen';
 import { useDeletePerson } from '../../application/useDeletePerson';
+import { useLinkCreationToPerson } from '../../application/useLinkCreationToPerson';
+import { useScheduledSends } from '../../application/useScheduledSends';
 import { useToggleAutoSend } from '../../application/useToggleAutoSend';
 import { useVaultPeople } from '../../application/useVaultPeople';
+import {
+  formatReviewDeadline,
+  occasionLabel,
+} from '../../domain/scheduledSend';
 import { getVaultCardTheme } from '../../domain/vaultCardTheme';
 import { filterVaultPeople, getPersonNextOccasion } from '../../domain/vaultOccasion';
-import type { VaultPerson } from '../../domain/types';
+import type { OccasionType, VaultPerson } from '../../domain/types';
+import { ScheduledSendInboxCard } from '../components/ScheduledSendInboxCard';
 import { VaultExpandPrompt } from '../components/VaultExpandPrompt';
 import { VaultPersonCard } from '../components/VaultPersonCard';
 import { VaultSearchField } from '../components/VaultSearchField';
 
 type ListProps = NativeStackScreenProps<VaultStackParamList, 'VaultList'>;
 
-function VaultListContent({ navigation }: ListProps) {
+function VaultListContent({ navigation, route }: ListProps) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
 
   const { people, isLoading, error } = useVaultPeople(true);
+  const { sends, reviewCount, error: sendsError } = useScheduledSends(true);
+  const { tier } = useSubscription();
   const { remove } = useDeletePerson();
-  const { toggle, error: toggleError, autoSendAllowed } = useToggleAutoSend();
+  const { toggle, error: toggleError, autoSendAllowed, pendingId } =
+    useToggleAutoSend(tier);
+  const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
+  const linkCreation = route.params?.linkCreation;
   const [query, setQuery] = useState('');
-  const [optimisticAutoSend, setOptimisticAutoSend] = useState<
-    Record<string, boolean>
+  const [optimisticArms, setOptimisticArms] = useState<
+    Record<string, Partial<Record<OccasionType, boolean>>>
   >({});
 
   const filtered = useMemo(
@@ -44,7 +57,7 @@ function VaultListContent({ navigation }: ListProps) {
   );
 
   useEffect(() => {
-    setOptimisticAutoSend((current) => {
+    setOptimisticArms((current) => {
       if (Object.keys(current).length === 0) {
         return current;
       }
@@ -53,11 +66,31 @@ function VaultListContent({ navigation }: ListProps) {
       let changed = false;
 
       for (const person of people) {
+        const pending = next[person.id];
+        if (!pending) continue;
+
+        const resolved = { ...pending };
         if (
-          person.id in next &&
-          next[person.id] === person.autoSendBirthday
+          pending.birthday !== undefined &&
+          pending.birthday === person.autoSendBirthday
         ) {
+          delete resolved.birthday;
+        }
+        if (
+          pending.anniversary !== undefined &&
+          pending.anniversary === person.autoSendAnniversary
+        ) {
+          delete resolved.anniversary;
+        }
+
+        if (resolved.birthday === undefined && resolved.anniversary === undefined) {
           delete next[person.id];
+          changed = true;
+        } else if (
+          resolved.birthday !== pending.birthday ||
+          resolved.anniversary !== pending.anniversary
+        ) {
+          next[person.id] = resolved;
           changed = true;
         }
       }
@@ -66,18 +99,43 @@ function VaultListContent({ navigation }: ListProps) {
     });
   }, [people]);
 
-  const resolveAutoSend = (person: VaultPerson) =>
-    person.id in optimisticAutoSend
-      ? optimisticAutoSend[person.id]
-      : person.autoSendBirthday;
+  const resolveArm = (person: VaultPerson, occasion: OccasionType) => {
+    const pending = optimisticArms[person.id]?.[occasion];
+    if (pending !== undefined) return pending;
+    return occasion === 'birthday'
+      ? person.autoSendBirthday
+      : person.autoSendAnniversary;
+  };
 
   const openAddPerson = () => {
     triggerCardHaptic();
-    navigation.navigate('AddPerson', {});
+    navigation.navigate('AddPerson', { linkCreation });
   };
 
   const openPerson = (personId: string) => {
     navigation.navigate('PersonDetail', { personId });
+  };
+
+  const openReview = (sendId: string) => {
+    triggerCardHaptic();
+    navigation.navigate('ScheduledSendReview', { sendId });
+  };
+
+  const handlePersonPress = (personId: string, personName: string) => {
+    if (!linkCreation) {
+      openPerson(personId);
+      return;
+    }
+    if (isLinking) return;
+
+    void link(personId, linkCreation).then((ok) => {
+      if (!ok) return;
+      Alert.alert(
+        'Saved for auto-send',
+        `We'll use this card for ${personName}.`,
+      );
+      navigation.setParams({ linkCreation: undefined });
+    });
   };
 
   const openMenu = (personId: string, personName: string) => {
@@ -110,31 +168,77 @@ function VaultListContent({ navigation }: ListProps) {
     ]);
   };
 
-  const handleAutoSendToggle = (personId: string, current: boolean) => {
+  const handleAutoSendToggle = (
+    personId: string,
+    occasion: OccasionType,
+    current: boolean,
+  ) => {
     triggerCardHaptic();
     const next = !current;
-    setOptimisticAutoSend((prev) => ({ ...prev, [personId]: next }));
-    void toggle(personId, next).then((ok) => {
+    setOptimisticArms((prev) => ({
+      ...prev,
+      [personId]: { ...prev[personId], [occasion]: next },
+    }));
+    void toggle(personId, occasion, next).then((ok) => {
       if (!ok) {
-        setOptimisticAutoSend((prev) => {
+        setOptimisticArms((prev) => {
           const copy = { ...prev };
-          delete copy[personId];
+          const pending = { ...copy[personId] };
+          delete pending[occasion];
+          if (pending.birthday === undefined && pending.anniversary === undefined) {
+            delete copy[personId];
+          } else {
+            copy[personId] = pending;
+          }
           return copy;
         });
       }
     });
   };
 
+  const subtitle =
+    reviewCount > 0
+      ? reviewCount === 1
+        ? '1 card waiting for review.'
+        : `${reviewCount} cards waiting for review.`
+      : 'People you celebrate — birthdays and reminders.';
+
   return (
     <Screen
       title="Vault"
-      subtitle="People you celebrate — birthdays and auto-send."
+      subtitle={subtitle}
       scrollRef={scrollRef}
       headerAction={
         <ScreenHeaderAction label="Add" onPress={openAddPerson} />
       }
     >
       <VaultSearchField value={query} onChangeText={setQuery} />
+
+      {sends.length > 0 ? (
+        <View style={styles.inbox}>
+          {sends.map((send) => {
+            const person = people.find((item) => item.id === send.relationshipId);
+            const personName =
+              send.personName?.trim() || person?.personName.trim() || 'This person';
+            return (
+              <ScheduledSendInboxCard
+                key={send.id}
+                personName={personName}
+                occasionLabel={occasionLabel(send.occasionType)}
+                deadlineLabel={formatReviewDeadline(send.reviewDeadline)}
+                status={send.status}
+                onPress={() => openReview(send.id)}
+              />
+            );
+          })}
+        </View>
+      ) : null}
+
+      {linkCreation ? (
+        <Text style={styles.linkHint}>
+          Choose someone to save this card for auto-send.
+        </Text>
+      ) : null}
 
       {isLoading ? (
         <VaultListSkeleton />
@@ -149,7 +253,8 @@ function VaultListContent({ navigation }: ListProps) {
           {filtered.map((person) => {
             const theme = getVaultCardTheme(person.relationshipType);
             const occasion = getPersonNextOccasion(person);
-            const autoSendEnabled = resolveAutoSend(person);
+            const autoSendBirthday = resolveArm(person, 'birthday');
+            const autoSendAnniversary = resolveArm(person, 'anniversary');
 
             return (
               <VaultPersonCard
@@ -157,13 +262,26 @@ function VaultListContent({ navigation }: ListProps) {
                 person={person}
                 theme={theme}
                 occasion={occasion}
-                autoSendEnabled={autoSendEnabled}
-                autoSendDisabled={!autoSendAllowed || !person.birthday}
-                onAutoSendToggle={() =>
-                  handleAutoSendToggle(person.id, autoSendEnabled)
+                autoSendBirthday={autoSendBirthday}
+                autoSendAnniversary={autoSendAnniversary}
+                birthdayDisabled={
+                  !autoSendAllowed ||
+                  !person.birthday ||
+                  pendingId === person.id
                 }
-                onOpenVault={() => openPerson(person.id)}
-                onNote={() => openPerson(person.id)}
+                anniversaryDisabled={
+                  !autoSendAllowed ||
+                  !person.anniversary ||
+                  pendingId === person.id
+                }
+                onBirthdayToggle={() =>
+                  handleAutoSendToggle(person.id, 'birthday', autoSendBirthday)
+                }
+                onAnniversaryToggle={() =>
+                  handleAutoSendToggle(person.id, 'anniversary', autoSendAnniversary)
+                }
+                onOpenVault={() => handlePersonPress(person.id, person.personName)}
+                onNote={() => handlePersonPress(person.id, person.personName)}
                 onMenu={() => openMenu(person.id, person.personName)}
               />
             );
@@ -174,12 +292,15 @@ function VaultListContent({ navigation }: ListProps) {
       {people.length > 0 ? <VaultExpandPrompt onPress={openAddPerson} /> : null}
 
       {toggleError ? <Text style={styles.error}>{toggleError}</Text> : null}
+      {linkError ? <Text style={styles.error}>{linkError}</Text> : null}
+      {sendsError ? <Text style={styles.error}>{sendsError}</Text> : null}
     </Screen>
   );
 }
 
 export function VaultListScreen(props: ListProps) {
   const { isSignedIn, isLoading } = useAuth();
+  const { requireAuth } = useRequireAuth();
 
   if (isLoading) {
     return <SessionBootSkeleton withTabBar />;
@@ -190,7 +311,8 @@ export function VaultListScreen(props: ListProps) {
       <GuestGateScreen
         title="Vault"
         message="Save people and birthdays so you never miss a moment."
-        action="vault_view"
+        isSignedIn={false}
+        onSignIn={() => requireAuth('vault_view', () => undefined)}
       />
     );
   }
@@ -203,11 +325,21 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     gap: spacing.md,
   },
+  inbox: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
   muted: {
     marginTop: spacing.md,
     fontSize: typography.sizeSm,
     color: colors.muted,
     textAlign: 'center',
+  },
+  linkHint: {
+    marginTop: spacing.md,
+    fontSize: typography.sizeSm,
+    color: colors.inkSoft,
+    lineHeight: typography.sizeSm * 1.4,
   },
   error: {
     marginTop: spacing.md,

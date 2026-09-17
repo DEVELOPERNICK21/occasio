@@ -1,5 +1,23 @@
 export type SubscriptionTier = 'free' | 'personal' | 'family';
 
+export type OccasionType = 'birthday' | 'anniversary';
+
+export type ScheduledSendStatus =
+  | 'pending'
+  | 'review'
+  | 'approved'
+  | 'cancelled'
+  | 'sent'
+  | 'failed';
+
+export type AutoSendPack = {
+  preferredTemplateId: string | null;
+  preferredTemplateType: string | null;
+  photoRefs: string[];
+  defaultMessage: string;
+  fromName: string | null;
+};
+
 export type RelationshipType =
   | 'mom'
   | 'dad'
@@ -21,8 +39,13 @@ export type VaultPerson = {
   personName: string;
   relationshipType: RelationshipType;
   birthday: PersonDate | null;
+  anniversary: PersonDate | null;
   whatsapp: string | null;
+  email: string | null;
   autoSendBirthday: boolean;
+  autoSendAnniversary: boolean;
+  pack: AutoSendPack | null;
+  lastCreationId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -32,15 +55,21 @@ export type PersonDraft = {
   relationshipType: RelationshipType | null;
   birthdayMonth: string;
   birthdayDay: string;
+  anniversaryMonth: string;
+  anniversaryDay: string;
   whatsapp: string;
+  email: string;
 };
 
 export type CreatePersonInput = {
   personName: string;
   relationshipType: RelationshipType;
   birthday: PersonDate | null;
+  anniversary: PersonDate | null;
   whatsapp: string | null;
+  email: string | null;
   autoSendBirthday: boolean;
+  autoSendAnniversary: boolean;
 };
 
 export const EMPTY_PERSON_DRAFT: PersonDraft = {
@@ -48,5 +77,8 @@ export const EMPTY_PERSON_DRAFT: PersonDraft = {
   relationshipType: null,
   birthdayMonth: '',
   birthdayDay: '',
+  anniversaryMonth: '',
+  anniversaryDay: '',
   whatsapp: '',
+  email: '',
 };

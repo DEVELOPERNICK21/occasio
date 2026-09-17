@@ -5,7 +5,7 @@ import { formatAuthIdentity } from './mapUser';
 export function tierDisplayLabel(tier: SubscriptionTier): string {
   switch (tier) {
     case 'personal':
-      return 'PERSONAL TIER';
+      return 'OCCASIO PRO';
     case 'family':
       return 'FAMILY TIER';
     default:
@@ -36,24 +36,24 @@ export function profileInitials(user: AuthUser): string {
 export function subscriptionStatusCopy(tier: SubscriptionTier): string {
   switch (tier) {
     case 'personal':
-      return 'Your current status is Personal Tier. Billed annually when store billing ships.';
+      return 'You have Occasio Pro — unlimited cards, Vault for up to 5 people, and year-long links.';
     case 'family':
-      return 'Your current status is Family Tier. Billed annually when store billing ships.';
+      return 'You have Family — Vault for up to 15 people.';
     default:
-      return 'Your current status is Free Tier. Upgrade for unlimited cards and Vault.';
+      return 'Free tier: 1 card per month and 1 Vault person. Upgrade to Occasio Pro for more.';
   }
 }
 
 export function subscriptionPaymentLabel(tier: SubscriptionTier): string {
-  return tier === 'free' ? 'Not billed' : 'When billing launches';
+  return tier === 'free' ? 'Not billed' : 'Active via store';
 }
 
 export function subscriptionAmountLabel(tier: SubscriptionTier): string {
   switch (tier) {
     case 'personal':
-      return 'Plus plan';
+      return 'Occasio Pro';
     case 'family':
-      return 'Family plan';
+      return 'Family';
     default:
       return 'Free';
   }

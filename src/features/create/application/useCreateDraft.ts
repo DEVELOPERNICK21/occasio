@@ -4,7 +4,13 @@ import {
   readCreationDraft,
   writeCreationDraft,
 } from '../data/createDraftStorage';
+import {
+  defaultTemplateIdForType,
+  occasionFromTemplateType,
+  occasionToTemplateType,
+} from '../domain/audienceOccasion';
 import { canPreviewDraft } from '../domain/creationRules';
+import type { Audience, Occasion } from '../domain/templateSchema';
 import {
   EMPTY_CREATION_DRAFT,
   type CreationDraft,
@@ -56,12 +62,32 @@ export function useCreateDraft() {
     setDraft((d) => ({ ...d, templateType }));
   }, []);
 
+  const setAudience = useCallback((audience: Audience) => {
+    setDraft((d) => ({ ...d, audience }));
+  }, []);
+
+  const setOccasion = useCallback((occasion: Occasion) => {
+    setDraft((d) => ({
+      ...d,
+      occasion,
+      templateType: occasionToTemplateType(occasion),
+    }));
+  }, []);
+
+  const setTemplateId = useCallback((templateId: string) => {
+    setDraft((d) => ({ ...d, templateId }));
+  }, []);
+
   const setPhotoUris = useCallback((photoUris: string[]) => {
     setDraft((d) => ({ ...d, photoUris }));
   }, []);
 
   const setRecipientName = useCallback((recipientName: string) => {
     setDraft((d) => ({ ...d, recipientName }));
+  }, []);
+
+  const setFromName = useCallback((fromName: string) => {
+    setDraft((d) => ({ ...d, fromName }));
   }, []);
 
   const setMessage = useCallback((message: string) => {
@@ -75,24 +101,52 @@ export function useCreateDraft() {
 
   const startWish = useCallback(
     (partial: Partial<Pick<CreationDraft, 'templateType' | 'recipientName'>>) => {
+      const templateType = partial.templateType ?? 'birthday';
       setDraft({
         ...EMPTY_CREATION_DRAFT,
-        ...partial,
+        templateType,
+        templateId: defaultTemplateIdForType(templateType),
+        occasion: occasionFromTemplateType(templateType),
+        recipientName: partial.recipientName ?? '',
       });
     },
     [],
   );
+
+  /** Frictionless path — occasion and frame preselected, photo is the first ask. */
+  const startQuickCreate = useCallback((recipientName = '') => {
+    setDraft({
+      ...EMPTY_CREATION_DRAFT,
+      templateId: 'B10',
+      occasion: 'birthday',
+      templateType: 'birthday',
+      recipientName,
+    });
+  }, []);
+
+  const startFromAudience = useCallback((audience: Audience) => {
+    setDraft({
+      ...EMPTY_CREATION_DRAFT,
+      audience,
+    });
+  }, []);
 
   const canPreview = canPreviewDraft(draft);
 
   return {
     draft,
     setTemplate,
+    setAudience,
+    setOccasion,
+    setTemplateId,
     setPhotoUris,
     setRecipientName,
+    setFromName,
     setMessage,
     reset,
     startWish,
+    startQuickCreate,
+    startFromAudience,
     canPreview,
   };
 }
