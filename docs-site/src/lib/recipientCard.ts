@@ -29,13 +29,20 @@ export function parseDemoSlug(slug: string): RecipientCard | null {
 
   return {
     recipientName,
-    message: null,
+    message:
+      "You light up every room. Have the best birthday — celebrating you always.",
     templateType: "birthday",
     templateId: null,
-    fromName: null,
+    fromName: "Someone who cares",
     isDemo: true,
     experienceMode: "story",
     experienceVersion: 1,
+    /** Sample stack so local/demo links show a multi-card Polaroid deck. */
+    mediaUrls: [
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1522673607200-164a1a38d7f3?w=600&h=800&fit=crop",
+    ],
   };
 }
 
