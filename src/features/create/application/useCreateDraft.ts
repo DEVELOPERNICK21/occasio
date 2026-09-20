@@ -94,6 +94,10 @@ export function useCreateDraft() {
     setDraft((d) => ({ ...d, message }));
   }, []);
 
+  const setBalloonLine = useCallback((balloonLine: string) => {
+    setDraft((d) => ({ ...d, balloonLine }));
+  }, []);
+
   const setExperienceMode = useCallback(
     (experienceMode: CreationDraft['experienceMode']) => {
       setDraft((d) => ({ ...d, experienceMode }));
@@ -150,6 +154,7 @@ export function useCreateDraft() {
     setRecipientName,
     setFromName,
     setMessage,
+    setBalloonLine,
     setExperienceMode,
     reset,
     startWish,

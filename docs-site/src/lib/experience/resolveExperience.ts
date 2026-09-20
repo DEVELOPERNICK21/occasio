@@ -23,7 +23,11 @@ export function resolveExperience(
       ? card.experienceMode
       : defaultExperienceMode(card.templateType);
 
-  const revealLine = splitRevealLine(card.message, card.recipientName);
+  const revealLine = splitRevealLine(
+    card.message,
+    card.recipientName,
+    card.balloonLine,
+  );
 
   if (mode === 'classic') {
     return { mode, scenes: [], revealLine };

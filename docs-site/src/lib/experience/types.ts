@@ -13,6 +13,8 @@ export type ExperienceCardInput = {
   message: string | null;
   recipientName: string;
   experienceMode?: ExperienceMode | null;
+  /** Optional ≤8-word balloon pop line. Empty → default "You are so special". */
+  balloonLine?: string | null;
 };
 
 export type ResolvedExperience = {

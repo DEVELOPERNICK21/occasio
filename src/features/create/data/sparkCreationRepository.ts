@@ -55,6 +55,9 @@ export async function createShareLinkSpark(
         message: draft.message.trim(),
         photoRefs,
         mediaUrls,
+        ...(draft.balloonLine.trim()
+          ? { balloonLine: draft.balloonLine.trim() }
+          : {}),
         ...(draft.experienceMode === 'story' || draft.experienceMode === 'classic'
           ? { experienceMode: draft.experienceMode }
           : {}),

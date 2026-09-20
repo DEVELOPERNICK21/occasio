@@ -28,6 +28,7 @@ export function DetailsScreen({ navigation }: Props) {
     setRecipientName,
     setFromName,
     setMessage,
+    setBalloonLine,
     setExperienceMode,
   } = useCreateDraftContext();
 
@@ -43,6 +44,10 @@ export function DetailsScreen({ navigation }: Props) {
   const interactiveOn =
     resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
     'story';
+  const balloonWords = draft.balloonLine
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
 
   return (
     <Screen
@@ -108,6 +113,34 @@ export function DetailsScreen({ navigation }: Props) {
               }
             />
           </View>
+        ) : null}
+
+        {interactiveDefault && interactiveOn ? (
+          <Field
+            label="Balloon line"
+            hint={
+              draft.balloonLine.trim()
+                ? `${balloonWords}/8 words · pops inside balloons`
+                : 'Optional · default: “You are so special”'
+            }
+          >
+            <TextInput
+              placeholder="You are so special"
+              placeholderTextColor={colors.muted}
+              value={draft.balloonLine}
+              onChangeText={(text) => {
+                const words = text.trim().split(/\s+/).filter(Boolean);
+                if (words.length > 8) {
+                  setBalloonLine(words.slice(0, 8).join(' '));
+                  return;
+                }
+                setBalloonLine(text.slice(0, 72));
+              }}
+              style={styles.input}
+              maxLength={72}
+              autoCapitalize="sentences"
+            />
+          </Field>
         ) : null}
       </View>
     </Screen>

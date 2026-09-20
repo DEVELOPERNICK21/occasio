@@ -1,22 +1,23 @@
-const MAX_LEN = 80;
-const MIN_USEFUL = 12;
+export const DEFAULT_BALLOON_LINE = 'You are so special';
+export const MAX_BALLOON_WORDS = 8;
 
+/** Clamp / default the balloon pop line — never more than 8 words. */
+export function normalizeBalloonLine(line: string | null | undefined): string {
+  const cleaned = (line ?? '').trim().replace(/\s+/g, ' ');
+  if (!cleaned) return DEFAULT_BALLOON_LINE;
+  const words = cleaned.split(' ').filter(Boolean).slice(0, MAX_BALLOON_WORDS);
+  return words.join(' ') || DEFAULT_BALLOON_LINE;
+}
+
+/**
+ * Balloon reveal line for the story.
+ * Prefers an optional creator-written `balloonLine` (≤8 words).
+ * Otherwise uses the short default — never the full letter message.
+ */
 export function splitRevealLine(
-  message: string | null,
-  recipientName: string,
+  _message: string | null,
+  _recipientName: string,
+  balloonLine?: string | null,
 ): string {
-  const name = recipientName.trim() || 'you';
-  const fallback = `You are so special, ${name}.`;
-  const raw = (message ?? '').trim();
-  if (raw.length < MIN_USEFUL) return fallback;
-
-  const firstSentence = raw.split(/(?<=[.!?])\s+/)[0]?.trim() || raw;
-  if (firstSentence.length <= MAX_LEN) {
-    return /[.!?]$/.test(firstSentence) ? firstSentence : `${firstSentence}.`;
-  }
-
-  const sliced = firstSentence.slice(0, MAX_LEN);
-  const cut = sliced.lastIndexOf(' ');
-  const truncated = (cut > 40 ? sliced.slice(0, cut) : sliced).trim();
-  return `${truncated}…`;
+  return normalizeBalloonLine(balloonLine);
 }

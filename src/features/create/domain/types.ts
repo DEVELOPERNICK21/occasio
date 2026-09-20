@@ -26,6 +26,11 @@ export type CreationDraft = {
    * (birthday/anniversary → story).
    */
   experienceMode: 'story' | 'classic' | null;
+  /**
+   * Short line for balloon pops (max 8 words). Empty = default
+   * "You are so special".
+   */
+  balloonLine: string;
 };
 
 export type Creation = CreationDraft & {
@@ -46,4 +51,5 @@ export const EMPTY_CREATION_DRAFT: CreationDraft = {
   fromName: '',
   message: '',
   experienceMode: null,
+  balloonLine: '',
 };

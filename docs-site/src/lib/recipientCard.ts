@@ -11,6 +11,8 @@ export type RecipientCard = {
   /** Interactive story vs classic card. Null on legacy docs → resolve from templateType. */
   experienceMode?: 'story' | 'classic' | null;
   experienceVersion?: number | null;
+  /** Optional ≤8-word balloon pop line. */
+  balloonLine?: string | null;
 };
 
 /** Parse mock slugs from the mobile app (`demo-mom-abc123`). */

@@ -42,7 +42,8 @@ export function isCreationDraftEmpty(draft: CreationDraft): boolean {
     draft.photoUris.length === 0 &&
     draft.recipientName.trim() === '' &&
     draft.fromName.trim() === '' &&
-    draft.message.trim() === ''
+    draft.message.trim() === '' &&
+    draft.balloonLine.trim() === ''
   );
 }
 
@@ -107,6 +108,8 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     record.experienceMode === 'story' || record.experienceMode === 'classic'
       ? record.experienceMode
       : null;
+  const balloonLine =
+    typeof record.balloonLine === 'string' ? record.balloonLine : '';
 
   const draft: CreationDraft = {
     templateType,
@@ -118,6 +121,7 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     fromName,
     message,
     experienceMode,
+    balloonLine,
   };
 
   return isCreationDraftEmpty(draft) ? null : draft;

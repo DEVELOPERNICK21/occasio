@@ -1,5 +1,6 @@
 import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { defaultExperienceMode } from '@/lib/experience/resolveExperience';
+import { normalizeBalloonLine } from '@/lib/experience/splitRevealLine';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
 import { generateShareSlug } from '@/lib/shareSlug';
@@ -18,6 +19,8 @@ export type CreateCreationInput = {
   mediaUrls?: string[];
   /** Optional client override; otherwise derived from templateType. */
   experienceMode?: 'story' | 'classic';
+  /** Optional ≤8-word line for balloon pops. */
+  balloonLine?: string;
   /** Ignored unless server is in dev-relaxed mode. */
   devMode?: boolean;
 };
@@ -168,6 +171,12 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
 
   validateMediaUrls(mediaUrls, photoRefs);
 
+  const rawBalloon =
+    typeof input.balloonLine === 'string' ? input.balloonLine.trim() : '';
+  const balloonLine = rawBalloon
+    ? normalizeBalloonLine(rawBalloon)
+    : undefined;
+
   const devMode = input.devMode === true;
   const experienceMode =
     input.experienceMode === 'story' || input.experienceMode === 'classic'
@@ -182,6 +191,7 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
     message,
     photoRefs,
     mediaUrls,
+    ...(balloonLine ? { balloonLine } : {}),
     ...(experienceMode ? { experienceMode } : {}),
     devMode,
   };
@@ -211,6 +221,9 @@ export async function createCreation(
         ? input.experienceMode
         : defaultExperienceMode(input.templateType),
     experienceVersion: 1,
+    balloonLine: input.balloonLine
+      ? normalizeBalloonLine(input.balloonLine)
+      : null,
     shareSlug,
     watermarked: true,
     viewCount: 0,
@@ -273,6 +286,10 @@ export async function lookupCardBySlug(slug: string): Promise<CardLookupResult> 
           ? doc.experienceMode
           : null,
       experienceVersion: (doc.experienceVersion as number | undefined) ?? null,
+      balloonLine:
+        typeof doc.balloonLine === 'string' && doc.balloonLine.trim()
+          ? normalizeBalloonLine(doc.balloonLine)
+          : null,
     },
   };
 }
