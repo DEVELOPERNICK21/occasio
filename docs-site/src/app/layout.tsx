@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans, Inter, IBM_Plex_Mono } from "next/font/google";
+import {
+  Caveat,
+  Fraunces,
+  Plus_Jakarta_Sans,
+  Inter,
+  IBM_Plex_Mono,
+} from "next/font/google";
 import "./globals.css";
 
 const display = Plus_Jakarta_Sans({
@@ -10,6 +16,14 @@ const display = Plus_Jakarta_Sans({
 
 const displaySerif = Fraunces({
   variable: "--font-display-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+/** Warm handwritten accent for messages, captions, revealed words */
+const handwriting = Caveat({
+  variable: "--font-hand",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
 });
@@ -41,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${display.variable} ${displaySerif.variable} ${body.variable} ${mono.variable} antialiased`}
+        className={`${display.variable} ${displaySerif.variable} ${handwriting.variable} ${body.variable} ${mono.variable} antialiased`}
       >
         {children}
       </body>

@@ -18,6 +18,7 @@ export function LetterScene({ card, slug }: Props) {
   return (
     <section className="story-letter">
       <h2 className="story-scene-title">A message for you</h2>
+      <p className="story-scene-sub">Written just for this moment</p>
       <OccasionStickerShower
         templateType={card.templateType}
         replayKey={replayKey}

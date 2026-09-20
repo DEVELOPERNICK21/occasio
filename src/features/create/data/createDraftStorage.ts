@@ -103,6 +103,10 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     typeof record.recipientName === 'string' ? record.recipientName : '';
   const fromName = typeof record.fromName === 'string' ? record.fromName : '';
   const message = typeof record.message === 'string' ? record.message : '';
+  const experienceMode =
+    record.experienceMode === 'story' || record.experienceMode === 'classic'
+      ? record.experienceMode
+      : null;
 
   const draft: CreationDraft = {
     templateType,
@@ -113,6 +117,7 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     recipientName,
     fromName,
     message,
+    experienceMode,
   };
 
   return isCreationDraftEmpty(draft) ? null : draft;

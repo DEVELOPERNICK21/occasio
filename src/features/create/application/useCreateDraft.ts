@@ -94,6 +94,13 @@ export function useCreateDraft() {
     setDraft((d) => ({ ...d, message }));
   }, []);
 
+  const setExperienceMode = useCallback(
+    (experienceMode: CreationDraft['experienceMode']) => {
+      setDraft((d) => ({ ...d, experienceMode }));
+    },
+    [],
+  );
+
   const reset = useCallback(() => {
     setDraft(EMPTY_CREATION_DRAFT);
     void clearCreationDraft();
@@ -143,6 +150,7 @@ export function useCreateDraft() {
     setRecipientName,
     setFromName,
     setMessage,
+    setExperienceMode,
     reset,
     startWish,
     startQuickCreate,

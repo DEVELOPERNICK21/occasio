@@ -12,6 +12,9 @@ export function defaultExperienceMode(templateType: string): ExperienceMode {
   return STORY_TYPES.has(templateType) ? 'story' : 'classic';
 }
 
+/**
+ * Phase B pack: balloons → candle → gift → photos? → letter
+ */
 export function resolveExperience(
   card: ExperienceCardInput,
 ): ResolvedExperience {
@@ -27,7 +30,7 @@ export function resolveExperience(
   }
 
   const photos = (card.mediaUrls ?? []).map((u) => u.trim()).filter(Boolean);
-  const scenes: SceneId[] = ['balloons'];
+  const scenes: SceneId[] = ['balloons', 'candle', 'gift'];
   if (photos.length > 0) scenes.push('photo_deck');
   scenes.push('letter');
 

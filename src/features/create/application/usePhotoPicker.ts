@@ -25,13 +25,15 @@ function isPickerCancelled(error: unknown): boolean {
 }
 
 function cropOptions() {
+  const compact = env.useBase64Media;
   return {
-    width: CARD_PHOTO_CROP_WIDTH,
-    height: CARD_PHOTO_CROP_HEIGHT,
+    width: compact ? 800 : CARD_PHOTO_CROP_WIDTH,
+    height: compact ? 640 : CARD_PHOTO_CROP_HEIGHT,
     cropping: true,
     mediaType: 'photo' as const,
-    compressImageQuality: env.useBase64Media ? 0.7 : 0.8,
-    includeBase64: env.useBase64Media,
+    // Tighter compression when embedding up to 5 photos in Firestore.
+    compressImageQuality: compact ? 0.45 : 0.8,
+    includeBase64: compact,
     forceJpg: true,
     cropperToolbarTitle: 'Crop photo',
     cropperChooseText: 'Use photo',

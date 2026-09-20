@@ -16,7 +16,6 @@ import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events
 import { Text } from '../../../../shared/ui/Text';
 import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
-import { useTemplateCatalog } from '../../application/useTemplateCatalog';
 import { validatePickedPhoto } from '../../domain/photoValidation';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
@@ -33,14 +32,10 @@ const photoMode = env.useBase64Media ? 'base64' : 'storage';
 
 export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
-  const { getById } = useTemplateCatalog();
   const { pickPhoto, picking } = usePhotoPicker();
   const [validationError, setValidationError] = useState<string | null>(null);
-  const template = draft.templateId ? getById(draft.templateId) : null;
-  const maxPhotos = Math.min(
-    template?.photoSlots ?? environmentMaxPhotos,
-    environmentMaxPhotos,
-  );
+  // Story photo deck + letter use all picks; frame layouts only show 1–2.
+  const maxPhotos = environmentMaxPhotos;
 
   useEffect(() => {
     if (draft.photoUris.length > maxPhotos) {
@@ -91,8 +86,8 @@ export function AddPhotosScreen({ navigation }: Props) {
       title="Photos"
       subtitle={
         isQuickCreate
-          ? 'Add their photo.'
-          : `Add ${maxPhotos === 1 ? '1 photo' : `1–${maxPhotos} photos`} — you'll pick a frame next.`
+          ? 'Add up to 5 photos.'
+          : `Add 1–${maxPhotos} photos — you'll pick a frame next.`
       }
       step={getCreateStep('photos', isQuickCreate)}
       onBack={() => navigation.goBack()}
@@ -128,8 +123,8 @@ export function AddPhotosScreen({ navigation }: Props) {
       ) : null}
       <Text style={styles.hint}>
         {env.useBase64Media
-          ? 'Pick from gallery or camera, then crop to fit your card.'
-          : 'Pick from gallery or camera, crop to fit, then upload when you share.'}
+          ? 'Pick from gallery or camera, then crop to fit your card. Extra photos show in the story deck.'
+          : 'Pick from gallery or camera, crop to fit, then upload when you share. Extra photos show in the story deck.'}
       </Text>
     </Screen>
   );
@@ -183,11 +178,15 @@ function PhotoSlot({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
     marginTop: spacing.md,
   },
   slotWrap: {
-    flex: 1,
+    width: '30%',
+    flexGrow: 1,
+    flexBasis: '30%',
+    maxWidth: '32%',
     position: 'relative',
   },
   slot: {

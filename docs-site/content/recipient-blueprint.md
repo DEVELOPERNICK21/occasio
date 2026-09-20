@@ -18,7 +18,9 @@ Recipient opens a share link (WhatsApp, SMS, etc.) and sees a calm, branded card
 |---|---|---|
 | Card view (classic) | `/c/[slug]` | ✅ Live |
 | Interactive story (Phase A) | `/c/[slug]` | ✅ Balloons → photo deck → letter |
-| Candle / gift beats | `/c/[slug]` | ⬜ Phase B |
+| Candle / gift beats | `/c/[slug]` | ✅ Phase B — balloons → candle → gift → photos → letter |
+| Creator interactive toggle | Details screen | ✅ Birthday/anniversary |
+| App Preview story player | Preview | ⬜ Thin note only (full RN player later) |
 | Expired link | `/c/[slug]` (410/expired) | ✅ |
 | Not found | `/c/[slug]` (404) | ✅ Branded |
 | OG preview image | `/c/[slug]/opengraph-image` | ✅ Dynamic |

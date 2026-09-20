@@ -1044,6 +1044,11 @@ body {
 .wish-card-overlay .wish-card-greeting,
 .wish-card-overlay .wish-card-name {
   color: #fff;
+  text-shadow: 0 1px 12px rgba(28, 25, 20, 0.35);
+}
+
+.wish-card-overlay .wish-card-name {
+  font-size: 2.5rem;
 }
 
 .wish-card-body--quiet {
@@ -1066,14 +1071,16 @@ body {
 }
 
 .wish-card-greeting {
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 0.75rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1.4;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  line-height: 1.35;
   color: var(--wish-accent);
   animation: wish-fade-up 0.45s ease 0.18s both;
+  text-wrap: balance;
 }
 
 .wish-card-divider {
@@ -1104,36 +1111,39 @@ body {
 .wish-card-name {
   margin-top: 0;
   font-family: var(--font-display-serif), Georgia, serif;
-  font-size: 2.125rem;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  font-weight: 600;
+  font-size: 2.35rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 700;
   color: var(--ink, #2a2220);
   animation: wish-fade-up 0.48s ease 0.26s both;
+  text-wrap: balance;
 }
 
 .wish-card--compact .wish-card-name {
-  font-size: 1.75rem;
+  font-size: 1.85rem;
 }
 
 .wish-card-message {
-  margin-top: 1rem;
-  max-width: 20rem;
+  margin-top: 1.1rem;
+  max-width: 21rem;
   margin-left: auto;
   margin-right: auto;
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 1rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.45rem;
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.6;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--ink-soft);
   animation: wish-fade-up 0.48s ease 0.34s both;
+  text-wrap: pretty;
 }
 
 .wish-card-placeholder {
   margin-top: 1rem;
-  font-size: 0.875rem;
-  font-style: normal;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
   color: var(--muted);
   animation: wish-fade-up 0.48s ease 0.34s both;
 }
@@ -1142,18 +1152,28 @@ body {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  margin-top: 1.35rem;
-  padding: 0.5rem 1.15rem;
+  gap: 0.1rem;
+  margin-top: 1.5rem;
+  padding: 0.55rem 1.25rem 0.45rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-size: 0.8125rem;
+  border: 1px solid color-mix(in srgb, var(--wish-accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--surface) 88%, var(--wish-soft));
+  font-family: var(--font-hand), cursive;
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
   color: var(--ink);
   animation: wish-fade-up 0.48s ease 0.42s both;
+}
+
+.wish-card-signoff__label {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--muted);
 }
 
 .wish-reaction {
@@ -1171,8 +1191,10 @@ body {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--accent);
-  font-size: 0.875rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
   font-weight: 500;
+  font-style: italic;
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -1209,8 +1231,10 @@ body {
   margin: 1rem auto 0;
   min-height: 44px;
   padding: 0 1rem;
-  font-size: 0.875rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
   font-weight: 500;
+  font-style: italic;
   color: var(--wish-accent);
   background: transparent;
   border: none;
@@ -1252,12 +1276,32 @@ body {
   }
 
   .story-balloon.is-popped {
-    opacity: 0 !important;
+    opacity: 1 !important;
     transform: none !important;
   }
 
   .story-balloon:hover:not(:disabled) .story-balloon__svg {
     transform: none !important;
+  }
+
+  .story-balloon__svg,
+  .story-balloon__word,
+  .story-balloon__burst,
+  .story-polaroid--top.is-entering,
+  .story-reveal-line--done,
+  .story-cake-art__flame,
+  .story-cake-art__smoke,
+  .story-cake-art.is-blowing .story-cake-art__svg,
+  .story-air__streak,
+  .story-air__haze,
+  .story-air__dot,
+  .story-gift-art__tissue,
+  .story-gift-art__note {
+    animation: none !important;
+  }
+
+  .story-gift-art__lid {
+    transition: none !important;
   }
 }
 
@@ -1274,10 +1318,13 @@ body {
   height: 8px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--muted) 35%, transparent);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .story-progress__dot.is-on {
   background: var(--accent);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .story-skip {
@@ -1286,32 +1333,61 @@ body {
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.9rem;
+  font-style: italic;
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.story-scene-title {
-  margin: 0 0 0.75rem;
+.story-letter .story-scene-title {
+  font-size: 1.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.story-brand {
+  margin: 0 0 1rem;
   text-align: center;
-  font-size: 1.25rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
   font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.story-scene-title {
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   color: var(--ink);
+  text-wrap: balance;
 }
 
 .story-scene-sub {
-  margin: 0 0 1rem;
+  margin: 0 0 1.15rem;
   text-align: center;
-  font-size: 0.875rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--muted);
 }
 
 .story-reveal-line {
   margin: 1rem 0 1.25rem;
   text-align: center;
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.35;
   color: var(--ink);
+  text-wrap: balance;
 }
 
 .story-balloons__grid {
@@ -1324,6 +1400,7 @@ body {
 
 .story-balloon {
   appearance: none;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1342,16 +1419,99 @@ body {
   height: auto;
   filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 14%, transparent));
   pointer-events: none;
+  animation: story-balloon-float 3.2s ease-in-out infinite;
+}
+
+.story-balloon:nth-child(2) .story-balloon__svg {
+  animation-delay: 0.4s;
+}
+
+.story-balloon:nth-child(3) .story-balloon__svg {
+  animation-delay: 0.8s;
+}
+
+.story-balloon:nth-child(4) .story-balloon__svg {
+  animation-delay: 1.2s;
+}
+
+@keyframes story-balloon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .story-balloon:hover:not(:disabled) .story-balloon__svg {
-  transform: scale(1.04);
+  transform: scale(1.06);
+  animation: none;
 }
 
 .story-balloon.is-popped {
-  opacity: 0;
-  transform: scale(0.35);
   pointer-events: none;
+}
+
+.story-balloon.is-popped .story-balloon__svg {
+  opacity: 0;
+  transform: scale(0.2);
+  animation: none;
+}
+
+.story-balloon__word {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #C73A66;
+  text-align: center;
+  line-height: 1.15;
+  animation: story-word-pop 380ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+@keyframes story-word-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.story-balloon__burst {
+  position: absolute;
+  inset: 18% 12%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, #FF8A65 55%, transparent) 0%,
+    transparent 70%
+  );
+  animation: story-burst 420ms ease-out both;
+}
+
+@keyframes story-burst {
+  from {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+.story-reveal-line--done {
+  animation: story-word-pop 420ms ease both;
 }
 
 .story-balloon:disabled {
@@ -1387,10 +1547,46 @@ body {
   width: min(100%, 14.5rem);
   margin: 0;
   padding: 0.65rem 0.65rem 0;
-  background: #fff;
+  background: #fffef9;
   border-radius: 6px;
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--ink) 18%, transparent);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--ink) 16%, transparent),
+    0 1px 0 color-mix(in srgb, var(--accent-soft) 40%, transparent);
   transform-origin: center center;
+  transition:
+    box-shadow 200ms ease,
+    filter 200ms ease;
+}
+
+.story-polaroid--top {
+  will-change: transform, opacity;
+  transition: opacity 180ms ease;
+}
+
+.story-polaroid--top.is-entering {
+  animation: story-card-enter 380ms cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+
+.story-polaroid--top.is-exiting {
+  transition:
+    transform 280ms cubic-bezier(0.4, 0, 1, 1),
+    opacity 280ms ease;
+  pointer-events: none;
+}
+
+.story-polaroid--behind {
+  transition: transform 220ms ease;
+  filter: brightness(0.97);
+}
+
+@keyframes story-card-enter {
+  from {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0.92) rotate(-4deg);
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .story-polaroid img {
@@ -1407,22 +1603,275 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.4rem;
+  min-height: 2.55rem;
   margin: 0;
-  padding: 0.35rem 0.25rem 0.55rem;
-  font-size: 0.9rem;
+  padding: 0.4rem 0.35rem 0.6rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--ink);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.story-swipe-hint {
+  position: absolute;
+  top: 18%;
+  z-index: 30;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  animation: story-word-pop 180ms ease both;
+}
+
+.story-swipe-hint.is-left {
+  left: 0;
+}
+
+.story-swipe-hint.is-right {
+  right: 0;
+}
+
+/* Candle + gift — illustrated SVG (not flat CSS boxes) */
+.story-candle,
+.story-gift {
+  position: relative;
   text-align: center;
 }
 
-.story-deck-next {
+.story-air {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.story-air__haze {
+  position: absolute;
+  inset: 8% -12%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, #fff 55%, transparent) 35%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 55%,
+    transparent 100%
+  );
+  animation: story-air-haze 0.9s ease-out both;
+}
+
+.story-air__streak {
+  position: absolute;
+  left: -25%;
+  width: 48%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #fff 70%, transparent),
+    color-mix(in srgb, var(--ink) 18%, transparent),
+    transparent
+  );
+  animation: story-air-streak 0.8s ease-out both;
+  filter: blur(0.4px);
+}
+
+.story-air__dot {
+  position: absolute;
+  left: 5%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #fff 80%, transparent);
+  animation: story-air-dot 0.85s ease-out both;
+}
+
+@keyframes story-air-streak {
+  from {
+    transform: translateX(0) scaleX(0.35);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.75;
+  }
+  to {
+    transform: translateX(170%) scaleX(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes story-air-haze {
+  from {
+    opacity: 0;
+    transform: translateX(-35%);
+  }
+  35% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(45%);
+  }
+}
+
+@keyframes story-air-dot {
+  from {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(220px) translateY(-12px);
+    opacity: 0;
+  }
+}
+
+.story-cake-art,
+.story-gift-art {
+  appearance: none;
   display: block;
-  margin: 0 auto 0.75rem;
+  margin: 0.4rem auto 1.25rem;
   padding: 0;
   border: none;
-  background: none;
-  color: var(--accent);
-  font-size: 0.9rem;
-  text-decoration: underline;
+  background: transparent;
   cursor: pointer;
+}
+
+.story-cake-art:disabled,
+.story-gift-art:disabled {
+  cursor: default;
+}
+
+.story-cake-art__svg,
+.story-gift-art__svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.story-gift-art__svg {
+  filter: drop-shadow(0 10px 18px color-mix(in srgb, #C73A66 18%, transparent));
+}
+
+.story-cake-art__label {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.story-gift-art__note-text {
+  font-family: var(--font-hand), cursive;
+  font-weight: 600;
+}
+
+.story-cake-art.is-blowing .story-cake-art__svg {
+  animation: story-cake-sway 0.35s ease-in-out;
+}
+
+@keyframes story-cake-sway {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+}
+
+.story-cake-art__flame {
+  transform-origin: 120px 62px;
+  animation: story-flame-soft 0.5s ease-in-out infinite alternate;
+}
+
+.story-cake-art__flame.is-leaning {
+  animation: story-flame-blow-svg 0.38s ease-out both;
+}
+
+@keyframes story-flame-soft {
+  from {
+    transform: scale(1) rotate(-2deg);
+  }
+  to {
+    transform: scale(1.05, 0.95) rotate(3deg);
+  }
+}
+
+@keyframes story-flame-blow-svg {
+  0% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+  55% {
+    transform: scale(0.75, 1.1) rotate(24deg) translate(8px, -4px);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(0.15) rotate(36deg) translate(22px, -8px);
+    opacity: 0;
+  }
+}
+
+.story-cake-art__smoke {
+  animation: story-smoke-rise 1.2s ease-out both;
+}
+
+@keyframes story-smoke-rise {
+  from {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.story-gift-art__lid {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.7s cubic-bezier(0.22, 1.05, 0.36, 1), opacity 0.55s ease;
+}
+
+.story-gift-art__lid.is-open {
+  transform: translate(-12px, -48px) rotate(-16deg);
+  opacity: 0.98;
+}
+
+.story-gift-art__tissue {
+  animation: story-tissue-up 0.55s ease both;
+}
+
+@keyframes story-tissue-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.story-gift-art__note {
+  animation: story-word-pop 0.4s ease both;
+}
+
+.story-gift-art__wrap.is-open {
+  transition: transform 0.55s ease, opacity 0.55s ease;
+  transform: translateY(10px) scale(1.04);
+  opacity: 0.4;
+}
+
+.story-gift-art__bow.is-open {
+  transition: transform 0.55s ease, opacity 0.55s ease;
+  transform: translateY(16px) rotate(20deg);
+  opacity: 0.25;
 }

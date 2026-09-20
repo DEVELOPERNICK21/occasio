@@ -9,7 +9,7 @@ import { useHistory } from '../../../history/application/useHistory';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
 import { countWishesThisMonth } from '../../domain/createHome';
-import { isInteractiveExperience } from '../../domain/experienceMode';
+import { isInteractiveExperience, resolveDraftExperienceMode } from '../../domain/experienceMode';
 import { freeQuotaNotice } from '../../domain/quota';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
@@ -138,10 +138,11 @@ export function PreviewScreen({ navigation }: Props) {
         />
       </ScreenActions>
 
-      {isInteractiveExperience(draft.templateType) ? (
+      {isInteractiveExperience(draft.templateType) &&
+      resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
+        'story' ? (
         <Text style={styles.hint}>
-          They’ll open a short interactive experience — balloons, photos, then
-          your message.
+          They’ll open balloons, candle, gift, photos, then your letter.
         </Text>
       ) : null}
       <Text style={styles.hint}>

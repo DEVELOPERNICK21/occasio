@@ -187,8 +187,8 @@ describe('base64Media', () => {
 
 describe('photoValidation', () => {
   it('caps photo count by mode', () => {
-    expect(maxPhotosForMode('base64')).toBe(2);
-    expect(maxPhotosForMode('storage')).toBe(3);
+    expect(maxPhotosForMode('base64')).toBe(5);
+    expect(maxPhotosForMode('storage')).toBe(5);
   });
 
   it('rejects oversized base64 photos at pick time', () => {
@@ -220,7 +220,7 @@ describe('photoValidation', () => {
   it('blocks adding when the photo limit is already reached', () => {
     const result = validatePickedPhoto({
       uri: 'file://photo.jpg',
-      currentCount: 2,
+      currentCount: 5,
       mode: 'base64',
     });
     expect(result.valid).toBe(false);
@@ -229,7 +229,7 @@ describe('photoValidation', () => {
   it('allows replacing an existing photo when at the limit', () => {
     const result = validatePickedPhoto({
       uri: 'data:image/jpeg;base64,abc',
-      currentCount: 2,
+      currentCount: 5,
       mode: 'base64',
       isReplacing: true,
     });

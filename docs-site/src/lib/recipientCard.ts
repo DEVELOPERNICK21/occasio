@@ -29,8 +29,7 @@ export function parseDemoSlug(slug: string): RecipientCard | null {
 
   return {
     recipientName,
-    message:
-      "You light up every room. Have the best birthday — celebrating you always.",
+    message: "You are so special.",
     templateType: "birthday",
     templateId: null,
     fromName: "Someone who cares",

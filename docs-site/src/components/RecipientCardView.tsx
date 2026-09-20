@@ -36,9 +36,7 @@ export function RecipientCardView({ card, slug }: Props) {
         replayKey={replayKey}
       />
       <div className="wish-recipient-inner">
-        <p className="mb-6 text-center text-xs font-medium tracking-wide text-[var(--accent)]">
-          Occasio
-        </p>
+        <p className="story-brand">Occasio</p>
 
         <WishCard card={card} replayKey={replayKey} onReplay={handleReplay} />
 

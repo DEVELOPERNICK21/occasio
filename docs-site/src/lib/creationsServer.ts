@@ -16,6 +16,8 @@ export type CreateCreationInput = {
   message: string;
   photoRefs: string[];
   mediaUrls?: string[];
+  /** Optional client override; otherwise derived from templateType. */
+  experienceMode?: 'story' | 'classic';
   /** Ignored unless server is in dev-relaxed mode. */
   devMode?: boolean;
 };
@@ -56,7 +58,9 @@ async function uniqueShareSlug(db: Firestore): Promise<string> {
   throw new ApiRouteError(500, 'INTERNAL', 'Could not generate share link');
 }
 
-const MAX_BASE64_DATA_URL_CHARS = 750_000;
+const MAX_PHOTOS = 5;
+/** Per inline photo — keep total under Firestore ~1 MB with message + metadata. */
+const MAX_BASE64_DATA_URL_CHARS = 160_000;
 
 /** Local docs-site dev or explicit env — never enable on production Vercel. */
 export function isDevRelaxedQuota(devModeRequested = false): boolean {
@@ -86,28 +90,34 @@ function isInlineBase64(photoRefs: string[]): boolean {
 }
 
 function validateMediaUrls(mediaUrls: string[], photoRefs: string[]): void {
-  if (mediaUrls.length < 1 || mediaUrls.length > 3) {
+  // Storage-only creates send photoRefs without embedded mediaUrls.
+  if (mediaUrls.length === 0) {
+    return;
+  }
+
+  if (mediaUrls.length < 1 || mediaUrls.length > MAX_PHOTOS) {
     throw new ApiRouteError(
       400,
       'VALIDATION_ERROR',
-      'mediaUrls must contain 1–3 items',
+      `mediaUrls must contain 1–${MAX_PHOTOS} items`,
     );
   }
 
   if (isInlineBase64(photoRefs)) {
-    if (mediaUrls.length !== 1) {
+    if (mediaUrls.length !== photoRefs.length) {
       throw new ApiRouteError(
         400,
         'VALIDATION_ERROR',
-        'Only one inline photo is supported',
+        'Inline photos must match photoRefs',
       );
     }
-    const url = mediaUrls[0] ?? '';
-    if (!url.startsWith('data:image/')) {
-      throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Invalid image data URL');
-    }
-    if (url.length > MAX_BASE64_DATA_URL_CHARS) {
-      throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Photo is too large');
+    for (const url of mediaUrls) {
+      if (!url.startsWith('data:image/')) {
+        throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Invalid image data URL');
+      }
+      if (url.length > MAX_BASE64_DATA_URL_CHARS) {
+        throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Photo is too large');
+      }
     }
   }
 }
@@ -141,8 +151,16 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   if (message.length > 500) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Message is too long');
   }
-  if (!Array.isArray(photoRefs) || photoRefs.length < 1 || photoRefs.length > 3) {
-    throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Add 1–3 photos');
+  if (
+    !Array.isArray(photoRefs) ||
+    photoRefs.length < 1 ||
+    photoRefs.length > MAX_PHOTOS
+  ) {
+    throw new ApiRouteError(
+      400,
+      'VALIDATION_ERROR',
+      `Add 1–${MAX_PHOTOS} photos`,
+    );
   }
   if (!Array.isArray(mediaUrls)) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'mediaUrls must be an array');
@@ -151,6 +169,10 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   validateMediaUrls(mediaUrls, photoRefs);
 
   const devMode = input.devMode === true;
+  const experienceMode =
+    input.experienceMode === 'story' || input.experienceMode === 'classic'
+      ? input.experienceMode
+      : undefined;
 
   return {
     templateType,
@@ -160,6 +182,7 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
     message,
     photoRefs,
     mediaUrls,
+    ...(experienceMode ? { experienceMode } : {}),
     devMode,
   };
 }
@@ -183,7 +206,10 @@ export async function createCreation(
     message: input.message,
     photoRefs: input.photoRefs,
     mediaUrls: input.mediaUrls ?? [],
-    experienceMode: defaultExperienceMode(input.templateType),
+    experienceMode:
+      input.experienceMode === 'story' || input.experienceMode === 'classic'
+        ? input.experienceMode
+        : defaultExperienceMode(input.templateType),
     experienceVersion: 1,
     shareSlug,
     watermarked: true,

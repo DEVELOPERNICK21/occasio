@@ -2,9 +2,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Field } from '../../../../shared/ui/Field';
+import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
 import { useAuth } from '../../../auth/application/useAuth';
+import { AccountToggle } from '../../../auth/ui/components/AccountToggle';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import {
+  isInteractiveExperience,
+  resolveDraftExperienceMode,
+} from '../../domain/experienceMode';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
@@ -17,8 +23,13 @@ const MESSAGE_MAX = 280;
 
 export function DetailsScreen({ navigation }: Props) {
   const { user } = useAuth();
-  const { draft, setRecipientName, setFromName, setMessage } =
-    useCreateDraftContext();
+  const {
+    draft,
+    setRecipientName,
+    setFromName,
+    setMessage,
+    setExperienceMode,
+  } = useCreateDraftContext();
 
   useEffect(() => {
     if (draft.fromName.trim()) return;
@@ -27,6 +38,11 @@ export function DetailsScreen({ navigation }: Props) {
       setFromName(accountName);
     }
   }, [draft.fromName, setFromName, user?.displayName]);
+
+  const interactiveDefault = isInteractiveExperience(draft.templateType);
+  const interactiveOn =
+    resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
+    'story';
 
   return (
     <Screen
@@ -76,6 +92,23 @@ export function DetailsScreen({ navigation }: Props) {
             style={[styles.input, styles.textArea]}
           />
         </Field>
+
+        {interactiveDefault ? (
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleCopy}>
+              <Text style={styles.toggleTitle}>Interactive experience</Text>
+              <Text style={styles.toggleHint}>
+                Balloons, candle, gift, then photos and your letter
+              </Text>
+            </View>
+            <AccountToggle
+              value={interactiveOn}
+              onValueChange={(on) =>
+                setExperienceMode(on ? 'story' : 'classic')
+              }
+            />
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -99,5 +132,25 @@ const styles = StyleSheet.create({
   textArea: {
     minHeight: 132,
     textAlignVertical: 'top',
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  toggleCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  toggleTitle: {
+    fontSize: typography.sizeMd,
+    fontWeight: '600',
+    color: colors.ink,
+  },
+  toggleHint: {
+    fontSize: typography.sizeSm,
+    color: colors.muted,
+    lineHeight: typography.sizeSm * 1.4,
   },
 });

@@ -6,6 +6,8 @@ import { CardReaction } from '@/components/CardReaction';
 import { OccasionStickerShower } from '@/components/OccasionStickerShower';
 import { WishCard } from '@/components/WishCard';
 import { BalloonPopScene } from '@/components/story/BalloonPopScene';
+import { CandleScene } from '@/components/story/CandleScene';
+import { GiftScene } from '@/components/story/GiftScene';
 import { LetterScene } from '@/components/story/LetterScene';
 import { PhotoDeckScene } from '@/components/story/PhotoDeckScene';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
@@ -27,9 +29,7 @@ function ClassicFallback({ card, slug }: Props) {
         replayKey={replayKey}
       />
       <div className="wish-recipient-inner">
-        <p className="mb-6 text-center text-xs font-medium tracking-wide text-[var(--accent)]">
-          Occasio
-        </p>
+        <p className="story-brand">Occasio</p>
         <WishCard card={card} replayKey={replayKey} onReplay={handleReplay} />
         {card.isDemo ? (
           <p className="mt-4 text-center text-xs text-[var(--muted)]">
@@ -65,9 +65,7 @@ export function StoryPlayer({ card, slug }: Props) {
   return (
     <div className="wish-recipient-page story-player">
       <div className="wish-recipient-inner">
-        <p className="mb-4 text-center text-xs font-medium tracking-wide text-[var(--accent)]">
-          Occasio
-        </p>
+        <p className="story-brand">Occasio</p>
         <div
           className="story-progress"
           aria-label={`Step ${index + 1} of ${resolved.scenes.length}`}
@@ -83,6 +81,19 @@ export function StoryPlayer({ card, slug }: Props) {
         {scene === 'balloons' ? (
           <BalloonPopScene
             revealLine={resolved.revealLine}
+            onComplete={advance}
+          />
+        ) : null}
+        {scene === 'candle' ? (
+          <CandleScene
+            recipientName={card.recipientName}
+            onComplete={advance}
+          />
+        ) : null}
+        {scene === 'gift' ? (
+          <GiftScene
+            templateType={card.templateType}
+            recipientName={card.recipientName}
             onComplete={advance}
           />
         ) : null}

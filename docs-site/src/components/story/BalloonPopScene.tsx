@@ -1,6 +1,8 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
+import { chunkRevealWords } from '@/lib/experience/chunkRevealWords';
+import { playBalloonPop } from '@/lib/experience/playBalloonPop';
 
 type Props = {
   revealLine: string;
@@ -9,57 +11,71 @@ type Props = {
 
 const COUNT = 4;
 
-/** Occasio cream/green palette — glossy party balloons, not flat pills. */
+/** Warm emotional cartoon balloons — glossy, rounded, playful */
 const BALLOONS = [
-  { fill: '#2F5D50', highlight: '#7CB5A3', shadow: '#1A3A32' },
-  { fill: '#C4A574', highlight: '#F0E2C4', shadow: '#8A6F3E' },
-  { fill: '#5C8F7A', highlight: '#B8D9C8', shadow: '#2F5D50' },
-  { fill: '#8B7355', highlight: '#D4C4A8', shadow: '#5C4A35' },
+  { fill: '#E84B7A', highlight: '#FF9BB8', shadow: '#B8325A', string: '#C73A66' },
+  { fill: '#F6D35A', highlight: '#FFF0A8', shadow: '#D4A82E', string: '#C49A28' },
+  { fill: '#FF8A65', highlight: '#FFC4B0', shadow: '#E0563A', string: '#D45A3A' },
+  { fill: '#F06292', highlight: '#FFB3D1', shadow: '#C2185B', string: '#AD1457' },
 ] as const;
 
 function BalloonSvg({
   fill,
   highlight,
   shadow,
+  string,
   uid,
 }: {
   fill: string;
   highlight: string;
   shadow: string;
+  string: string;
   uid: string;
 }) {
   const gid = `balloon-grad-${uid}`;
+  const gloss = `balloon-gloss-${uid}`;
   return (
     <svg
       className="story-balloon__svg"
-      viewBox="0 0 80 120"
+      viewBox="0 0 90 130"
       width="100%"
       height="100%"
       aria-hidden
     >
       <defs>
-        <radialGradient id={gid} cx="35%" cy="30%" r="65%">
+        <radialGradient id={gid} cx="32%" cy="28%" r="70%">
           <stop offset="0%" stopColor={highlight} />
-          <stop offset="45%" stopColor={fill} />
+          <stop offset="42%" stopColor={fill} />
           <stop offset="100%" stopColor={shadow} />
         </radialGradient>
+        <linearGradient id={gloss} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </linearGradient>
       </defs>
-      {/* soft ground shadow */}
-      <ellipse cx="40" cy="108" rx="18" ry="4" fill="#2A2220" opacity="0.12" />
-      {/* balloon body */}
-      <ellipse cx="40" cy="42" rx="30" ry="38" fill={`url(#${gid})`} />
-      {/* gloss highlight */}
-      <ellipse cx="28" cy="28" rx="9" ry="14" fill="#FFFFFF" opacity="0.42" />
-      {/* knot */}
-      <path d="M36 78 L40 86 L44 78 Z" fill={shadow} />
-      {/* string */}
-      <path
-        d="M40 86 Q36 96 40 106 Q44 112 40 116"
+      <ellipse cx="45" cy="118" rx="16" ry="4" fill="#2A2220" opacity="0.12" />
+      <ellipse cx="45" cy="46" rx="32" ry="42" fill={`url(#${gid})`} />
+      <ellipse
+        cx="45"
+        cy="46"
+        rx="30"
+        ry="40"
         fill="none"
-        stroke="#5C534A"
-        strokeWidth="1.4"
+        stroke="#FFFFFF"
+        strokeOpacity="0.2"
+        strokeWidth="2"
+      />
+      <ellipse cx="32" cy="30" rx="10" ry="16" fill={`url(#${gloss})`} />
+      <ellipse cx="30" cy="26" rx="4" ry="7" fill="#FFFFFF" opacity="0.55" />
+      <path d="M40 86 L45 96 L50 86 Z" fill={shadow} />
+      <ellipse cx="45" cy="86" rx="5" ry="3" fill={fill} />
+      <path
+        d="M45 96 Q38 104 45 110 Q52 116 45 122"
+        fill="none"
+        stroke={string}
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity="0.65"
+        opacity="0.75"
       />
     </svg>
   );
@@ -67,45 +83,83 @@ function BalloonSvg({
 
 export function BalloonPopScene({ revealLine, onComplete }: Props) {
   const reactId = useId().replace(/:/g, '');
+  const words = useMemo(
+    () => chunkRevealWords(revealLine, COUNT),
+    [revealLine],
+  );
   const [popped, setPopped] = useState<boolean[]>(() =>
     Array.from({ length: COUNT }, () => false),
   );
+  const [burstAt, setBurstAt] = useState<number | null>(null);
+
   const allPopped = useMemo(() => popped.every(Boolean), [popped]);
+  const revealed = useMemo(
+    () => words.filter((_, i) => popped[i]),
+    [words, popped],
+  );
+
+  const popBalloon = useCallback(
+    (index: number) => {
+      if (popped[index]) return;
+      playBalloonPop();
+      setBurstAt(index);
+      window.setTimeout(() => setBurstAt(null), 420);
+      setPopped((prev) => prev.map((v, j) => (j === index ? true : v)));
+    },
+    [popped],
+  );
 
   return (
     <section className="story-balloons" aria-label="Pop the balloons">
       <h2 className="story-scene-title">Pop the balloons</h2>
+      <p className="story-scene-sub" aria-live="polite">
+        {revealed.length === 0
+          ? 'Tap each one — a little wish waits inside'
+          : revealed.join(' ')}
+      </p>
+
       <div className="story-balloons__grid">
         {popped.map((isPopped, i) => {
-          const palette = BALLOONS[i] ?? BALLOONS[0];
+          const palette = BALLOONS[i] ?? BALLOONS[0]!;
+          const word = words[i] ?? '';
           return (
             <button
               key={i}
               type="button"
-              className={`story-balloon${isPopped ? ' is-popped' : ''}`}
-              aria-label={isPopped ? 'Popped' : `Balloon ${i + 1}`}
-              disabled={isPopped}
-              onClick={() =>
-                setPopped((prev) => prev.map((v, j) => (j === i ? true : v)))
+              className={`story-balloon${isPopped ? ' is-popped' : ''}${burstAt === i ? ' is-bursting' : ''}`}
+              aria-label={
+                isPopped ? `Revealed: ${word}` : `Balloon — tap to reveal a word`
               }
+              disabled={isPopped}
+              onClick={() => popBalloon(i)}
             >
-              <BalloonSvg
-                fill={palette.fill}
-                highlight={palette.highlight}
-                shadow={palette.shadow}
-                uid={`${reactId}-${i}`}
-              />
+              {!isPopped ? (
+                <BalloonSvg
+                  fill={palette.fill}
+                  highlight={palette.highlight}
+                  shadow={palette.shadow}
+                  string={palette.string}
+                  uid={`${reactId}-${i}`}
+                />
+              ) : (
+                <span className="story-balloon__word" role="status">
+                  {word}
+                </span>
+              )}
+              {burstAt === i ? (
+                <span className="story-balloon__burst" aria-hidden />
+              ) : null}
             </button>
           );
         })}
       </div>
+
       {allPopped ? (
-        <p className="story-reveal-line" role="status">
+        <p className="story-reveal-line story-reveal-line--done" role="status">
           {revealLine}
         </p>
-      ) : (
-        <p className="story-scene-sub">Tap each one</p>
-      )}
+      ) : null}
+
       <button
         type="button"
         className="landing-btn-primary"

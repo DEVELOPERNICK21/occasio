@@ -1,6 +1,11 @@
 export type ExperienceMode = 'story' | 'classic';
 
-export type SceneId = 'balloons' | 'photo_deck' | 'letter';
+export type SceneId =
+  | 'balloons'
+  | 'candle'
+  | 'gift'
+  | 'photo_deck'
+  | 'letter';
 
 export type ExperienceCardInput = {
   templateType: string;

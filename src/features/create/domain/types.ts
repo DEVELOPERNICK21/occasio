@@ -21,6 +21,11 @@ export type CreationDraft = {
   /** Who the card is signed by — an unsigned card arrives anonymous. */
   fromName: string;
   message: string;
+  /**
+   * Recipient interactive story. Null = default from occasion
+   * (birthday/anniversary → story).
+   */
+  experienceMode: 'story' | 'classic' | null;
 };
 
 export type Creation = CreationDraft & {
@@ -40,4 +45,5 @@ export const EMPTY_CREATION_DRAFT: CreationDraft = {
   recipientName: '',
   fromName: '',
   message: '',
+  experienceMode: null,
 };

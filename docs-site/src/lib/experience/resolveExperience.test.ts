@@ -36,7 +36,13 @@ describe('resolveExperience', () => {
       experienceMode: null,
     });
     assert.equal(r.mode, 'story');
-    assert.deepEqual(r.scenes, ['balloons', 'photo_deck', 'letter']);
+    assert.deepEqual(r.scenes, [
+      'balloons',
+      'candle',
+      'gift',
+      'photo_deck',
+      'letter',
+    ]);
     assert.ok(r.revealLine.length > 0);
   });
 
@@ -47,7 +53,7 @@ describe('resolveExperience', () => {
       message: 'Happy day.',
       recipientName: 'Sam',
     });
-    assert.deepEqual(r.scenes, ['balloons', 'letter']);
+    assert.deepEqual(r.scenes, ['balloons', 'candle', 'gift', 'letter']);
   });
 
   it('filters blank media urls before deciding photo_deck', () => {
@@ -57,6 +63,6 @@ describe('resolveExperience', () => {
       message: 'Still us.',
       recipientName: 'Alex',
     });
-    assert.deepEqual(r.scenes, ['balloons', 'letter']);
+    assert.deepEqual(r.scenes, ['balloons', 'candle', 'gift', 'letter']);
   });
 });

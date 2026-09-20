@@ -53,9 +53,7 @@ export function WishCard({
         )}
         {card.fromName ? (
           <p className="wish-card-signoff">
-            <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--muted)' }}>
-              With love
-            </span>
+            <span className="wish-card-signoff__label">With love</span>
             {card.fromName}
           </p>
         ) : null}
@@ -110,7 +108,10 @@ export function WishCard({
               <p className="wish-card-message">{card.message}</p>
             ) : null}
             {card.fromName ? (
-              <p className="wish-card-signoff">With love, {card.fromName}</p>
+              <p className="wish-card-signoff">
+                <span className="wish-card-signoff__label">With love</span>
+                {card.fromName}
+              </p>
             ) : null}
           </div>
         ) : (
