@@ -160,14 +160,16 @@ export function BalloonPopScene({ revealLine, onComplete }: Props) {
         </p>
       ) : null}
 
-      <button
-        type="button"
-        className="landing-btn-primary"
-        disabled={!allPopped}
-        onClick={onComplete}
-      >
-        Continue
-      </button>
+      <div className="story-cta">
+        <button
+          type="button"
+          className="landing-btn-primary"
+          disabled={!allPopped}
+          onClick={onComplete}
+        >
+          Continue
+        </button>
+      </div>
     </section>
   );
 }

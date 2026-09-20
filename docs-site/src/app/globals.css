@@ -1320,7 +1320,15 @@ body {
   .story-gift-art.is-idle .story-gift-art__svg,
   .story-gift-art__glow,
   .story-gift-art__spark,
-  .story-gift-art__shimmer {
+  .story-gift-art__shimmer,
+  .story-envelope__svg,
+  .story-envelope__glow,
+  .story-envelope.is-opening .story-envelope__svg,
+  .story-envelope.is-opening .story-envelope__flap,
+  .story-letter-paper,
+  .story-letter-paper__greeting,
+  .story-letter-paper__line,
+  .story-letter-paper__signoff {
     animation: none !important;
   }
 
@@ -1399,6 +1407,208 @@ body {
   margin-bottom: 0.75rem;
 }
 
+/* Sealed envelope → handwritten letter (finale) */
+.story-envelope {
+  appearance: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem auto 1.5rem;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.story-envelope__glow {
+  position: absolute;
+  inset: 12% 8% 18%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 28%, transparent) 0%,
+    transparent 70%
+  );
+  animation: story-gift-glow 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.story-envelope__svg {
+  display: block;
+  filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--ink) 14%, transparent));
+  animation: story-gift-bob 2.6s ease-in-out infinite;
+}
+
+.story-envelope:hover .story-envelope__svg,
+.story-envelope:focus-visible .story-envelope__svg {
+  transform: translateY(-4px) scale(1.02);
+  animation: none;
+}
+
+.story-envelope.is-opening .story-envelope__svg {
+  animation: story-envelope-open 0.7s ease both;
+}
+
+.story-envelope.is-opening .story-envelope__flap {
+  transform-box: fill-box;
+  transform-origin: 120px 48px;
+  animation: story-envelope-flap 0.65s ease both;
+}
+
+.story-envelope.is-opening .story-envelope__glow {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes story-envelope-open {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.06) translateY(-8px);
+    opacity: 0.35;
+  }
+}
+
+@keyframes story-envelope-flap {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-155deg);
+  }
+}
+
+.story-envelope__hint {
+  font-family: var(--font-hand), cursive;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.story-letter-paper {
+  position: relative;
+  z-index: 2;
+  max-width: 22rem;
+  margin: 0.75rem auto 1.25rem;
+  padding: 1.75rem 1.5rem 1.85rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #fff 92%, var(--accent-soft)) 0%,
+      #fffef9 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--accent-soft));
+  border-radius: 4px 4px 6px 6px;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--accent-soft) 50%, transparent),
+    0 14px 32px color-mix(in srgb, var(--ink) 12%, transparent);
+  animation: story-letter-unfold 520ms cubic-bezier(0.22, 1.1, 0.36, 1) both;
+}
+
+.story-letter-paper::before {
+  content: '';
+  position: absolute;
+  left: 1.15rem;
+  top: 0.85rem;
+  bottom: 0.85rem;
+  width: 1px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  pointer-events: none;
+}
+
+.story-letter-paper__greeting {
+  margin: 0 0 1rem;
+  padding-left: 0.85rem;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.25;
+  text-wrap: balance;
+  animation: story-word-pop 420ms ease both;
+}
+
+.story-letter-paper__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-left: 0.85rem;
+}
+
+.story-letter-paper__line {
+  margin: 0;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+  animation: story-letter-write 480ms ease both;
+}
+
+.story-letter-paper__signoff {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  margin: 1.5rem 0 0;
+  padding-left: 0.85rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ink);
+  animation: story-letter-write 480ms ease both;
+}
+
+.story-letter-paper__signoff-label {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.story-letter-replay {
+  display: block;
+  margin: 0.25rem auto 0.75rem;
+  background: none;
+  border: none;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@keyframes story-letter-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94) rotate(-1.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes story-letter-write {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .story-brand {
   margin: 0 0 1rem;
   text-align: center;
@@ -1449,6 +1659,56 @@ body {
   gap: 0.75rem 1.25rem;
   margin: 0.5rem auto 1.25rem;
   max-width: 17rem;
+}
+
+/* Shared story scene CTAs — always stacked + centered */
+.story-balloons,
+.story-photos,
+.story-candle,
+.story-gift,
+.story-envelope-scene,
+.story-letter-write,
+.story-letter {
+  text-align: center;
+}
+
+.story-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 18rem;
+  margin: 0.85rem auto 0;
+}
+
+.story-cta .landing-btn-primary {
+  width: 100%;
+  max-width: 14rem;
+}
+
+.story-deck-next {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 0.5rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.story-deck-next:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .story-balloon {

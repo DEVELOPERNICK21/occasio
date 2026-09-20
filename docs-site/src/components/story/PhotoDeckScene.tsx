@@ -66,9 +66,11 @@ export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
     return (
       <section className="story-photos">
         <h2 className="story-scene-title">Sweet moments</h2>
-        <button type="button" className="landing-btn-primary" onClick={onComplete}>
-          Continue
-        </button>
+        <div className="story-cta">
+          <button type="button" className="landing-btn-primary" onClick={onComplete}>
+            Continue
+          </button>
+        </div>
       </section>
     );
   }
@@ -175,18 +177,26 @@ export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
         ) : null}
       </div>
       {remaining.length > 1 ? (
-        <button
-          type="button"
-          className="story-deck-next"
-          onClick={() => dismissTop('right')}
-          disabled={!!exiting}
-        >
-          Next photo
-        </button>
-      ) : null}
-      <button type="button" className="landing-btn-primary" onClick={onComplete}>
-        Continue
-      </button>
+        <div className="story-cta">
+          <button
+            type="button"
+            className="story-deck-next"
+            onClick={() => dismissTop('right')}
+            disabled={!!exiting}
+          >
+            Next photo
+          </button>
+          <button type="button" className="landing-btn-primary" onClick={onComplete}>
+            Continue
+          </button>
+        </div>
+      ) : (
+        <div className="story-cta">
+          <button type="button" className="landing-btn-primary" onClick={onComplete}>
+            Continue
+          </button>
+        </div>
+      )}
     </section>
   );
 }

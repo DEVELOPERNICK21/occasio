@@ -41,6 +41,8 @@ describe('resolveExperience', () => {
       'candle',
       'gift',
       'photo_deck',
+      'envelope',
+      'letter_write',
       'letter',
     ]);
     assert.ok(r.revealLine.length > 0);
@@ -53,7 +55,14 @@ describe('resolveExperience', () => {
       message: 'Happy day.',
       recipientName: 'Sam',
     });
-    assert.deepEqual(r.scenes, ['balloons', 'candle', 'gift', 'letter']);
+    assert.deepEqual(r.scenes, [
+      'balloons',
+      'candle',
+      'gift',
+      'envelope',
+      'letter_write',
+      'letter',
+    ]);
   });
 
   it('filters blank media urls before deciding photo_deck', () => {
@@ -63,6 +72,13 @@ describe('resolveExperience', () => {
       message: 'Still us.',
       recipientName: 'Alex',
     });
-    assert.deepEqual(r.scenes, ['balloons', 'candle', 'gift', 'letter']);
+    assert.deepEqual(r.scenes, [
+      'balloons',
+      'candle',
+      'gift',
+      'envelope',
+      'letter_write',
+      'letter',
+    ]);
   });
 });

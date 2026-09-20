@@ -367,14 +367,16 @@ export function GiftScene({ recipientName, onComplete }: Props) {
         </svg>
       </button>
 
-      <button
-        type="button"
-        className="landing-btn-primary"
-        disabled={phase !== 'open'}
-        onClick={onComplete}
-      >
-        Continue
-      </button>
+      <div className="story-cta">
+        <button
+          type="button"
+          className="landing-btn-primary"
+          disabled={phase !== 'open'}
+          onClick={onComplete}
+        >
+          Continue
+        </button>
+      </div>
     </section>
   );
 }

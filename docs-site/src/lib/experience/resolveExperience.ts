@@ -13,7 +13,7 @@ export function defaultExperienceMode(templateType: string): ExperienceMode {
 }
 
 /**
- * Phase B pack: balloons → candle → gift → photos? → letter
+ * Story pack: balloons → candle → gift → photos? → envelope → letter write → card
  */
 export function resolveExperience(
   card: ExperienceCardInput,
@@ -36,7 +36,7 @@ export function resolveExperience(
   const photos = (card.mediaUrls ?? []).map((u) => u.trim()).filter(Boolean);
   const scenes: SceneId[] = ['balloons', 'candle', 'gift'];
   if (photos.length > 0) scenes.push('photo_deck');
-  scenes.push('letter');
+  scenes.push('envelope', 'letter_write', 'letter');
 
   return { mode, scenes, revealLine };
 }

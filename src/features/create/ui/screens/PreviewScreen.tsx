@@ -142,7 +142,7 @@ export function PreviewScreen({ navigation }: Props) {
       resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
         'story' ? (
         <Text style={styles.hint}>
-          They’ll open balloons, candle, gift, photos, then your letter.
+          They’ll open balloons, candle, gift, photos, envelope, letter, then your card.
         </Text>
       ) : null}
       <Text style={styles.hint}>

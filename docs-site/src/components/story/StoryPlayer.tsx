@@ -7,8 +7,10 @@ import { OccasionStickerShower } from '@/components/OccasionStickerShower';
 import { WishCard } from '@/components/WishCard';
 import { BalloonPopScene } from '@/components/story/BalloonPopScene';
 import { CandleScene } from '@/components/story/CandleScene';
+import { EnvelopeScene } from '@/components/story/EnvelopeScene';
 import { GiftScene } from '@/components/story/GiftScene';
 import { LetterScene } from '@/components/story/LetterScene';
+import { LetterWriteScene } from '@/components/story/LetterWriteScene';
 import { PhotoDeckScene } from '@/components/story/PhotoDeckScene';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
 import type { SceneId } from '@/lib/experience/types';
@@ -99,6 +101,15 @@ export function StoryPlayer({ card, slug }: Props) {
         ) : null}
         {scene === 'photo_deck' ? (
           <PhotoDeckScene urls={card.mediaUrls ?? []} onComplete={advance} />
+        ) : null}
+        {scene === 'envelope' ? (
+          <EnvelopeScene
+            recipientName={card.recipientName}
+            onComplete={advance}
+          />
+        ) : null}
+        {scene === 'letter_write' ? (
+          <LetterWriteScene card={card} onComplete={advance} />
         ) : null}
         {scene === 'letter' ? <LetterScene card={card} slug={slug} /> : null}
 

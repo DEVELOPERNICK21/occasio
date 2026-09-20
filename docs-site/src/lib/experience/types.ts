@@ -5,6 +5,8 @@ export type SceneId =
   | 'candle'
   | 'gift'
   | 'photo_deck'
+  | 'envelope'
+  | 'letter_write'
   | 'letter';
 
 export type ExperienceCardInput = {

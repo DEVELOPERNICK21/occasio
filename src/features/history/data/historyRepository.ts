@@ -136,3 +136,33 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
     throw new HistoryError('NETWORK', 'Could not save to history.');
   }
 }
+
+/** Permanently remove a history entry owned by the signed-in user. */
+export async function deleteHistoryEntry(entryId: string): Promise<void> {
+  const uid = requireUid();
+
+  if (env.useMockAuth) {
+    mockStore = mockStore.filter(
+      (entry) => !(entry.id === entryId && entry.userId === uid),
+    );
+    return;
+  }
+
+  try {
+    const ref = firestore().collection('user_creations').doc(entryId);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      return;
+    }
+    const data = snap.data() as HistoryDoc | undefined;
+    if (!data || data.userId !== uid) {
+      throw new HistoryError('UNKNOWN', 'Could not delete this card.');
+    }
+    await ref.delete();
+  } catch (error) {
+    if (error instanceof HistoryError) {
+      throw error;
+    }
+    throw new HistoryError('NETWORK', 'Could not delete this card.');
+  }
+}

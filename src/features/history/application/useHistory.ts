@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { subscribeHistory, recordHistoryEntry } from '../data/historyRepository';
+import {
+  deleteHistoryEntry,
+  subscribeHistory,
+  recordHistoryEntry,
+} from '../data/historyRepository';
 import { enqueuePendingHistoryEntry } from '../data/pendingHistoryStorage';
 import { syncPendingHistoryEntries } from '../data/syncPendingHistory';
-import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
+import type { RecordHistoryInput } from '../domain/types';
 
 export function useHistory(enabled: boolean) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
@@ -43,6 +47,28 @@ export function useHistory(enabled: boolean) {
   }, [enabled]);
 
   return { entries, isLoading, error };
+}
+
+/** Permanently delete a history entry (UI confirms in screens). */
+export function useDeleteHistory() {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const remove = useCallback(async (entryId: string): Promise<boolean> => {
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteHistoryEntry(entryId);
+      setIsDeleting(false);
+      return true;
+    } catch {
+      setError('Could not delete this card. Try again.');
+      setIsDeleting(false);
+      return false;
+    }
+  }, []);
+
+  return { remove, isDeleting, error };
 }
 
 /** Persist a creation to signed-in history (idempotent by creationId). */

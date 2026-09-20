@@ -257,14 +257,16 @@ export function CandleScene({ recipientName, onComplete }: Props) {
         </svg>
       </button>
 
-      <button
-        type="button"
-        className="landing-btn-primary"
-        disabled={lit}
-        onClick={onComplete}
-      >
-        Continue
-      </button>
+      <div className="story-cta">
+        <button
+          type="button"
+          className="landing-btn-primary"
+          disabled={lit}
+          onClick={onComplete}
+        >
+          Continue
+        </button>
+      </div>
     </section>
   );
 }

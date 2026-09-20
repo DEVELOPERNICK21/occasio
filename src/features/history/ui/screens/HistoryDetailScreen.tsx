@@ -18,7 +18,7 @@ import type {
 import { useRequireAuth, useAuth } from '../../../auth/application/useAuth';
 import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
-import { useHistory } from '../../application/useHistory';
+import { useHistory, useDeleteHistory } from '../../application/useHistory';
 import { templateLabel } from '../../domain/display';
 import {
   formatHistoryDate,
@@ -32,6 +32,7 @@ type Props = CompositeScreenProps<
 
 export function HistoryDetailScreen({ navigation, route }: Props) {
   const { entries, isLoading } = useHistory(true);
+  const { remove, isDeleting } = useDeleteHistory();
   const { isSignedIn } = useAuth();
   const { requireAuth } = useRequireAuth();
   const { people } = useVaultPeople(isSignedIn);
@@ -83,6 +84,29 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
     } catch {
       Alert.alert('Could not copy', 'Long-press the link to copy manually.');
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete this card?',
+      `“${entry.recipientName}” will be removed from History permanently. This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            void remove(entry.id).then((ok) => {
+              if (ok) {
+                navigation.goBack();
+                return;
+              }
+              Alert.alert('Could not delete', 'Try again in a moment.');
+            });
+          },
+        },
+      ],
+    );
   };
 
   const linkCreation: LinkCreationParam = {
@@ -161,19 +185,37 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
         <Button
           label="Share again"
           onPress={() => void handleShare()}
-          disabled={expired}
+          disabled={expired || isDeleting}
         />
-        <Button label="Copy link" variant="secondary" onPress={handleCopy} disabled={expired} />
+        <Button
+          label="Copy link"
+          variant="secondary"
+          onPress={handleCopy}
+          disabled={expired || isDeleting}
+        />
         {entry.creationId ? (
           <Button
             label="Save for auto-send"
             variant="secondary"
             loading={isLinking}
+            disabled={isDeleting}
             onPress={handleSaveForAutoSend}
           />
         ) : null}
         {linkError ? <Text style={styles.expired}>{linkError}</Text> : null}
-        <Button label="Back" variant="ghost" onPress={() => navigation.goBack()} />
+        <Button
+          label="Delete from History"
+          variant="ghost"
+          loading={isDeleting}
+          onPress={handleDelete}
+          style={styles.deleteBtn}
+        />
+        <Button
+          label="Back"
+          variant="ghost"
+          onPress={() => navigation.goBack()}
+          disabled={isDeleting}
+        />
       </ScreenActions>
     </Screen>
   );
@@ -233,5 +275,8 @@ const styles = StyleSheet.create({
   expiry: {
     fontSize: typography.sizeXs,
     color: colors.muted,
+  },
+  deleteBtn: {
+    marginTop: spacing.sm,
   },
 });

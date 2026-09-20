@@ -20,7 +20,7 @@ import { getTemplateTheme } from '../../../create/domain/templateTheme';
 import type { TemplateType } from '../../../create/domain/types';
 import { useAuth, useRequireAuth } from '../../../auth/application/useAuth';
 import { GuestGateScreen } from '../../../../shared/ui/GuestGateScreen';
-import { useHistory } from '../../application/useHistory';
+import { useHistory, useDeleteHistory } from '../../application/useHistory';
 import { shareMessage } from '../../../create/domain/shareLink';
 import {
   filterHistoryEntries,
@@ -47,6 +47,7 @@ function HistoryListContent({ navigation }: ListProps) {
   useScrollToTop(scrollRef);
 
   const { entries, isLoading, error } = useHistory(true);
+  const { remove, isDeleting } = useDeleteHistory();
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(
@@ -86,6 +87,27 @@ function HistoryListContent({ navigation }: ListProps) {
     }
   };
 
+  const confirmDelete = (entry: HistoryEntry) => {
+    Alert.alert(
+      'Delete this card?',
+      `“${entry.recipientName}” will be removed from History permanently. This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            void remove(entry.id).then((ok) => {
+              if (!ok) {
+                Alert.alert('Could not delete', 'Try again in a moment.');
+              }
+            });
+          },
+        },
+      ],
+    );
+  };
+
   const openMenu = (entry: HistoryEntry) => {
     Alert.alert(entry.recipientName, undefined, [
       {
@@ -101,6 +123,11 @@ function HistoryListContent({ navigation }: ListProps) {
       {
         text: 'Copy link',
         onPress: () => copyEntry(entry),
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => confirmDelete(entry),
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
@@ -138,7 +165,7 @@ function HistoryListContent({ navigation }: ListProps) {
           {filtered.length === 0 ? (
             <Text style={styles.muted}>No wishes match that search.</Text>
           ) : (
-            <View style={styles.list}>
+            <View style={[styles.list, isDeleting ? styles.listBusy : null]}>
               {filtered.map((entry) => {
                 const expired = isHistoryEntryExpired(entry);
                 const theme = themeForEntry(entry.templateType);
@@ -199,6 +226,9 @@ const styles = StyleSheet.create({
   list: {
     marginTop: spacing.md,
     gap: spacing.md,
+  },
+  listBusy: {
+    opacity: 0.7,
   },
   muted: {
     marginTop: spacing.md,
