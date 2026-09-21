@@ -25,11 +25,21 @@ function sparkApiBase(): string {
   return 'https://occasio-greetings.vercel.app';
 }
 
+/** Recipient web (/c/[slug]) — local docs-site in __DEV__ so frames match before Vercel deploy. */
+function shareBase(): string {
+  if (__DEV__) {
+    return Platform.OS === 'android'
+      ? 'http://10.0.2.2:3000'
+      : 'http://localhost:3000';
+  }
+  return 'https://occasio-greetings.vercel.app';
+}
+
 export const env = {
   firebaseProjectId: firebaseConfig.projectId,
 
   /** Public recipient pages (docs-site /c/[slug]). */
-  shareBaseUrl: 'https://occasio-greetings.vercel.app',
+  shareBaseUrl: shareBase(),
 
   /** Server API for card create (Vercel /api/v1/*). */
   sparkApiBaseUrl: sparkApiBase(),

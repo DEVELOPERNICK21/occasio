@@ -46,7 +46,7 @@ function score(input: RecommendInput, template: TemplateDefinition): number {
  * difference.
  */
 export function recommendTemplates(input: RecommendInput): TemplateDefinition[] {
-  const limit = input.limit ?? 5;
+  const limit = input.limit ?? 8;
   const eligible = input.catalog.filter(
     (t) => t.photoSlots <= input.maxPhotosAllowed,
   );

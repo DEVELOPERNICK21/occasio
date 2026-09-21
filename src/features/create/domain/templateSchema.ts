@@ -16,7 +16,13 @@ export type Occasion =
 export type LayoutId =
   | 'editorial_portrait'
   | 'dual_editorial'
-  | 'minimal_fullscreen';
+  | 'minimal_fullscreen'
+  | 'film_strip'
+  | 'asymmetric_split'
+  | 'story_mosaic'
+  | 'polaroid_overlay';
+
+export type PhotoSlotCount = 1 | 2 | 3 | 4 | 5;
 
 export type TemplateTextRole = 'headline' | 'body' | 'name';
 
@@ -34,7 +40,7 @@ export type TemplateDefinition = {
   occasions: Occasion[];
   style: 'elegant' | 'emotional' | 'minimal';
   layoutId: LayoutId;
-  photoSlots: 1 | 2;
+  photoSlots: PhotoSlotCount;
   texts: TemplateTextSlot[];
   quickCreate?: boolean;
 };
@@ -43,6 +49,10 @@ const LAYOUT_IDS = new Set<LayoutId>([
   'editorial_portrait',
   'dual_editorial',
   'minimal_fullscreen',
+  'film_strip',
+  'asymmetric_split',
+  'story_mosaic',
+  'polaroid_overlay',
 ]);
 
 function isAudience(v: unknown): v is Audience {
@@ -66,6 +76,14 @@ function isOccasion(v: unknown): v is Occasion {
   );
 }
 
+function isLayoutId(v: unknown): v is LayoutId {
+  return typeof v === 'string' && LAYOUT_IDS.has(v as LayoutId);
+}
+
+function isPhotoSlots(v: unknown): v is PhotoSlotCount {
+  return v === 1 || v === 2 || v === 3 || v === 4 || v === 5;
+}
+
 function parseOne(raw: unknown): TemplateDefinition {
   if (!raw || typeof raw !== 'object') {
     throw new Error('Invalid template entry');
@@ -74,15 +92,11 @@ function parseOne(raw: unknown): TemplateDefinition {
   if (typeof r.id !== 'string' || typeof r.title !== 'string') {
     throw new Error('Template missing id/title');
   }
-  if (
-    r.layoutId !== 'editorial_portrait' &&
-    r.layoutId !== 'dual_editorial' &&
-    r.layoutId !== 'minimal_fullscreen'
-  ) {
+  if (!isLayoutId(r.layoutId)) {
     throw new Error(`Unknown layoutId: ${String(r.layoutId)}`);
   }
-  if (r.photoSlots !== 1 && r.photoSlots !== 2) {
-    throw new Error('photoSlots must be 1 or 2');
+  if (!isPhotoSlots(r.photoSlots)) {
+    throw new Error('photoSlots must be 1–5');
   }
   if (!Array.isArray(r.audiences) || !r.audiences.every(isAudience)) {
     throw new Error('Invalid audiences');
@@ -138,6 +152,5 @@ export function parseTemplateCatalog(raw: unknown): TemplateDefinition[] {
   if (parsed.length === 0) {
     throw new Error('Catalog is empty');
   }
-  void LAYOUT_IDS; // keep set for future guards
   return parsed;
 }

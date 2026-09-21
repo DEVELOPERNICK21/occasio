@@ -3,7 +3,7 @@
 import { useMemo, type CSSProperties } from 'react';
 import { OccasionIcon } from '@/components/OccasionIcon';
 import { getWebTemplateTheme } from '@/lib/templateThemes';
-import { wishLayoutId } from '@/lib/templateLayout';
+import { wishLayoutId, type WishLayoutId } from '@/lib/templateLayout';
 import { wishGreeting, type RecipientCard } from '@/lib/recipientCard';
 
 type Props = {
@@ -13,6 +13,87 @@ type Props = {
   replayKey?: number;
   onReplay?: () => void;
 };
+
+function CollageHero({
+  layoutId,
+  photos,
+}: {
+  layoutId: WishLayoutId;
+  photos: string[];
+}) {
+  if (layoutId === 'film_strip') {
+    return (
+      <div className="wish-card-hero wish-card-hero--strip wish-reveal wish-reveal--photo">
+        {[0, 1, 2].map((i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={photos[i]} alt="" className="wish-card-photo" />
+        ))}
+      </div>
+    );
+  }
+
+  if (layoutId === 'asymmetric_split') {
+    return (
+      <div className="wish-card-hero wish-card-hero--asym wish-reveal wish-reveal--photo">
+        <div className="wish-card-asym__top">
+          <div className="wish-card-asym__left">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[0]} alt="" className="wish-card-photo" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[1]} alt="" className="wish-card-photo" />
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[2]} alt="" className="wish-card-photo wish-card-asym__tall" />
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[3]} alt="" className="wish-card-photo wish-card-asym__footer" />
+      </div>
+    );
+  }
+
+  if (layoutId === 'story_mosaic') {
+    return (
+      <div className="wish-card-hero wish-card-hero--mosaic wish-reveal wish-reveal--photo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[0]} alt="" className="wish-card-photo wish-card-mosaic__banner" />
+        <div className="wish-card-mosaic__row">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[1]} alt="" className="wish-card-photo" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[2]} alt="" className="wish-card-photo" />
+        </div>
+        <div className="wish-card-mosaic__row">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[3]} alt="" className="wish-card-photo" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[4]} alt="" className="wish-card-photo" />
+        </div>
+      </div>
+    );
+  }
+
+  if (layoutId === 'polaroid_overlay') {
+    return (
+      <div className="wish-card-hero wish-card-hero--polaroid wish-reveal wish-reveal--photo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[0]} alt="" className="wish-card-photo" />
+        <div className="wish-card-polaroid-inset">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[1]} alt="" className="wish-card-photo" />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+const COLLAGE_LAYOUTS: WishLayoutId[] = [
+  'film_strip',
+  'asymmetric_split',
+  'story_mosaic',
+  'polaroid_overlay',
+];
 
 export function WishCard({
   card,
@@ -29,6 +110,7 @@ export function WishCard({
   const theme = useMemo(() => getWebTemplateTheme(card.templateType), [card.templateType]);
   const greeting = wishGreeting(card.templateType);
   const displayName = card.recipientName.trim() || 'Someone special';
+  const isCollage = COLLAGE_LAYOUTS.includes(layoutId);
 
   const rootStyle = {
     '--wish-accent': theme.accent,
@@ -88,6 +170,8 @@ export function WishCard({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photos[1]} alt="" className="wish-card-photo" />
           </div>
+        ) : isCollage && hasPhoto ? (
+          <CollageHero layoutId={layoutId} photos={photos} />
         ) : hasPhoto ? (
           <div className="wish-card-hero wish-reveal wish-reveal--photo">
             {/* eslint-disable-next-line @next/next/no-img-element */}

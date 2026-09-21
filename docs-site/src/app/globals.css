@@ -1061,6 +1061,127 @@ body {
   background: var(--surface);
 }
 
+/* Frame: memory strip — three stacked horizontals. */
+.wish-card-hero--strip {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 3px;
+  aspect-ratio: 4 / 5;
+  background: var(--surface);
+  padding: 0.4rem;
+}
+
+.wish-card-hero--strip .wish-card-photo {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.wish-card-hero--strip::after {
+  display: none;
+}
+
+/* Frame: side stories — tall right + stacked left + footer. */
+.wish-card-hero--asym {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  aspect-ratio: 4 / 5;
+  background: var(--surface);
+  padding: 0.4rem;
+}
+
+.wish-card-hero--asym::after {
+  display: none;
+}
+
+.wish-card-asym__top {
+  flex: 3;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 3px;
+  min-height: 0;
+}
+
+.wish-card-asym__left {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  min-height: 0;
+}
+
+.wish-card-asym__left .wish-card-photo,
+.wish-card-asym__tall,
+.wish-card-asym__footer {
+  border-radius: var(--radius-sm);
+  min-height: 0;
+  height: 100%;
+}
+
+.wish-card-asym__footer {
+  flex: 1;
+}
+
+/* Frame: photo mosaic — banner + 2×2. */
+.wish-card-hero--mosaic {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  aspect-ratio: 4 / 5;
+  background: var(--surface);
+  padding: 0.4rem;
+}
+
+.wish-card-hero--mosaic::after {
+  display: none;
+}
+
+.wish-card-mosaic__banner {
+  flex: 1.2;
+  border-radius: var(--radius-sm);
+  min-height: 0;
+}
+
+.wish-card-mosaic__row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  min-height: 0;
+}
+
+.wish-card-mosaic__row .wish-card-photo {
+  border-radius: var(--radius-sm);
+  min-height: 0;
+  height: 100%;
+}
+
+/* Frame: snapshot — full bleed + inset polaroid. */
+.wish-card-hero--polaroid {
+  aspect-ratio: 4 / 5;
+  background: var(--surface);
+}
+
+.wish-card-hero--polaroid::after {
+  display: none;
+}
+
+.wish-card-polaroid-inset {
+  position: absolute;
+  top: 1rem;
+  right: 0.85rem;
+  width: 34%;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  border: 3px solid var(--surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transform: rotate(4deg);
+  z-index: 1;
+}
+
 /* Frame: full photo — copy sits over the image, message reads below. */
 .wish-card-hero--full {
   aspect-ratio: 4 / 5;

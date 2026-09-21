@@ -30,6 +30,22 @@ function PhotoFill({ uri, fallback }: { uri?: string; fallback: string }) {
   return <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />;
 }
 
+function MiniSlot({
+  uri,
+  fallback,
+  style,
+}: {
+  uri?: string;
+  fallback: string;
+  style?: object;
+}) {
+  return (
+    <View style={[styles.miniSlot, style]}>
+      <PhotoFill uri={uri} fallback={fallback} />
+    </View>
+  );
+}
+
 /** Mini editorial mock — silhouette only, no live TemplateRenderer overflow. */
 export function DesignFramePreview({
   layoutId,
@@ -71,6 +87,68 @@ export function DesignFramePreview({
               </Text>
               <View style={[styles.accentDot, { backgroundColor: tone.accent }]} />
             </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'film_strip') {
+    return (
+      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+        <View style={styles.stripCol}>
+          <MiniSlot uri={photoUris[0]} fallback={tone.photo} />
+          <MiniSlot uri={photoUris[1]} fallback={tone.photoAlt} />
+          <MiniSlot uri={photoUris[2]} fallback={tone.photo} />
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'asymmetric_split') {
+    return (
+      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+        <View style={styles.asymGrid}>
+          <View style={styles.asymTop}>
+            <View style={styles.asymLeft}>
+              <MiniSlot uri={photoUris[0]} fallback={tone.photo} />
+              <MiniSlot uri={photoUris[1]} fallback={tone.photoAlt} />
+            </View>
+            <MiniSlot uri={photoUris[2]} fallback={tone.photo} style={styles.asymTall} />
+          </View>
+          <MiniSlot uri={photoUris[3]} fallback={tone.photoAlt} style={styles.asymFooter} />
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'story_mosaic') {
+    return (
+      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+        <View style={styles.mosaicGrid}>
+          <MiniSlot uri={photoUris[0]} fallback={tone.photo} style={styles.mosaicBanner} />
+          <View style={styles.mosaicRow}>
+            <MiniSlot uri={photoUris[1]} fallback={tone.photoAlt} />
+            <MiniSlot uri={photoUris[2]} fallback={tone.photo} />
+          </View>
+          <View style={styles.mosaicRow}>
+            <MiniSlot uri={photoUris[3]} fallback={tone.photo} />
+            <MiniSlot uri={photoUris[4]} fallback={tone.photoAlt} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'polaroid_overlay') {
+    return (
+      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+        <View style={styles.polaroidStage}>
+          <View style={styles.polaroidBase}>
+            <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
+          </View>
+          <View style={styles.polaroidInset}>
+            <PhotoFill uri={photoUris[1]} fallback={tone.photoAlt} />
           </View>
         </View>
       </View>
@@ -215,5 +293,67 @@ const styles = StyleSheet.create({
     bottom: '40%',
     backgroundColor: colors.white,
     opacity: 0.14,
+  },
+  miniSlot: {
+    flex: 1,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  stripCol: {
+    flex: 1,
+    gap: 3,
+  },
+  asymGrid: {
+    flex: 1,
+    gap: 3,
+  },
+  asymTop: {
+    flex: 3,
+    flexDirection: 'row',
+    gap: 3,
+  },
+  asymLeft: {
+    flex: 1,
+    gap: 3,
+  },
+  asymTall: {
+    flex: 1.15,
+  },
+  asymFooter: {
+    flex: 1,
+  },
+  mosaicGrid: {
+    flex: 1,
+    gap: 3,
+  },
+  mosaicBanner: {
+    flex: 1.15,
+  },
+  mosaicRow: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 3,
+  },
+  polaroidStage: {
+    flex: 1,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  polaroidBase: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  polaroidInset: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: '34%',
+    aspectRatio: 3 / 4,
+    borderRadius: 3,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    overflow: 'hidden',
+    transform: [{ rotate: '5deg' }],
   },
 });

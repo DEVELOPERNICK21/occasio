@@ -94,5 +94,85 @@
       { "key": "headline", "role": "headline", "default": "Thank you" },
       { "key": "body", "role": "body", "default": "for being there." }
     ]
+  },
+  {
+    "id": "G01",
+    "title": "Memory strip",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "minimal",
+    "layoutId": "film_strip",
+    "photoSlots": 3,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Three moments worth keeping." }
+    ]
+  },
+  {
+    "id": "G02",
+    "title": "Side stories",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "asymmetric_split",
+    "photoSlots": 4,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Every angle of you." }
+    ]
+  },
+  {
+    "id": "G03",
+    "title": "Photo mosaic",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "elegant",
+    "layoutId": "story_mosaic",
+    "photoSlots": 5,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "A little gallery of us." }
+    ]
+  },
+  {
+    "id": "G04",
+    "title": "Snapshot",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "polaroid_overlay",
+    "photoSlots": 2,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "One for the album." }
+    ]
   }
 ]

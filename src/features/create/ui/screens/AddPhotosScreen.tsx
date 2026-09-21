@@ -34,7 +34,7 @@ export function AddPhotosScreen({ navigation }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
   const { pickPhoto, picking } = usePhotoPicker();
   const [validationError, setValidationError] = useState<string | null>(null);
-  // Story photo deck + letter use all picks; frame layouts only show 1–2.
+  // Story photo deck + letter use all picks; frame layouts use 1–5 slots.
   const maxPhotos = environmentMaxPhotos;
 
   useEffect(() => {

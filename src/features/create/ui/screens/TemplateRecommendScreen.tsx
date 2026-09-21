@@ -34,6 +34,10 @@ const TEMPLATE_CUES: Record<string, string> = {
   B10: 'Their photo, nothing else',
   L06: 'Warm and personal',
   T01: 'Simple and sincere',
+  G01: 'Three photos in a strip',
+  G02: 'Tall photo with side stories',
+  G03: 'Banner plus a photo grid',
+  G04: 'Full photo with a snapshot inset',
 };
 
 const STYLE_TONES: Record<
