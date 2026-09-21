@@ -89,19 +89,19 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   const handleDelete = () => {
     Alert.alert(
       'Delete this card?',
-      `“${entry.recipientName}” will be removed from History permanently. This cannot be undone.`,
+      `“${entry.recipientName}” will be removed from History and the share link will stop working. This cannot be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            void remove(entry.id).then((ok) => {
-              if (ok) {
-                navigation.goBack();
+            void remove(entry.id).then((err) => {
+              if (err) {
+                Alert.alert('Could not delete', err);
                 return;
               }
-              Alert.alert('Could not delete', 'Try again in a moment.');
+              navigation.goBack();
             });
           },
         },

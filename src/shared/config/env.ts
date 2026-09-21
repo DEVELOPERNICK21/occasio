@@ -17,16 +17,8 @@ function emulatorApiBase(): string {
   return `http://${host}:${FUNCTIONS_EMULATOR_PORT}/${firebaseConfig.projectId}/${firebaseConfig.region}/api`;
 }
 
-/** Vercel API base for Spark create (POST /api/v1/creations). */
-function sparkApiBase(): string {
-  // Physical device / prod: must be the deployed docs-site URL.
-  // iOS simulator + local docs-site: `cd docs-site && npm run dev` then uncomment:
-  // return Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
-  return 'https://occasio-greetings.vercel.app';
-}
-
-/** Recipient web (/c/[slug]) — local docs-site in __DEV__ so frames match before Vercel deploy. */
-function shareBase(): string {
+/** Docs-site origin: local in __DEV__, Vercel in release. */
+function docsSiteBase(): string {
   if (__DEV__) {
     return Platform.OS === 'android'
       ? 'http://10.0.2.2:3000'
@@ -39,10 +31,10 @@ export const env = {
   firebaseProjectId: firebaseConfig.projectId,
 
   /** Public recipient pages (docs-site /c/[slug]). */
-  shareBaseUrl: shareBase(),
+  shareBaseUrl: docsSiteBase(),
 
-  /** Server API for card create (Vercel /api/v1/*). */
-  sparkApiBaseUrl: sparkApiBase(),
+  /** Server API for card create + revoke (docs-site /api/v1/*). */
+  sparkApiBaseUrl: docsSiteBase(),
 
   /**
    * When true, create/upload skip network and return mocks.

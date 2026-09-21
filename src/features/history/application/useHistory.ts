@@ -4,9 +4,10 @@ import {
   subscribeHistory,
   recordHistoryEntry,
 } from '../data/historyRepository';
+import { HistoryError } from '../data/historyErrors';
 import { enqueuePendingHistoryEntry } from '../data/pendingHistoryStorage';
 import { syncPendingHistoryEntries } from '../data/syncPendingHistory';
-import type { RecordHistoryInput } from '../domain/types';
+import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
 
 export function useHistory(enabled: boolean) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
@@ -54,17 +55,21 @@ export function useDeleteHistory() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const remove = useCallback(async (entryId: string): Promise<boolean> => {
+  const remove = useCallback(async (entryId: string): Promise<string | null> => {
     setIsDeleting(true);
     setError(null);
     try {
       await deleteHistoryEntry(entryId);
       setIsDeleting(false);
-      return true;
-    } catch {
-      setError('Could not delete this card. Try again.');
+      return null;
+    } catch (err) {
+      const message =
+        err instanceof HistoryError
+          ? err.message
+          : 'Could not delete this card. Try again.';
+      setError(message);
       setIsDeleting(false);
-      return false;
+      return message;
     }
   }, []);
 

@@ -4,25 +4,30 @@ import {
 } from '../../src/features/create/domain/experienceMode';
 
 describe('isInteractiveExperience', () => {
-  it('true for birthday and anniversary', () => {
+  it('true for all five create-flow moments', () => {
     expect(isInteractiveExperience('birthday')).toBe(true);
     expect(isInteractiveExperience('anniversary')).toBe(true);
+    expect(isInteractiveExperience('thank_you')).toBe(true);
+    expect(isInteractiveExperience('congratulations')).toBe(true);
+    expect(isInteractiveExperience('just_because')).toBe(true);
   });
 
-  it('false otherwise', () => {
-    expect(isInteractiveExperience('thank_you')).toBe(false);
+  it('false for null and legacy-only types', () => {
     expect(isInteractiveExperience(null)).toBe(false);
+    expect(isInteractiveExperience('sorry')).toBe(false);
   });
 });
 
 describe('resolveDraftExperienceMode', () => {
   it('honors explicit override', () => {
     expect(resolveDraftExperienceMode('birthday', 'classic')).toBe('classic');
-    expect(resolveDraftExperienceMode('thank_you', 'story')).toBe('story');
+    expect(resolveDraftExperienceMode('thank_you', 'classic')).toBe('classic');
   });
 
-  it('defaults from occasion when null', () => {
+  it('defaults to story for every create-flow moment', () => {
     expect(resolveDraftExperienceMode('birthday', null)).toBe('story');
-    expect(resolveDraftExperienceMode('thank_you', null)).toBe('classic');
+    expect(resolveDraftExperienceMode('thank_you', null)).toBe('story');
+    expect(resolveDraftExperienceMode('congratulations', null)).toBe('story');
+    expect(resolveDraftExperienceMode('just_because', null)).toBe('story');
   });
 });

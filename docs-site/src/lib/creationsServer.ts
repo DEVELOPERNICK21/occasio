@@ -299,6 +299,56 @@ export async function getCardBySlug(slug: string): Promise<RecipientCard | null>
   return result.status === 'found' ? result.card : null;
 }
 
+export type RevokeCreationResult =
+  | { status: 'revoked' }
+  | { status: 'not_found' }
+  | { status: 'forbidden' };
+
+/**
+ * Kill a public share link after History delete.
+ * Requires ownership via `user_creations/{creationId}`.
+ */
+export async function revokeCreation(
+  creationId: string,
+  uid: string,
+): Promise<RevokeCreationResult> {
+  if (!isFirebaseAdminConfigured()) {
+    throw new ApiRouteError(503, 'INTERNAL', 'Server is not configured');
+  }
+
+  const id = creationId.trim();
+  if (!id || id.length > 128) {
+    return { status: 'not_found' };
+  }
+
+  const db = getAdminFirestore();
+  const historyRef = db.collection('user_creations').doc(id);
+  const historySnap = await historyRef.get();
+
+  if (!historySnap.exists) {
+    return { status: 'not_found' };
+  }
+
+  const history = historySnap.data() as { userId?: string } | undefined;
+  if (!history || history.userId !== uid) {
+    return { status: 'forbidden' };
+  }
+
+  const creationRef = db.collection('creations').doc(id);
+  const creationSnap = await creationRef.get();
+  if (creationSnap.exists) {
+    // Expire immediately so GET /cards/:slug returns 410.
+    await creationRef.update({
+      expiresAt: Timestamp.fromDate(new Date(0)),
+      revokedAt: Timestamp.now(),
+      revokedBy: uid,
+    });
+  }
+
+  await historyRef.delete();
+  return { status: 'revoked' };
+}
+
 /** Increment view count (best-effort, server-only). */
 export async function recordCardView(slug: string): Promise<void> {
   if (!isFirebaseAdminConfigured()) return;

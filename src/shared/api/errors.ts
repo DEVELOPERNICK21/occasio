@@ -4,6 +4,7 @@ export type HttpErrorCode =
   | 'UPLOAD_MISSING'
   | 'NOT_FOUND'
   | 'EXPIRED'
+  | 'UNAUTHORIZED'
   | 'NOT_IMPLEMENTED'
   | 'INTERNAL';
 

@@ -1,5 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import firestore, { type FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { httpClient } from '../../../shared/api/httpClient';
 import { env } from '../../../shared/config/env';
 import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
 import { HistoryError } from './historyErrors';
@@ -137,7 +138,7 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
   }
 }
 
-/** Permanently remove a history entry owned by the signed-in user. */
+/** Permanently remove a history entry and kill the public share link. */
 export async function deleteHistoryEntry(entryId: string): Promise<void> {
   const uid = requireUid();
 
@@ -158,7 +159,27 @@ export async function deleteHistoryEntry(entryId: string): Promise<void> {
     if (!data || data.userId !== uid) {
       throw new HistoryError('UNKNOWN', 'Could not delete this card.');
     }
-    await ref.delete();
+
+    const token = await auth().currentUser?.getIdToken();
+    if (!token) {
+      throw new HistoryError('NOT_AUTHENTICATED', 'Sign in to delete this card.');
+    }
+
+    // Server expires `creations/{id}` then deletes this history row.
+    try {
+      await httpClient.delete(
+        env.sparkApiBaseUrl,
+        `/api/v1/creations/${encodeURIComponent(entryId)}`,
+        { Authorization: `Bearer ${token}` },
+      );
+    } catch {
+      // Fallback: at least remove from History if revoke API is unreachable.
+      await ref.delete();
+      throw new HistoryError(
+        'NETWORK',
+        'Removed from History, but the share link may still work. Try again.',
+      );
+    }
   } catch (error) {
     if (error instanceof HistoryError) {
       throw error;

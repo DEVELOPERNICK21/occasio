@@ -1,14 +1,21 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
   recipientName: string;
+  templateType?: string;
   onComplete: () => void;
 };
 
-export function EnvelopeScene({ recipientName, onComplete }: Props) {
+export function EnvelopeScene({
+  recipientName,
+  templateType = 'birthday',
+  onComplete,
+}: Props) {
   const name = recipientName.trim() || 'you';
+  const copy = storyCopyFor(templateType);
   const [opened, setOpened] = useState(false);
 
   const open = useCallback(() => {
@@ -22,7 +29,7 @@ export function EnvelopeScene({ recipientName, onComplete }: Props) {
       className={`story-envelope-scene${opened ? ' is-open' : ''}`}
       aria-label="Open the letter"
     >
-      <h2 className="story-scene-title">A letter for {name}</h2>
+      <h2 className="story-scene-title">{copy.envelopeTitle(name)}</h2>
       <p className="story-scene-sub">
         {opened ? 'Opening…' : 'Tap the envelope to open'}
       </p>

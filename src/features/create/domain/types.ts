@@ -23,7 +23,7 @@ export type CreationDraft = {
   message: string;
   /**
    * Recipient interactive story. Null = default from occasion
-   * (birthday/anniversary → story).
+   * (all five create-flow moments → story).
    */
   experienceMode: 'story' | 'classic' | null;
   /**

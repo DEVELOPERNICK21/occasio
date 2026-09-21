@@ -2,6 +2,7 @@
 
 import { useCallback, useId, useState } from 'react';
 import { playGiftUnwrap } from '@/lib/experience/playBalloonPop';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
   templateType: string;
@@ -45,9 +46,10 @@ function SmallRose({
   );
 }
 
-export function GiftScene({ recipientName, onComplete }: Props) {
+export function GiftScene({ templateType, recipientName, onComplete }: Props) {
   const uid = useId().replace(/:/g, '');
   const name = recipientName.trim() || 'you';
+  const copy = storyCopyFor(templateType);
   const [phase, setPhase] = useState<Phase>('wrapped');
   const open = phase === 'unwrapping' || phase === 'open';
 
@@ -63,12 +65,8 @@ export function GiftScene({ recipientName, onComplete }: Props) {
       className={`story-gift story-gift--${phase}`}
       aria-label={open ? `For ${name}` : `A gift for ${name}`}
     >
-      <h2 className="story-scene-title">
-        {open ? `For ${name}` : `A gift for ${name}`}
-      </h2>
-      <p className="story-scene-sub">
-        {open ? 'A little joy, just for you' : 'Tap to unwrap'}
-      </p>
+      <h2 className="story-scene-title">{copy.giftTitle(name, open)}</h2>
+      <p className="story-scene-sub">{copy.giftSub(open)}</p>
 
       <button
         type="button"

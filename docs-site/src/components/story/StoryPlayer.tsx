@@ -13,6 +13,7 @@ import { LetterScene } from '@/components/story/LetterScene';
 import { LetterWriteScene } from '@/components/story/LetterWriteScene';
 import { PhotoDeckScene } from '@/components/story/PhotoDeckScene';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 import type { SceneId } from '@/lib/experience/types';
 import type { RecipientCard } from '@/lib/recipientCard';
 
@@ -52,6 +53,10 @@ function ClassicFallback({ card, slug }: Props) {
 
 export function StoryPlayer({ card, slug }: Props) {
   const resolved = useMemo(() => resolveExperience(card), [card]);
+  const copy = useMemo(
+    () => storyCopyFor(card.templateType),
+    [card.templateType],
+  );
   const [index, setIndex] = useState(0);
 
   const scene: SceneId | null = resolved.scenes[index] ?? null;
@@ -83,12 +88,14 @@ export function StoryPlayer({ card, slug }: Props) {
         {scene === 'balloons' ? (
           <BalloonPopScene
             revealLine={resolved.revealLine}
+            templateType={card.templateType}
             onComplete={advance}
           />
         ) : null}
         {scene === 'candle' ? (
           <CandleScene
             recipientName={card.recipientName}
+            templateType={card.templateType}
             onComplete={advance}
           />
         ) : null}
@@ -100,11 +107,17 @@ export function StoryPlayer({ card, slug }: Props) {
           />
         ) : null}
         {scene === 'photo_deck' ? (
-          <PhotoDeckScene urls={card.mediaUrls ?? []} onComplete={advance} />
+          <PhotoDeckScene
+            urls={card.mediaUrls ?? []}
+            title={copy.photosTitle}
+            captions={copy.photoCaptions}
+            onComplete={advance}
+          />
         ) : null}
         {scene === 'envelope' ? (
           <EnvelopeScene
             recipientName={card.recipientName}
+            templateType={card.templateType}
             onComplete={advance}
           />
         ) : null}

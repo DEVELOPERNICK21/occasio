@@ -3,9 +3,11 @@
 import { useCallback, useId, useMemo, useState } from 'react';
 import { chunkRevealWords } from '@/lib/experience/chunkRevealWords';
 import { playBalloonPop } from '@/lib/experience/playBalloonPop';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
   revealLine: string;
+  templateType?: string;
   onComplete: () => void;
 };
 
@@ -109,8 +111,13 @@ function ConfettiBurst() {
   );
 }
 
-export function BalloonPopScene({ revealLine, onComplete }: Props) {
+export function BalloonPopScene({
+  revealLine,
+  templateType = 'birthday',
+  onComplete,
+}: Props) {
   const reactId = useId().replace(/:/g, '');
+  const copy = storyCopyFor(templateType);
   const words = useMemo(
     () => chunkRevealWords(revealLine, COUNT),
     [revealLine],
@@ -138,8 +145,8 @@ export function BalloonPopScene({ revealLine, onComplete }: Props) {
   );
 
   return (
-    <section className="story-balloons" aria-label="Pop the balloons">
-      <h2 className="story-scene-title">Pop the balloons</h2>
+    <section className="story-balloons" aria-label={copy.balloonsTitle}>
+      <h2 className="story-scene-title">{copy.balloonsTitle}</h2>
       <p className="story-scene-sub" aria-live="polite">
         {revealed.length === 0
           ? 'Tap each one — a little wish waits inside'

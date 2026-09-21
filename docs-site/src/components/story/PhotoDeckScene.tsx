@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 type Props = {
   urls: string[];
   onComplete: () => void;
+  title?: string;
   captions?: string[];
 };
 
@@ -14,16 +15,14 @@ const BEHIND = [
   { x: -8, y: 22, rot: -3 },
 ] as const;
 
-const CAPTIONS = [
-  'Happy birthday',
-  'Celebrating you',
-  'Sweet moments',
-  'With love',
-] as const;
-
 type ExitDir = 'left' | 'right' | null;
 
-export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
+export function PhotoDeckScene({
+  urls,
+  onComplete,
+  title = 'Sweet moments',
+  captions,
+}: Props) {
   const photos = urls.map((u) => u.trim()).filter(Boolean);
   const [top, setTop] = useState(0);
   const [dx, setDx] = useState(0);
@@ -65,7 +64,7 @@ export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
   if (photos.length === 0 || done) {
     return (
       <section className="story-photos">
-        <h2 className="story-scene-title">Sweet moments</h2>
+        <h2 className="story-scene-title">{title}</h2>
         <div className="story-cta">
           <button type="button" className="landing-btn-primary" onClick={onComplete}>
             Continue
@@ -78,7 +77,7 @@ export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
   const topUrl = remaining[0]!;
   const behind = remaining.slice(1, 4);
   const caption =
-    captions?.[top] ?? CAPTIONS[top % CAPTIONS.length] ?? 'Happy birthday';
+    captions?.[top] ?? captions?.[top % (captions?.length || 1)] ?? 'This one';
 
   const dragOpacity = Math.max(0.55, 1 - Math.abs(dx) / 220);
   const exitTransform =
@@ -90,7 +89,7 @@ export function PhotoDeckScene({ urls, onComplete, captions }: Props) {
 
   return (
     <section className="story-photos">
-      <h2 className="story-scene-title">Sweet moments</h2>
+      <h2 className="story-scene-title">{title}</h2>
       <p className="story-scene-sub">
         Swipe through · {remaining.length} left
       </p>

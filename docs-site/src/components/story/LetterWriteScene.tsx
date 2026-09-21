@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 import { wishGreeting, type RecipientCard } from '@/lib/recipientCard';
 
 type Props = {
@@ -12,6 +13,7 @@ export function LetterWriteScene({ card, onComplete }: Props) {
   const name = card.recipientName.trim() || 'you';
   const from = card.fromName?.trim() || '';
   const greeting = wishGreeting(card.templateType);
+  const copy = storyCopyFor(card.templateType);
   const message =
     card.message?.trim() ||
     'Thinking of you today — and always grateful you’re in my life.';
@@ -42,7 +44,7 @@ export function LetterWriteScene({ card, onComplete }: Props) {
 
   return (
     <section className="story-letter-write" aria-label="A handwritten letter">
-      <h2 className="story-scene-title">A letter for you</h2>
+      <h2 className="story-scene-title">{copy.letterWriteTitle}</h2>
       <p className="story-scene-sub">
         {done ? 'When you’re ready, continue' : 'Someone is writing…'}
       </p>

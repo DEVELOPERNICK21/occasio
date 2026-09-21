@@ -11,6 +11,7 @@ function mapStatusToCode(status: number, bodyCode?: string): HttpErrorCode {
     return bodyCode;
   }
   if (status === 400) return 'VALIDATION_ERROR';
+  if (status === 401 || status === 403) return 'UNAUTHORIZED';
   if (status === 402) return 'QUOTA_EXCEEDED';
   if (status === 404) return 'NOT_FOUND';
   if (status === 410) return 'EXPIRED';
@@ -25,6 +26,7 @@ function isHttpErrorCode(value: string): value is HttpErrorCode {
     'UPLOAD_MISSING',
     'NOT_FOUND',
     'EXPIRED',
+    'UNAUTHORIZED',
     'NOT_IMPLEMENTED',
     'INTERNAL',
   ].includes(value);
@@ -83,5 +85,8 @@ export const httpClient = {
     headers?: Record<string, string>,
   ) {
     return httpRequest<T>(baseUrl, path, { method: 'POST', body, headers });
+  },
+  delete<T>(baseUrl: string, path: string, headers?: Record<string, string>) {
+    return httpRequest<T>(baseUrl, path, { method: 'DELETE', headers });
   },
 };

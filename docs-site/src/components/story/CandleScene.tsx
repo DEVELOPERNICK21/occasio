@@ -2,16 +2,23 @@
 
 import { useCallback, useState } from 'react';
 import { playCandleBlow } from '@/lib/experience/playBalloonPop';
+import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
   recipientName: string;
+  templateType?: string;
   onComplete: () => void;
 };
 
 const AIR_STREAKS = Array.from({ length: 14 }, (_, i) => i);
 
-export function CandleScene({ recipientName, onComplete }: Props) {
+export function CandleScene({
+  recipientName,
+  templateType = 'birthday',
+  onComplete,
+}: Props) {
   const name = recipientName.trim() || 'you';
+  const copy = storyCopyFor(templateType);
   const [lit, setLit] = useState(true);
   const [blowing, setBlowing] = useState(false);
   const [smoke, setSmoke] = useState(false);
@@ -33,9 +40,9 @@ export function CandleScene({ recipientName, onComplete }: Props) {
       className={`story-candle${blowing ? ' is-blowing' : ''}${!lit ? ' is-out' : ''}`}
       aria-label="Blow the candle"
     >
-      <h2 className="story-scene-title">Blow the candle, {name}</h2>
+      <h2 className="story-scene-title">{copy.candleTitle(name)}</h2>
       <p className="story-scene-sub">
-        {lit ? 'Make a wish, then tap the cake' : 'Wish made — beautifully'}
+        {lit ? copy.candleSubLit : copy.candleSubOut}
       </p>
 
       {blowing ? (
