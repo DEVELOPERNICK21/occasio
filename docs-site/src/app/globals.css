@@ -1357,6 +1357,9 @@ body {
   .story-air__haze,
   .story-air__dot,
   .story-gift-art__tissue,
+  .story-gift-art__bouquet,
+  .story-gift-art__surprise,
+  .story-gift-art__mini-bouquet,
   .story-gift-art__note {
     animation: none !important;
   }
@@ -1571,6 +1574,35 @@ body {
   font-weight: 500;
   font-style: italic;
   color: var(--muted);
+}
+
+.story-letter-type {
+  margin: 0;
+  min-height: 9rem;
+  padding-left: 0.85rem;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.45rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.story-letter-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  vertical-align: -0.05em;
+  background: var(--accent);
+  animation: story-caret 0.7s steps(1) infinite;
+}
+
+@keyframes story-caret {
+  50% {
+    opacity: 0;
+  }
 }
 
 .story-letter-replay {
@@ -1810,6 +1842,36 @@ body {
     transparent 70%
   );
   animation: story-burst 420ms ease-out both;
+}
+
+.story-balloon__confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.story-balloon__confetti i {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 7px;
+  height: 10px;
+  margin: -5px 0 0 -3px;
+  border-radius: 2px;
+  background: var(--c, #F6D35A);
+  animation: story-confetti 520ms ease-out both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes story-confetti {
+  from {
+    opacity: 1;
+    transform: rotate(var(--a, 0deg)) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(var(--a, 0deg)) translateY(-46px) scale(0.6);
+  }
 }
 
 @keyframes story-burst {
@@ -2241,13 +2303,47 @@ body {
 }
 
 .story-gift-art__lid.is-open {
-  transform: translate(-18px, -56px) rotate(-18deg) scale(1.04);
-  opacity: 0.98;
-  transition: transform 0.85s cubic-bezier(0.22, 1.2, 0.36, 1), opacity 0.55s ease;
+  transform: translateY(-72px) rotate(-8deg) scale(0.96);
+  opacity: 0.96;
+  transition: transform 0.8s cubic-bezier(0.22, 1.15, 0.36, 1), opacity 0.5s ease;
+}
+
+.story-gift-art__surprise {
+  animation: story-surprise-up 0.65s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+
+.story-gift-art__mini-bouquet {
+  animation: story-bouquet-rise 0.7s cubic-bezier(0.22, 1.2, 0.36, 1) 0.05s both;
+}
+
+@keyframes story-surprise-up {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .story-gift-art__tissue {
   animation: story-tissue-up 0.55s ease both;
+}
+
+.story-gift-art__bouquet {
+  animation: story-bouquet-rise 0.7s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+
+@keyframes story-bouquet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes story-tissue-up {

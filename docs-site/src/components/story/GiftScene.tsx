@@ -11,54 +11,64 @@ type Props = {
 
 type Phase = 'wrapped' | 'unwrapping' | 'open';
 
-const SPARKS = Array.from({ length: 12 }, (_, i) => i);
-
-function giftCopy(
-  name: string,
-  phase: Phase,
-): { title: string; subtitle: string } {
-  if (phase === 'open') {
-    return {
-      title: `For ${name}`,
-      subtitle: 'A little joy, just for you',
-    };
-  }
-  return {
-    title: `A gift for ${name}`,
-    subtitle: 'Tap to unwrap something sweet',
-  };
+function SmallRose({
+  cx,
+  cy,
+  r,
+}: {
+  cx: number;
+  cy: number;
+  r: number;
+}) {
+  return (
+    <g>
+      <ellipse
+        cx={cx - r * 0.35}
+        cy={cy}
+        rx={r * 0.55}
+        ry={r * 0.38}
+        fill="#C6284A"
+        transform={`rotate(-30 ${cx} ${cy})`}
+      />
+      <ellipse
+        cx={cx + r * 0.35}
+        cy={cy}
+        rx={r * 0.55}
+        ry={r * 0.38}
+        fill="#E8455A"
+        transform={`rotate(30 ${cx} ${cy})`}
+      />
+      <ellipse cx={cx} cy={cy - r * 0.22} rx={r * 0.45} ry={r * 0.34} fill="#F25C72" />
+      <circle cx={cx} cy={cy} r={r * 0.28} fill="#FFE0E8" />
+      <circle cx={cx - r * 0.08} cy={cy - r * 0.1} r={r * 0.1} fill="#fff" opacity="0.55" />
+    </g>
+  );
 }
 
 export function GiftScene({ recipientName, onComplete }: Props) {
   const uid = useId().replace(/:/g, '');
   const name = recipientName.trim() || 'you';
   const [phase, setPhase] = useState<Phase>('wrapped');
-  const copy = giftCopy(name, phase);
   const open = phase === 'unwrapping' || phase === 'open';
 
   const unwrap = useCallback(() => {
     if (phase !== 'wrapped') return;
     playGiftUnwrap();
     setPhase('unwrapping');
-    window.setTimeout(() => setPhase('open'), 900);
+    window.setTimeout(() => setPhase('open'), 780);
   }, [phase]);
-
-  const pinkTop = `gift-pink-top-${uid}`;
-  const pinkLeft = `gift-pink-left-${uid}`;
-  const pinkRight = `gift-pink-right-${uid}`;
-  const gold = `gift-gold-${uid}`;
-  const goldDark = `gift-gold-dark-${uid}`;
-  const bow = `gift-bow-${uid}`;
-  const gloss = `gift-gloss-${uid}`;
-  const paper = `gift-paper-${uid}`;
 
   return (
     <section
       className={`story-gift story-gift--${phase}`}
-      aria-label={copy.title}
+      aria-label={open ? `For ${name}` : `A gift for ${name}`}
     >
-      <h2 className="story-scene-title">{copy.title}</h2>
-      <p className="story-scene-sub">{copy.subtitle}</p>
+      <h2 className="story-scene-title">
+        {open ? `For ${name}` : `A gift for ${name}`}
+      </h2>
+      <p className="story-scene-sub">
+        {open ? 'A little joy, just for you' : 'Tap to unwrap'}
+      </p>
 
       <button
         type="button"
@@ -71,299 +81,203 @@ export function GiftScene({ recipientName, onComplete }: Props) {
           <span className="story-gift-art__glow" aria-hidden />
         ) : null}
 
-        {open ? (
-          <span className="story-gift-art__sparks" aria-hidden>
-            {SPARKS.map((i) => (
-              <span
-                key={i}
-                className="story-gift-art__spark"
-                style={{
-                  ['--spark-i' as string]: i,
-                  left: `${18 + (i % 6) * 12}%`,
-                  top: `${28 + Math.floor(i / 6) * 18}%`,
-                }}
-              />
-            ))}
-          </span>
-        ) : null}
-
         <svg
-          viewBox="0 0 280 280"
-          width="248"
+          viewBox="0 0 260 280"
+          width="230"
           height="248"
           className="story-gift-art__svg"
           aria-hidden
         >
           <defs>
-            <linearGradient id={pinkTop} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFA3C0" />
-              <stop offset="40%" stopColor="#F25C88" />
-              <stop offset="100%" stopColor="#D63A68" />
+            <linearGradient id={`box-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FF6B7A" />
+              <stop offset="55%" stopColor="#E8455A" />
+              <stop offset="100%" stopColor="#C6284A" />
             </linearGradient>
-            <linearGradient id={pinkLeft} x1="20%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#C73A66" />
-              <stop offset="100%" stopColor="#8E2448" />
+            <linearGradient id={`lid-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FF8A95" />
+              <stop offset="100%" stopColor="#E8455A" />
             </linearGradient>
-            <linearGradient id={pinkRight} x1="0%" y1="0%" x2="40%" y2="100%">
-              <stop offset="0%" stopColor="#F06A90" />
-              <stop offset="100%" stopColor="#B8325A" />
+            <linearGradient id={`gold-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FFF3B0" />
+              <stop offset="40%" stopColor="#F6D35A" />
+              <stop offset="100%" stopColor="#D4A02A" />
             </linearGradient>
-            <linearGradient id={gold} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#FFF8DC" />
-              <stop offset="35%" stopColor="#F5D76E" />
-              <stop offset="100%" stopColor="#C9A22E" />
+            <linearGradient id={`gold-side-${uid}`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#E8C84A" />
+              <stop offset="100%" stopColor="#C49A28" />
             </linearGradient>
-            <linearGradient id={goldDark} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#EED67A" />
-              <stop offset="100%" stopColor="#A88420" />
-            </linearGradient>
-            <radialGradient id={bow} cx="32%" cy="28%" r="72%">
-              <stop offset="0%" stopColor="#FFF8DC" />
-              <stop offset="40%" stopColor="#F2D96A" />
-              <stop offset="100%" stopColor="#B89428" />
-            </radialGradient>
-            <linearGradient id={gloss} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.55" />
-              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-            </linearGradient>
-            <pattern
-              id={paper}
-              width="12"
-              height="12"
-              patternUnits="userSpaceOnUse"
-              patternTransform="rotate(18)"
-            >
-              <rect width="12" height="12" fill="transparent" />
-              <circle cx="1" cy="1" r="0.7" fill="#FFFFFF" opacity="0.12" />
-            </pattern>
-            <filter id={`gift-blur-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3" />
+            <filter id={`blur-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.5" />
             </filter>
           </defs>
 
           <ellipse
-            cx="140"
-            cy="246"
-            rx="86"
-            ry="16"
+            cx="130"
+            cy="258"
+            rx="78"
+            ry="12"
             fill="#2A2220"
-            opacity="0.18"
-            filter={`url(#gift-blur-${uid})`}
+            opacity="0.14"
+            filter={`url(#blur-${uid})`}
           />
 
-          {/* box body */}
-          <path
-            d="M55 128 L140 172 L225 128 L225 192 L140 244 L55 192 Z"
-            fill={`url(#${pinkRight})`}
+          {/* box body — front view */}
+          <rect
+            x="48"
+            y="128"
+            width="164"
+            height="118"
+            rx="18"
+            fill={`url(#box-${uid})`}
           />
+          {/* left highlight */}
           <path
-            d="M55 128 L140 172 L140 244 L55 192 Z"
-            fill={`url(#${pinkLeft})`}
+            d="M56 142 L68 136 L68 232 L56 226 Z"
+            fill="#FFF0F3"
+            opacity="0.28"
           />
-          <path
-            d="M140 172 L225 128 L225 192 L140 244 Z"
-            fill="#E84B7A"
+          {/* vertical ribbon */}
+          <rect
+            x="112"
+            y="128"
+            width="36"
+            height="118"
+            fill={`url(#gold-${uid})`}
           />
-          <path
-            d="M55 128 L140 172 L225 128 L140 172 Z"
-            fill="transparent"
-          />
-          {/* paper grain */}
-          <path
-            d="M55 128 L140 172 L140 244 L55 192 Z"
-            fill={`url(#${paper})`}
-          />
-          <path
-            d="M140 172 L225 128 L225 192 L140 244 Z"
-            fill={`url(#${paper})`}
-          />
-          <path
-            d="M150 176 L215 140 L215 182 L150 220 Z"
-            fill={`url(#${gloss})`}
-            opacity="0.65"
-          />
-
-          {/* lid */}
-          <g className={`story-gift-art__lid${open ? ' is-open' : ''}`}>
-            <path
-              d="M42 120 L140 68 L238 120 L140 170 Z"
-              fill={`url(#${pinkTop})`}
-            />
-            <path
-              d="M42 120 L140 170 L140 186 L42 136 Z"
-              fill={`url(#${pinkLeft})`}
-            />
-            <path
-              d="M238 120 L140 170 L140 186 L238 136 Z"
-              fill={`url(#${pinkRight})`}
-            />
-            <path
-              d="M70 116 L140 80 L168 96 L98 132 Z"
-              fill={`url(#${gloss})`}
-              opacity="0.55"
-            />
-            <path d="M42 120 L140 170 L238 120" fill="none" stroke="#FFFFFF" strokeOpacity="0.15" strokeWidth="1" />
-
-            {/* ribbons on lid */}
-            <path
-              d="M124 82 L156 98 L156 156 L124 140 Z"
-              fill={`url(#${gold})`}
-            />
-            <path
-              d="M126 84 L140 92 L140 150 L126 142 Z"
-              fill="#FFF8DC"
-              opacity="0.4"
-            />
-            <path
-              d="M74 120 L206 120 L214 128 L82 142 Z"
-              fill={`url(#${goldDark})`}
-            />
-            <path
-              d="M80 122 L204 122 L208 126 L84 136 Z"
-              fill="#FFF8DC"
-              opacity="0.3"
-            />
-
-            {/* bow loops */}
-            <ellipse
-              cx="98"
-              cy="102"
-              rx="38"
-              ry="24"
-              fill={`url(#${bow})`}
-              transform="rotate(-34 98 102)"
-            />
-            <ellipse
-              cx="106"
-              cy="104"
-              rx="18"
-              ry="12"
-              fill="#A88420"
-              opacity="0.4"
-              transform="rotate(-34 106 104)"
-            />
-            <ellipse
-              cx="88"
-              cy="94"
-              rx="14"
-              ry="9"
-              fill="#FFF8DC"
-              opacity="0.55"
-              transform="rotate(-34 88 94)"
-            />
-            <ellipse
-              cx="182"
-              cy="102"
-              rx="38"
-              ry="24"
-              fill={`url(#${bow})`}
-              transform="rotate(34 182 102)"
-            />
-            <ellipse
-              cx="174"
-              cy="104"
-              rx="18"
-              ry="12"
-              fill="#A88420"
-              opacity="0.38"
-              transform="rotate(34 174 104)"
-            />
-            <ellipse
-              cx="192"
-              cy="94"
-              rx="12"
-              ry="8"
-              fill="#FFF8DC"
-              opacity="0.4"
-              transform="rotate(34 192 94)"
-            />
-            <ellipse cx="140" cy="116" rx="18" ry="15" fill={`url(#${bow})`} />
-            <ellipse cx="140" cy="113" rx="9" ry="7" fill="#FFF8DC" opacity="0.55" />
-            <path
-              d="M126 128 Q118 152 108 168 Q128 154 132 132 Z"
-              fill={`url(#${goldDark})`}
-            />
-            <path
-              d="M154 128 Q162 152 172 168 Q152 154 148 132 Z"
-              fill={`url(#${gold})`}
-            />
-          </g>
-
-          {/* body ribbons */}
-          <path
-            d="M124 144 L156 160 L156 228 L124 212 Z"
-            fill={`url(#${gold})`}
-          />
-          <path
-            d="M126 146 L140 154 L140 222 L126 214 Z"
+          <rect
+            x="118"
+            y="128"
+            width="8"
+            height="118"
             fill="#FFF8DC"
             opacity="0.35"
           />
-          <path
-            d="M66 162 L214 162 L222 170 L74 184 Z"
-            fill={`url(#${goldDark})`}
-          />
-          <path
-            d="M72 164 L216 164 L218 167 L74 176 Z"
-            fill="#FFF8DC"
-            opacity="0.28"
-          />
 
-          {/* shimmer sweep while wrapped */}
-          {!open ? (
-            <rect
-              className="story-gift-art__shimmer"
-              x="40"
-              y="70"
-              width="40"
-              height="160"
-              fill={`url(#${gloss})`}
-              opacity="0.35"
-            />
-          ) : null}
-
+          {/* rising bouquet + note when open */}
           {open ? (
-            <g className="story-gift-art__tissue">
-              <path
-                d="M108 148 C76 114 58 96 80 76 C110 92 124 122 130 148 Z"
-                fill="#FFF8EC"
-              />
-              <path
-                d="M172 150 C208 114 224 94 200 74 C168 90 154 124 152 148 Z"
-                fill="#FFE8F0"
-              />
-              <path
-                d="M128 146 C116 112 120 90 140 78 C160 90 164 118 152 146 Z"
-                fill="#FFF0D8"
-              />
+            <g className="story-gift-art__surprise">
+              {/* small rose bouquet */}
+              <g className="story-gift-art__mini-bouquet">
+                <path
+                  d="M98 118 L86 70 L174 70 L162 118 Z"
+                  fill="#1A1A1A"
+                />
+                <path
+                  d="M92 96 L84 58 L176 58 L168 96 Z"
+                  fill="#2A2A2A"
+                />
+                <ellipse cx="108" cy="72" rx="10" ry="5" fill="#2F8A5F" transform="rotate(-35 108 72)" />
+                <ellipse cx="152" cy="70" rx="10" ry="5" fill="#3D9B6E" transform="rotate(32 152 70)" />
+                <SmallRose cx={118} cy={66} r={14} />
+                <SmallRose cx={142} cy={64} r={15} />
+                <SmallRose cx={130} cy={52} r={16} />
+                <rect x="116" y="96" width="28" height="10" rx="3" fill="#E8455A" />
+              </g>
+
+              {/* message card rising from box */}
+              <g className="story-gift-art__note">
+                <rect
+                  x="78"
+                  y="108"
+                  width="104"
+                  height="52"
+                  rx="8"
+                  fill="#FFFBF3"
+                  stroke="#E8D4A8"
+                  strokeWidth="1.5"
+                />
+                <rect x="84" y="114" width="92" height="40" rx="5" fill="#FFF8EC" />
+                <text
+                  x="130"
+                  y="132"
+                  textAnchor="middle"
+                  fill="#C73A66"
+                  fontSize="13"
+                  className="story-gift-art__note-text"
+                >
+                  For {name}
+                </text>
+                <text
+                  x="130"
+                  y="148"
+                  textAnchor="middle"
+                  fill="#857371"
+                  fontSize="11"
+                  fontFamily="var(--font-display-serif), Georgia, serif"
+                  fontStyle="italic"
+                >
+                  With love
+                </text>
+              </g>
             </g>
           ) : null}
 
-          {phase === 'open' ? (
-            <g className="story-gift-art__note">
-              <rect
-                x="98"
-                y="172"
-                width="84"
-                height="40"
-                rx="7"
-                fill="#FFFBF3"
-                stroke="#E8D4A8"
-                strokeWidth="1.5"
-              />
-              <text
-                x="140"
-                y="197"
-                textAnchor="middle"
-                fill="#C73A66"
-                fontSize="16"
-                className="story-gift-art__note-text"
-              >
-                With love
-              </text>
-            </g>
-          ) : null}
+          {/* lid */}
+          <g className={`story-gift-art__lid${open ? ' is-open' : ''}`}>
+            <rect
+              x="40"
+              y="108"
+              width="180"
+              height="36"
+              rx="12"
+              fill={`url(#lid-${uid})`}
+            />
+            <rect
+              x="40"
+              y="132"
+              width="180"
+              height="10"
+              fill="#C6284A"
+              opacity="0.55"
+            />
+            {/* lid ribbon */}
+            <rect
+              x="112"
+              y="108"
+              width="36"
+              height="36"
+              fill={`url(#gold-${uid})`}
+            />
+            {/* bow loops */}
+            <ellipse
+              cx="96"
+              cy="96"
+              rx="34"
+              ry="20"
+              fill={`url(#gold-${uid})`}
+              transform="rotate(-18 96 96)"
+            />
+            <ellipse
+              cx="164"
+              cy="96"
+              rx="34"
+              ry="20"
+              fill={`url(#gold-side-${uid})`}
+              transform="rotate(18 164 96)"
+            />
+            <ellipse
+              cx="90"
+              cy="90"
+              rx="12"
+              ry="8"
+              fill="#FFF8DC"
+              opacity="0.55"
+              transform="rotate(-18 90 90)"
+            />
+            {/* knot */}
+            <ellipse cx="130" cy="108" rx="14" ry="12" fill="#E8C84A" />
+            <ellipse cx="128" cy="104" rx="5" ry="4" fill="#FFF8DC" opacity="0.6" />
+            {/* tails */}
+            <path
+              d="M118 116 L108 148 L122 136 Z"
+              fill={`url(#gold-side-${uid})`}
+            />
+            <path
+              d="M142 116 L152 148 L138 136 Z"
+              fill={`url(#gold-${uid})`}
+            />
+          </g>
         </svg>
       </button>
 

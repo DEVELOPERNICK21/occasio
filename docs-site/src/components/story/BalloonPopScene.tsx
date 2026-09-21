@@ -81,6 +81,34 @@ function BalloonSvg({
   );
 }
 
+const CONFETTI = [
+  '#F6D35A',
+  '#FF8A65',
+  '#F06292',
+  '#7CBC6E',
+  '#6EC6FF',
+  '#E84B7A',
+  '#B388FF',
+  '#FFD36A',
+] as const;
+
+function ConfettiBurst() {
+  return (
+    <span className="story-balloon__confetti" aria-hidden>
+      {CONFETTI.map((color, i) => (
+        <i
+          key={color}
+          style={{
+            ['--c' as string]: color,
+            ['--a' as string]: `${i * 45 - 90}deg`,
+            ['--d' as string]: `${i * 0.02}s`,
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function BalloonPopScene({ revealLine, onComplete }: Props) {
   const reactId = useId().replace(/:/g, '');
   const words = useMemo(
@@ -147,7 +175,10 @@ export function BalloonPopScene({ revealLine, onComplete }: Props) {
                 </span>
               )}
               {burstAt === i ? (
-                <span className="story-balloon__burst" aria-hidden />
+                <>
+                  <span className="story-balloon__burst" aria-hidden />
+                  <ConfettiBurst />
+                </>
               ) : null}
             </button>
           );

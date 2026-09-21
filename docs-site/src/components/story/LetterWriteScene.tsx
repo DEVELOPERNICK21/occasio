@@ -16,62 +16,49 @@ export function LetterWriteScene({ card, onComplete }: Props) {
     card.message?.trim() ||
     'Thinking of you today — and always grateful you’re in my life.';
 
-  const lines = useMemo(
-    () => message.split(/\n+/).map((l) => l.trim()).filter(Boolean),
-    [message],
-  );
+  const script = useMemo(() => {
+    const sign = from ? `\n\nWith love,\n${from}` : '';
+    return `${greeting} ${name},\n\n${message}${sign}`;
+  }, [from, greeting, message, name]);
 
-  const writeMs = Math.max(1800, 700 + lines.length * 280);
-  const [ready, setReady] = useState(false);
+  const [count, setCount] = useState(0);
+  const done = count >= script.length;
 
   useEffect(() => {
-    const id = window.setTimeout(() => setReady(true), writeMs);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      setCount(script.length);
+      return;
+    }
+    if (done) return;
+    const id = window.setTimeout(() => setCount((c) => c + 1), 32);
     return () => window.clearTimeout(id);
-  }, [writeMs]);
+  }, [count, done, script.length]);
 
   const continueNext = useCallback(() => {
-    if (!ready) return;
+    if (!done) return;
     onComplete();
-  }, [ready, onComplete]);
+  }, [done, onComplete]);
 
   return (
     <section className="story-letter-write" aria-label="A handwritten letter">
       <h2 className="story-scene-title">A letter for you</h2>
       <p className="story-scene-sub">
-        {ready ? 'When you’re ready, continue' : 'Reading…'}
+        {done ? 'When you’re ready, continue' : 'Someone is writing…'}
       </p>
 
       <article className="story-letter-paper" aria-live="polite">
-        <p className="story-letter-paper__greeting">
-          {greeting} {name}
+        <p className="story-letter-type">
+          {script.slice(0, count)}
+          {done ? null : <span className="story-letter-caret" aria-hidden />}
         </p>
-        <div className="story-letter-paper__body">
-          {lines.map((line, i) => (
-            <p
-              key={`${i}-${line.slice(0, 12)}`}
-              className="story-letter-paper__line"
-              style={{ animationDelay: `${0.35 + i * 0.22}s` }}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
-        {from ? (
-          <p
-            className="story-letter-paper__signoff"
-            style={{ animationDelay: `${0.55 + lines.length * 0.22}s` }}
-          >
-            <span className="story-letter-paper__signoff-label">With love</span>
-            {from}
-          </p>
-        ) : null}
       </article>
 
       <div className="story-cta">
         <button
           type="button"
           className="landing-btn-primary"
-          disabled={!ready}
+          disabled={!done}
           onClick={continueNext}
         >
           Continue
