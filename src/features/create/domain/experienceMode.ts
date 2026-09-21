@@ -11,6 +11,9 @@ const STORY_TYPES = new Set<TemplateType>([
   'just_because',
 ]);
 
+/** Candle/cake beat — birthday & anniversary only. */
+const CANDLE_TYPES = new Set<TemplateType>(['birthday', 'anniversary']);
+
 export function isInteractiveExperience(
   templateType: TemplateType | null,
 ): boolean {
@@ -26,4 +29,15 @@ export function resolveDraftExperienceMode(
     return experienceMode;
   }
   return isInteractiveExperience(templateType) ? 'story' : 'classic';
+}
+
+/** Preview hint — scene list matches the recipient story for this moment. */
+export function storyBeatHint(templateType: TemplateType | null): string {
+  if (!templateType || !isInteractiveExperience(templateType)) {
+    return '';
+  }
+  if (CANDLE_TYPES.has(templateType)) {
+    return 'They’ll open balloons, candle, gift, photos, envelope, letter, then your card.';
+  }
+  return 'They’ll open balloons, gift, photos, envelope, letter, then your card.';
 }

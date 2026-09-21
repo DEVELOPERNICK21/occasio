@@ -17,24 +17,29 @@ function emulatorApiBase(): string {
   return `http://${host}:${FUNCTIONS_EMULATOR_PORT}/${firebaseConfig.projectId}/${firebaseConfig.region}/api`;
 }
 
-/** Docs-site origin: local in __DEV__, Vercel in release. */
-function docsSiteBase(): string {
-  if (__DEV__) {
-    return Platform.OS === 'android'
-      ? 'http://10.0.2.2:3000'
-      : 'http://localhost:3000';
-  }
-  return 'https://occasio-greetings.vercel.app';
+const PRODUCTION_DOCS = 'https://occasio-greetings.vercel.app';
+
+/**
+ * Create/revoke API must hit the deployed docs-site (Firebase Admin lives there).
+ * Local `yarn run dev` does not have FIREBASE_SERVICE_ACCOUNT_JSON by default.
+ */
+function sparkApiBase(): string {
+  return PRODUCTION_DOCS;
+}
+
+/** Public recipient pages — production so share links always resolve. */
+function shareBase(): string {
+  return PRODUCTION_DOCS;
 }
 
 export const env = {
   firebaseProjectId: firebaseConfig.projectId,
 
   /** Public recipient pages (docs-site /c/[slug]). */
-  shareBaseUrl: docsSiteBase(),
+  shareBaseUrl: shareBase(),
 
   /** Server API for card create + revoke (docs-site /api/v1/*). */
-  sparkApiBaseUrl: docsSiteBase(),
+  sparkApiBaseUrl: sparkApiBase(),
 
   /**
    * When true, create/upload skip network and return mocks.

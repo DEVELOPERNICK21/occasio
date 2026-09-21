@@ -9,7 +9,11 @@ import { useHistory } from '../../../history/application/useHistory';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
 import { countWishesThisMonth } from '../../domain/createHome';
-import { isInteractiveExperience, resolveDraftExperienceMode } from '../../domain/experienceMode';
+import {
+  isInteractiveExperience,
+  resolveDraftExperienceMode,
+  storyBeatHint,
+} from '../../domain/experienceMode';
 import { freeQuotaNotice } from '../../domain/quota';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
@@ -141,9 +145,7 @@ export function PreviewScreen({ navigation }: Props) {
       {isInteractiveExperience(draft.templateType) &&
       resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
         'story' ? (
-        <Text style={styles.hint}>
-          They’ll open balloons, candle, gift, photos, envelope, letter, then your card.
-        </Text>
+        <Text style={styles.hint}>{storyBeatHint(draft.templateType)}</Text>
       ) : null}
       <Text style={styles.hint}>
         Your link will be private and unlisted — only people you share it with can open it.
