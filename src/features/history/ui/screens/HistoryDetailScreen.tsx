@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Share, StyleSheet, View } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Text } from '../../../../shared/ui/Text';
@@ -16,6 +16,7 @@ import type {
   MainTabParamList,
 } from '../../../../shared/navigation/types';
 import { useRequireAuth, useAuth } from '../../../auth/application/useAuth';
+import { useCreateDraftContext } from '../../../create/application/CreateDraftContext';
 import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useHistory, useDeleteHistory } from '../../application/useHistory';
@@ -33,6 +34,8 @@ type Props = CompositeScreenProps<
 export function HistoryDetailScreen({ navigation, route }: Props) {
   const { entries, isLoading } = useHistory(true);
   const { remove, isDeleting } = useDeleteHistory();
+  const { loadForEdit } = useCreateDraftContext();
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
   const { isSignedIn } = useAuth();
   const { requireAuth } = useRequireAuth();
   const { people } = useVaultPeople(isSignedIn);
@@ -84,6 +87,28 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
     } catch {
       Alert.alert('Could not copy', 'Long-press the link to copy manually.');
     }
+  };
+
+  const busy = isDeleting || isLoadingEdit;
+
+  const handleEdit = () => {
+    if (expired || !entry.creationId) {
+      Alert.alert('Link expired', 'Create a new card to send a fresh link.');
+      return;
+    }
+
+    requireAuth('history_sync', () => {
+      void (async () => {
+        setIsLoadingEdit(true);
+        const err = await loadForEdit(entry.creationId);
+        setIsLoadingEdit(false);
+        if (err) {
+          Alert.alert('Could not edit', err);
+          return;
+        }
+        navigation.navigate('CreateTab', { screen: 'AddPhotos' });
+      })();
+    });
   };
 
   const handleDelete = () => {
@@ -185,20 +210,29 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
         <Button
           label="Share again"
           onPress={() => void handleShare()}
-          disabled={expired || isDeleting}
+          disabled={expired || busy}
         />
         <Button
           label="Copy link"
           variant="secondary"
           onPress={handleCopy}
-          disabled={expired || isDeleting}
+          disabled={expired || busy}
         />
+        {entry.creationId && !expired ? (
+          <Button
+            label="Edit card"
+            variant="secondary"
+            loading={isLoadingEdit}
+            disabled={busy}
+            onPress={handleEdit}
+          />
+        ) : null}
         {entry.creationId ? (
           <Button
             label="Save for auto-send"
             variant="secondary"
             loading={isLinking}
-            disabled={isDeleting}
+            disabled={busy}
             onPress={handleSaveForAutoSend}
           />
         ) : null}
@@ -208,13 +242,14 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
           variant="ghost"
           loading={isDeleting}
           onPress={handleDelete}
+          disabled={busy}
           style={styles.deleteBtn}
         />
         <Button
           label="Back"
           variant="ghost"
           onPress={() => navigation.goBack()}
-          disabled={isDeleting}
+          disabled={busy}
         />
       </ScreenActions>
     </Screen>

@@ -1,63 +1,78 @@
 import { Heart } from 'lucide-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = {
   onPress: () => void;
 };
 
-/** Fast path — birthday + Full photo frame, starts at photos. */
+/**
+ * Secondary fast path — not the primary CTA (audience grid is).
+ * Soft outline so the home fold stays one-job: pick a person.
+ */
 export function CreateWishPill({ onPress }: Props) {
   return (
-    <View style={styles.shadowShell}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Quick birthday wish"
-        accessibilityHint="Starts a birthday card with one photo. Skip choosing who and a frame."
-        onPress={onPress}
-        style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
-      >
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Quick birthday wish"
+      accessibilityHint="Starts a birthday card with one photo. Skip choosing who and a frame."
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    >
+      <View style={styles.iconWrap}>
         <Heart
-          size={18}
-          color={colors.white}
-          fill={colors.white}
+          size={16}
+          color={colors.accent}
+          fill={colors.accentSoft}
           strokeWidth={2}
           absoluteStrokeWidth
         />
-        <Text style={styles.label}>Quick birthday wish</Text>
-      </Pressable>
-    </View>
+      </View>
+      <View style={styles.copy}>
+        <Text style={styles.label}>Need something faster?</Text>
+        <Text style={styles.action}>Quick birthday wish</Text>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  shadowShell: {
-    borderRadius: radius.full,
-    ...shadow.card,
-    shadowOpacity: 0.14,
-    shadowRadius: 14,
-    elevation: 3,
-  },
-  pill: {
+  row: {
     minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.full,
-    backgroundColor: colors.accent,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   pressed: {
-    opacity: 0.92,
-    backgroundColor: colors.accentHover,
+    opacity: 0.88,
+    backgroundColor: colors.sidebar,
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.sidebar,
+  },
+  copy: {
+    flex: 1,
+    gap: 2,
   },
   label: {
-    fontSize: typography.sizeMd,
-    lineHeight: typography.sizeMd * 1.2,
+    fontSize: typography.sizeXs,
+    color: colors.muted,
+  },
+  action: {
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    color: colors.white,
+    color: colors.accent,
   },
 });

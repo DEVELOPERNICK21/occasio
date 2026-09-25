@@ -358,7 +358,7 @@ describe('createHome', () => {
 
   it('uses urgent subtitle only when nearest occasion is within a week', () => {
     expect(getCreateHomeSubtitle(true, [])).toBe(
-      'Start with the person, then the moment, a photo, and your words.',
+      'Start with who it’s for — the rest takes about two minutes.',
     );
     expect(
       getCreateHomeSubtitle(true, [
@@ -370,7 +370,7 @@ describe('createHome', () => {
           label: "Alex's birthday",
         },
       ]),
-    ).toBe('Start with the person, then the moment, a photo, and your words.');
+    ).toBe('Start with who it’s for — the rest takes about two minutes.');
     expect(
       getCreateHomeSubtitle(true, [
         {
@@ -381,6 +381,6 @@ describe('createHome', () => {
           label: "Alex's birthday",
         },
       ]),
-    ).toBe('Someone you care about has a date coming up. A small gesture goes far.');
+    ).toBe('Someone you care about has a date soon. Start with who it’s for.');
   });
 });

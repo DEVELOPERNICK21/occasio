@@ -19,6 +19,8 @@ import type { CreateStackParamList, MainTabParamList } from '../../../../shared/
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { MilestoneCard } from '../components/MilestoneCard';
 import { CreateWishPill } from '../components/CreateWishPill';
+import { CreateHomeHero } from '../components/CreateHomeHero';
+import { AmbientWishField } from '../components/AmbientWishField';
 import { AudienceCard } from '../components/AudienceCard';
 import { UpcomingOccasionCard } from '../components/UpcomingOccasionCard';
 import { VaultNudgeCard } from '../components/VaultNudgeCard';
@@ -28,7 +30,7 @@ import { freeQuotaNotice } from '../../domain/quota';
 import type { Audience } from '../../domain/templateSchema';
 import {
   countWishesThisMonth,
-  getCreateHomeSubtitle,
+  getCreateHomeHero,
   getMilestoneCardContent,
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
@@ -66,8 +68,8 @@ export function CreateHomeScreen({ navigation }: Props) {
   );
   const quotaNotice = freeQuotaNotice(wishCount, tier);
 
-  const subtitle = useMemo(
-    () => getCreateHomeSubtitle(isSignedIn, upcoming),
+  const hero = useMemo(
+    () => getCreateHomeHero(isSignedIn, upcoming),
     [isSignedIn, upcoming],
   );
 
@@ -137,9 +139,18 @@ export function CreateHomeScreen({ navigation }: Props) {
   };
 
   return (
-    <Screen title="Create a wish" subtitle={subtitle} scrollRef={scrollRef}>
-      <Text style={styles.prompt}>Who is this for?</Text>
-      <Text style={styles.promptHint}>Start with the person — the design follows.</Text>
+    <Screen
+      title="Create"
+      hideHeader
+      scrollRef={scrollRef}
+      ambient={<AmbientWishField />}
+    >
+      <CreateHomeHero
+        greeting={hero.greeting}
+        headline={hero.headline}
+        line={hero.line}
+      />
+
       <View style={styles.grid}>
         {AUDIENCE_OPTIONS.map((option) => (
           <AudienceCard
@@ -156,15 +167,6 @@ export function CreateHomeScreen({ navigation }: Props) {
         <CreateWishPill onPress={handleQuickWish} />
         {quotaNotice ? <Text style={styles.quota}>{quotaNotice}</Text> : null}
 
-        {showVaultNudge ? (
-          <VaultNudgeCard
-            title={vaultNudge.title}
-            body={vaultNudge.body}
-            actionLabel={vaultNudge.actionLabel}
-            onPress={handleVaultNudge}
-          />
-        ) : null}
-
         {isSignedIn && !showVaultNudge ? (
           <UpcomingSection
             vaultLoading={vaultLoading}
@@ -176,6 +178,15 @@ export function CreateHomeScreen({ navigation }: Props) {
           />
         ) : isSignedIn && vaultLoading ? (
           <UpcomingSectionSkeleton />
+        ) : null}
+
+        {showVaultNudge ? (
+          <VaultNudgeCard
+            title={vaultNudge.title}
+            body={vaultNudge.body}
+            actionLabel={vaultNudge.actionLabel}
+            onPress={handleVaultNudge}
+          />
         ) : null}
 
         {showMilestone ? (
@@ -211,7 +222,7 @@ function UpcomingSectionSkeleton() {
             strokeWidth={2}
             absoluteStrokeWidth
           />
-          <Text style={styles.sectionTitle}>Upcoming occasions</Text>
+          <Text style={styles.sectionTitle}>Coming up</Text>
         </View>
       </View>
       <View style={styles.cardList}>
@@ -240,7 +251,7 @@ function UpcomingSection({
             strokeWidth={2}
             absoluteStrokeWidth
           />
-          <Text style={styles.sectionTitle}>Upcoming occasions</Text>
+          <Text style={styles.sectionTitle}>Coming up</Text>
         </View>
         {peopleCount > 0 ? (
           <Pressable
@@ -283,18 +294,6 @@ function UpcomingSection({
 }
 
 const styles = StyleSheet.create({
-  prompt: {
-    marginTop: spacing.md,
-    fontSize: typography.sizeMd,
-    fontWeight: typography.weightSemibold,
-    color: colors.ink,
-  },
-  promptHint: {
-    marginTop: spacing.xs,
-    fontSize: typography.sizeSm,
-    lineHeight: typography.sizeSm * 1.4,
-    color: colors.muted,
-  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

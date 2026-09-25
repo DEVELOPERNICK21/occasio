@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   card: {
-    minHeight: 118,
+    minHeight: 124,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.lg,

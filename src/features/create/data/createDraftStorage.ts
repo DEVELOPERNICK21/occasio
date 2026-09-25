@@ -43,7 +43,8 @@ export function isCreationDraftEmpty(draft: CreationDraft): boolean {
     draft.recipientName.trim() === '' &&
     draft.fromName.trim() === '' &&
     draft.message.trim() === '' &&
-    draft.balloonLine.trim() === ''
+    draft.balloonLine.trim() === '' &&
+    (draft.editingCreationId === null || draft.editingCreationId.trim() === '')
   );
 }
 
@@ -110,6 +111,26 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
       : null;
   const balloonLine =
     typeof record.balloonLine === 'string' ? record.balloonLine : '';
+  const editingCreationId =
+    typeof record.editingCreationId === 'string' &&
+    record.editingCreationId.trim() !== ''
+      ? record.editingCreationId
+      : null;
+  const editingShareSlug =
+    typeof record.editingShareSlug === 'string' &&
+    record.editingShareSlug.trim() !== ''
+      ? record.editingShareSlug
+      : null;
+  const editingShareUrl =
+    typeof record.editingShareUrl === 'string' &&
+    record.editingShareUrl.trim() !== ''
+      ? record.editingShareUrl
+      : null;
+  const editingExpiresAt =
+    typeof record.editingExpiresAt === 'string' &&
+    record.editingExpiresAt.trim() !== ''
+      ? record.editingExpiresAt
+      : null;
 
   const draft: CreationDraft = {
     templateType,
@@ -122,6 +143,10 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     message,
     experienceMode,
     balloonLine,
+    editingCreationId,
+    editingShareSlug,
+    editingShareUrl,
+    editingExpiresAt,
   };
 
   return isCreationDraftEmpty(draft) ? null : draft;

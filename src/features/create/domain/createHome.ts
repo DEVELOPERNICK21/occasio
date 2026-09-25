@@ -145,15 +145,48 @@ export function getCreateHomeSubtitle(
   upcoming: readonly UpcomingOccasion[],
 ): string {
   if (!isSignedIn) {
-    return 'Start with the person — share a private link in minutes. No account needed.';
+    return 'A photo and a few honest words. Share a private link — no account needed.';
   }
 
   const nearestDays = upcoming[0]?.daysUntil;
   if (typeof nearestDays === 'number' && nearestDays <= 7) {
-    return 'Someone you care about has a date coming up. A small gesture goes far.';
+    return 'Someone you care about has a date soon. Start with who it’s for.';
   }
 
-  return 'Start with the person, then the moment, a photo, and your words.';
+  return 'Start with who it’s for — the rest takes about two minutes.';
+}
+
+export type CreateHomeHero = {
+  greeting: string;
+  headline: string;
+  line: string;
+};
+
+/** First-fold copy — readable in ~2 seconds. */
+export function getCreateHomeHero(
+  isSignedIn: boolean,
+  upcoming: readonly UpcomingOccasion[],
+  now = new Date(),
+): CreateHomeHero {
+  const hour = now.getHours();
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const nearest = upcoming[0];
+  if (isSignedIn && nearest && nearest.daysUntil <= 7) {
+    const first = nearest.personName.trim().split(/\s+/)[0] || 'them';
+    return {
+      greeting,
+      headline: `A moment for ${first}?`,
+      line: 'Pick who it’s for — or start a quick wish below.',
+    };
+  }
+
+  return {
+    greeting,
+    headline: 'Who needs to feel remembered?',
+    line: 'Tap a person. Add a photo. Share a private link.',
+  };
 }
 
 export type VaultNudgeContent = {

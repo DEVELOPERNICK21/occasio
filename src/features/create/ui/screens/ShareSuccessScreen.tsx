@@ -41,17 +41,20 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
   const { getById } = useTemplateCatalog();
   const { people } = useVaultPeople(isSignedIn);
   const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
-  const { shareUrl, expiresAt, creationId, shareSlug } = route.params;
+  const { shareUrl, expiresAt, creationId, shareSlug, wasUpdated } = route.params;
   const [copied, setCopied] = useState(false);
   const theme = useMemo(() => getTemplateTheme(draft.templateType), [draft.templateType]);
   const definition = draft.templateId ? getById(draft.templateId) : null;
 
-  const subtitle = draft.recipientName.trim()
-    ? `${theme.label} wish for ${draft.recipientName.trim()}`
-    : `Your ${theme.label.toLowerCase()} wish`;
+  const subtitle = wasUpdated
+    ? 'Same link — card updated'
+    : draft.recipientName.trim()
+      ? `${theme.label} wish for ${draft.recipientName.trim()}`
+      : `Your ${theme.label.toLowerCase()} wish`;
   const sendLabel = draft.recipientName.trim()
     ? `Send to ${draft.recipientName.trim()}`
     : 'Send the link';
+  const screenTitle = wasUpdated ? 'Link updated' : 'Your link is ready';
 
   useEffect(() => {
     if (!draft.templateType) return;
@@ -160,7 +163,7 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
   };
 
   return (
-    <Screen title="Your link is ready" subtitle={subtitle}>
+    <Screen title={screenTitle} subtitle={subtitle}>
       <View style={styles.previewStage}>
         <View style={styles.cardLayer}>
           {definition ? (

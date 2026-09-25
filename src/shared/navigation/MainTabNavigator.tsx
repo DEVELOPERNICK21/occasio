@@ -1,5 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { CreateDraftProvider } from '../../features/create/application/CreateDraftContext';
 import { AccountScreen } from '../../features/auth/ui/screens/AccountScreen';
 import { CreateNavigator } from './CreateNavigator';
 import { HistoryNavigator } from './HistoryNavigator';
@@ -16,36 +17,38 @@ function renderFloatingTabBar(props: BottomTabBarProps) {
 
 export function MainTabNavigator() {
   return (
-    <Tab.Navigator
-      tabBar={renderFloatingTabBar}
-      screenOptions={{
-        headerShown: false,
-        tabBarHideOnKeyboard: true,
-        sceneStyle: {
-          paddingBottom: FLOATING_TAB_BAR_HEIGHT,
-        },
-      }}
-    >
-      <Tab.Screen
-        name="CreateTab"
-        component={CreateNavigator}
-        listeners={({ navigation }) => ({
-          tabPress: () => {
-            const tabsState = navigation.getState();
-            const createRoute = tabsState.routes.find((r) => r.name === 'CreateTab');
-            const stackIndex =
-              createRoute?.state && 'index' in createRoute.state
-                ? (createRoute.state.index ?? 0)
-                : 0;
-            if (stackIndex > 0) {
-              navigation.navigate('CreateTab', { screen: 'CreateHome' });
-            }
+    <CreateDraftProvider>
+      <Tab.Navigator
+        tabBar={renderFloatingTabBar}
+        screenOptions={{
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+          sceneStyle: {
+            paddingBottom: FLOATING_TAB_BAR_HEIGHT,
           },
-        })}
-      />
-      <Tab.Screen name="VaultTab" component={VaultNavigator} />
-      <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
-      <Tab.Screen name="AccountTab" component={AccountScreen} />
-    </Tab.Navigator>
+        }}
+      >
+        <Tab.Screen
+          name="CreateTab"
+          component={CreateNavigator}
+          listeners={({ navigation }) => ({
+            tabPress: () => {
+              const tabsState = navigation.getState();
+              const createRoute = tabsState.routes.find((r) => r.name === 'CreateTab');
+              const stackIndex =
+                createRoute?.state && 'index' in createRoute.state
+                  ? (createRoute.state.index ?? 0)
+                  : 0;
+              if (stackIndex > 0) {
+                navigation.navigate('CreateTab', { screen: 'CreateHome' });
+              }
+            },
+          })}
+        />
+        <Tab.Screen name="VaultTab" component={VaultNavigator} />
+        <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
+        <Tab.Screen name="AccountTab" component={AccountScreen} />
+      </Tab.Navigator>
+    </CreateDraftProvider>
   );
 }

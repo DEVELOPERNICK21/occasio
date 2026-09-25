@@ -13,6 +13,8 @@ export type CreateStackParamList = {
     expiresAt: string;
     creationId: string;
     shareSlug: string;
+    /** True when Preview saved via PATCH — same public URL. */
+    wasUpdated?: boolean;
   };
 };
 

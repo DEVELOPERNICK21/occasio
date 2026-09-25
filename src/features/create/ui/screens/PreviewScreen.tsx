@@ -26,7 +26,7 @@ import { getCreateStep } from '../createSteps';
 type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
-  const { draft } = useCreateDraftContext();
+  const { draft, isEditing, clearEditing } = useCreateDraftContext();
   const { isSignedIn } = useAuth();
   const { entries } = useHistory(isSignedIn);
   const { open: openPaywall, isConfigured, tier, error: billingError } = usePaywall();
@@ -34,11 +34,14 @@ export function PreviewScreen({ navigation }: Props) {
     () => (isSignedIn ? countWishesThisMonth(entries) : 0),
     [entries, isSignedIn],
   );
-  const { generate, isLoading, error, paywallRequired, reset } = useCreateShareLink({
-    cardsCreatedThisMonth,
-    tier,
-  });
-  const quotaNotice = freeQuotaNotice(cardsCreatedThisMonth, tier);
+  const { generate, isLoading, error, paywallRequired, reset } =
+    useCreateShareLink({
+      cardsCreatedThisMonth,
+      tier,
+    });
+  const quotaNotice = isEditing
+    ? null
+    : freeQuotaNotice(cardsCreatedThisMonth, tier);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.previewOpened, {
@@ -47,7 +50,7 @@ export function PreviewScreen({ navigation }: Props) {
   }, [draft.templateType]);
 
   useEffect(() => {
-    if (!paywallRequired) {
+    if (!paywallRequired || isEditing) {
       return;
     }
 
@@ -71,12 +74,14 @@ export function PreviewScreen({ navigation }: Props) {
             expiresAt: created.expiresAt,
             creationId: created.creationId,
             shareSlug: created.shareSlug,
+            wasUpdated: false,
           });
         });
       }
     });
   }, [
     paywallRequired,
+    isEditing,
     isConfigured,
     openPaywall,
     reset,
@@ -85,8 +90,27 @@ export function PreviewScreen({ navigation }: Props) {
     navigation,
   ]);
 
+  const goShareSuccess = (
+    created: {
+      shareUrl: string;
+      expiresAt: string;
+      creationId: string;
+      shareSlug: string;
+    },
+    updated: boolean,
+  ) => {
+    trackEvent(AnalyticsEvents.cardShared, { shareSlug: created.shareSlug });
+    navigation.navigate('ShareSuccess', {
+      shareUrl: created.shareUrl,
+      expiresAt: created.expiresAt,
+      creationId: created.creationId,
+      shareSlug: created.shareSlug,
+      wasUpdated: updated,
+    });
+  };
+
   const handleGenerate = async () => {
-    if (paywallRequired) {
+    if (paywallRequired && !isEditing) {
       if (!isConfigured) {
         Alert.alert(
           'Upgrade needed',
@@ -100,22 +124,32 @@ export function PreviewScreen({ navigation }: Props) {
 
     const result = await generate(draft);
     if (result) {
-      trackEvent(AnalyticsEvents.cardShared, { shareSlug: result.shareSlug });
-      navigation.navigate('ShareSuccess', {
-        shareUrl: result.shareUrl,
-        expiresAt: result.expiresAt,
-        creationId: result.creationId,
-        shareSlug: result.shareSlug,
-      });
+      const updated = Boolean(draft.editingCreationId);
+      if (updated) {
+        clearEditing();
+      }
+      goShareSuccess(result, updated);
     } else if (error) {
       trackEvent(AnalyticsEvents.uploadFailed, { message: error });
     }
   };
 
+  const primaryLabel = isLoading
+    ? isEditing
+      ? 'Saving…'
+      : 'Creating link…'
+    : isEditing
+      ? 'Save changes'
+      : 'Create the link';
+
   return (
     <Screen
       title="Preview"
-      subtitle="This is what they’ll open"
+      subtitle={
+        isEditing
+          ? 'Updates keep the same share link'
+          : 'This is what they’ll open'
+      }
       step={getCreateStep('preview', !draft.audience)}
       onBack={() => navigation.goBack()}
     >
@@ -132,11 +166,13 @@ export function PreviewScreen({ navigation }: Props) {
         <ActivityIndicator style={styles.loader} color={colors.accent} />
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {billingError ? <Text style={styles.error}>{billingError}</Text> : null}
+      {billingError && !isEditing ? (
+        <Text style={styles.error}>{billingError}</Text>
+      ) : null}
 
       <ScreenActions>
         <Button
-          label={isLoading ? 'Creating link…' : 'Create the link'}
+          label={primaryLabel}
           disabled={isLoading}
           onPress={() => void handleGenerate()}
         />
@@ -148,7 +184,9 @@ export function PreviewScreen({ navigation }: Props) {
         <Text style={styles.hint}>{storyBeatHint(draft.templateType)}</Text>
       ) : null}
       <Text style={styles.hint}>
-        Your link will be private and unlisted — only people you share it with can open it.
+        {isEditing
+          ? 'Anyone with the link will see your updates. The URL stays the same.'
+          : 'Your link will be private and unlisted — only people you share it with can open it.'}
       </Text>
       {quotaNotice ? <Text style={styles.hint}>{quotaNotice}</Text> : null}
     </Screen>

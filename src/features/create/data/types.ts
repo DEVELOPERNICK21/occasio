@@ -22,10 +22,24 @@ export type CreateCreationResponse = {
   watermarked: boolean;
 };
 
+/** GET /api/v1/creations/:id — owned card for edit. */
+export type OwnedCreationResponse = CreateCreationResponse & {
+  templateType: string;
+  templateId: string | null;
+  recipientName: string;
+  fromName: string;
+  message: string;
+  photoRefs: string[];
+  mediaUrls: string[];
+  experienceMode: 'story' | 'classic' | null;
+  balloonLine: string | null;
+};
+
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'QUOTA_EXCEEDED'
   | 'UPLOAD_MISSING'
+  | 'UNAUTHORIZED'
   | 'INTERNAL';
 
 export class CreationApiError extends Error {

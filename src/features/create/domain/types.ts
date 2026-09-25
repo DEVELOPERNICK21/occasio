@@ -31,6 +31,13 @@ export type CreationDraft = {
    * "You are so special".
    */
   balloonLine: string;
+  /**
+   * When set, Preview saves via PATCH (same share URL) instead of create.
+   */
+  editingCreationId: string | null;
+  editingShareSlug: string | null;
+  editingShareUrl: string | null;
+  editingExpiresAt: string | null;
 };
 
 export type Creation = CreationDraft & {
@@ -52,4 +59,8 @@ export const EMPTY_CREATION_DRAFT: CreationDraft = {
   message: '',
   experienceMode: null,
   balloonLine: '',
+  editingCreationId: null,
+  editingShareSlug: null,
+  editingShareUrl: null,
+  editingExpiresAt: null,
 };

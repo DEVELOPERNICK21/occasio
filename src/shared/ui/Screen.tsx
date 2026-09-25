@@ -18,6 +18,8 @@ type Props = {
   footer?: ReactNode;
   /** Trailing header CTA — compact accent action (Continue, Sign in, Save). */
   headerAction?: ReactNode;
+  /** Soft absolute layer behind body (e.g. ambient motifs). */
+  ambient?: ReactNode;
   /** Hide title block — home-style surfaces that lead with content cards. */
   hideHeader?: boolean;
   /** Top-left back control — familiar stack navigation (Jakob's Law). */
@@ -37,6 +39,7 @@ export function Screen({
   children,
   footer,
   headerAction,
+  ambient,
   hideHeader = false,
   onBack,
   scrollRef,
@@ -104,6 +107,15 @@ export function Screen({
       ) : (
         <View style={styles.body}>{children}</View>
       )}
+      {/*
+        Ambient must sit ABOVE ScrollView. On Android, ScrollView is its own
+        surface — siblings behind it never show through, even if transparent.
+      */}
+      {ambient ? (
+        <View style={styles.ambient} pointerEvents="none">
+          {ambient}
+        </View>
+      ) : null}
       {footer ? (
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.sm }]}>
           {footer}
@@ -118,10 +130,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg,
   },
+  ambient: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
+    elevation: 2,
+  },
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
+    zIndex: 1,
+    elevation: 1,
+    backgroundColor: 'transparent',
   },
   backButton: {
     alignSelf: 'flex-start',
@@ -182,6 +202,9 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
+    zIndex: 1,
+    elevation: 1,
+    backgroundColor: 'transparent',
   },
   bodyContent: {
     paddingHorizontal: spacing.lg,

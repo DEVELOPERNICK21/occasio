@@ -7,11 +7,11 @@ export const AUDIENCE_OPTIONS: {
   /** Short emotional cue — helps choose, not hype. */
   cue: string;
 }[] = [
-  { id: 'someone_special', label: 'Someone special', cue: 'A quiet note that lands' },
-  { id: 'mom', label: 'Mom', cue: 'For the one who raised you' },
-  { id: 'dad', label: 'Dad', cue: 'Quiet appreciation counts' },
-  { id: 'friend', label: 'Best friend', cue: 'They already know — say it' },
-  { id: 'partner', label: 'Partner', cue: 'Something only you would send' },
+  { id: 'someone_special', label: 'Someone special', cue: 'They crossed your mind' },
+  { id: 'mom', label: 'Mom', cue: 'The one who always listens' },
+  { id: 'dad', label: 'Dad', cue: 'Fewer words, more meaning' },
+  { id: 'friend', label: 'Best friend', cue: 'Say what you never text' },
+  { id: 'partner', label: 'Partner', cue: 'Only you would send this' },
   { id: 'family', label: 'Family', cue: 'Keep the thread warm' },
 ];
 

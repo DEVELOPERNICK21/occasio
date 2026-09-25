@@ -116,23 +116,24 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
   }
 
   try {
-    await firestore()
-      .collection('user_creations')
-      .doc(input.creationId)
-      .set(
-        {
-          userId: uid,
-          creationId: input.creationId,
-          shareSlug: input.shareSlug,
-          shareUrl: input.shareUrl,
-          recipientName: input.recipientName,
-          templateType: input.templateType,
-          message: input.message,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          expiresAt: firestore.Timestamp.fromDate(new Date(input.expiresAt)),
-        },
-        { merge: true },
-      );
+    const ref = firestore().collection('user_creations').doc(input.creationId);
+    const existing = await ref.get();
+    const payload: Record<string, unknown> = {
+      userId: uid,
+      creationId: input.creationId,
+      shareSlug: input.shareSlug,
+      shareUrl: input.shareUrl,
+      recipientName: input.recipientName,
+      templateType: input.templateType,
+      message: input.message,
+      expiresAt: firestore.Timestamp.fromDate(new Date(input.expiresAt)),
+    };
+    if (!existing.exists) {
+      payload.createdAt = firestore.FieldValue.serverTimestamp();
+    } else {
+      payload.updatedAt = firestore.FieldValue.serverTimestamp();
+    }
+    await ref.set(payload, { merge: true });
   } catch {
     throw new HistoryError('NETWORK', 'Could not save to history.');
   }

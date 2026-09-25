@@ -299,6 +299,206 @@ export async function getCardBySlug(slug: string): Promise<RecipientCard | null>
   return result.status === 'found' ? result.card : null;
 }
 
+export type OwnedCreation = {
+  creationId: string;
+  shareSlug: string;
+  shareUrl: string;
+  expiresAt: string;
+  watermarked: boolean;
+  templateType: string;
+  templateId: string | null;
+  recipientName: string;
+  fromName: string;
+  message: string;
+  photoRefs: string[];
+  mediaUrls: string[];
+  experienceMode: 'story' | 'classic' | null;
+  balloonLine: string | null;
+};
+
+export type OwnedCreationResult =
+  | { status: 'found'; creation: OwnedCreation }
+  | { status: 'not_found' }
+  | { status: 'forbidden' }
+  | { status: 'expired' };
+
+export type UpdateCreationResult =
+  | { status: 'updated'; creation: CreateCreationResult }
+  | { status: 'not_found' }
+  | { status: 'forbidden' }
+  | { status: 'expired' };
+
+async function assertOwnedCreation(creationId: string, uid: string) {
+  const id = creationId.trim();
+  if (!id || id.length > 128) {
+    return { status: 'not_found' as const };
+  }
+
+  const db = getAdminFirestore();
+  const historyRef = db.collection('user_creations').doc(id);
+  const historySnap = await historyRef.get();
+
+  if (!historySnap.exists) {
+    return { status: 'not_found' as const };
+  }
+
+  const history = historySnap.data() as { userId?: string } | undefined;
+  if (!history || history.userId !== uid) {
+    return { status: 'forbidden' as const };
+  }
+
+  const creationRef = db.collection('creations').doc(id);
+  const creationSnap = await creationRef.get();
+  if (!creationSnap.exists) {
+    return { status: 'not_found' as const };
+  }
+
+  const creationData = creationSnap.data() ?? {};
+  const expiresAt = creationData.expiresAt as Timestamp | undefined;
+  if (expiresAt && expiresAt.toDate() < new Date()) {
+    return { status: 'expired' as const };
+  }
+
+  const shareSlug =
+    typeof creationData.shareSlug === 'string' ? creationData.shareSlug : '';
+  if (!shareSlug) {
+    return { status: 'not_found' as const };
+  }
+
+  const shareBase =
+    process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';
+
+  return {
+    status: 'ok' as const,
+    historyRef,
+    creationRef,
+    creationData,
+    shareSlug,
+    shareBase,
+  };
+}
+
+/**
+ * Load a creation the signed-in user owns (for edit-after-create).
+ */
+export async function getOwnedCreation(
+  creationId: string,
+  uid: string,
+): Promise<OwnedCreationResult> {
+  if (!isFirebaseAdminConfigured()) {
+    throw new ApiRouteError(503, 'INTERNAL', 'Server is not configured');
+  }
+
+  const owned = await assertOwnedCreation(creationId, uid);
+  if (owned.status !== 'ok') {
+    return { status: owned.status };
+  }
+
+  const doc = owned.creationData;
+  const expiresAt = doc.expiresAt as Timestamp | undefined;
+  const recipientName =
+    typeof doc.recipientName === 'string' ? doc.recipientName : '';
+  if (!recipientName) {
+    return { status: 'not_found' };
+  }
+
+  return {
+    status: 'found',
+    creation: {
+      creationId: creationId.trim(),
+      shareSlug: owned.shareSlug,
+      shareUrl: `${owned.shareBase}/c/${owned.shareSlug}`,
+      expiresAt: expiresAt
+        ? expiresAt.toDate().toISOString()
+        : new Date().toISOString(),
+      watermarked: doc.watermarked !== false,
+      templateType: (doc.templateType as string) ?? 'birthday',
+      templateId: (doc.templateId as string | null) ?? null,
+      recipientName,
+      fromName: typeof doc.fromName === 'string' ? doc.fromName : '',
+      message: typeof doc.message === 'string' ? doc.message : '',
+      photoRefs: Array.isArray(doc.photoRefs)
+        ? (doc.photoRefs as string[])
+        : [],
+      mediaUrls: Array.isArray(doc.mediaUrls)
+        ? (doc.mediaUrls as string[])
+        : [],
+      experienceMode:
+        doc.experienceMode === 'story' || doc.experienceMode === 'classic'
+          ? doc.experienceMode
+          : null,
+      balloonLine:
+        typeof doc.balloonLine === 'string' && doc.balloonLine.trim()
+          ? normalizeBalloonLine(doc.balloonLine)
+          : null,
+    },
+  };
+}
+
+/**
+ * Update card content in place — same shareSlug / shareUrl.
+ * No quota charge. Requires ownership via `user_creations/{creationId}`.
+ */
+export async function updateCreation(
+  creationId: string,
+  uid: string,
+  input: CreateCreationInput,
+): Promise<UpdateCreationResult> {
+  if (!isFirebaseAdminConfigured()) {
+    throw new ApiRouteError(503, 'INTERNAL', 'Server is not configured');
+  }
+
+  const owned = await assertOwnedCreation(creationId, uid);
+  if (owned.status !== 'ok') {
+    return { status: owned.status };
+  }
+
+  const expiresAt = owned.creationData.expiresAt as Timestamp | undefined;
+  const expiresAtIso = expiresAt
+    ? expiresAt.toDate().toISOString()
+    : new Date().toISOString();
+
+  await owned.creationRef.update({
+    templateType: input.templateType,
+    templateId: input.templateId ?? null,
+    recipientName: input.recipientName,
+    fromName: input.fromName || null,
+    message: input.message,
+    photoRefs: input.photoRefs,
+    mediaUrls: input.mediaUrls ?? [],
+    experienceMode:
+      input.experienceMode === 'story' || input.experienceMode === 'classic'
+        ? input.experienceMode
+        : defaultExperienceMode(input.templateType),
+    balloonLine: input.balloonLine
+      ? normalizeBalloonLine(input.balloonLine)
+      : null,
+    updatedAt: Timestamp.now(),
+    updatedBy: uid,
+  });
+
+  await owned.historyRef.set(
+    {
+      recipientName: input.recipientName,
+      templateType: input.templateType,
+      message: input.message,
+      updatedAt: Timestamp.now(),
+    },
+    { merge: true },
+  );
+
+  return {
+    status: 'updated',
+    creation: {
+      creationId: creationId.trim(),
+      shareSlug: owned.shareSlug,
+      shareUrl: `${owned.shareBase}/c/${owned.shareSlug}`,
+      expiresAt: expiresAtIso,
+      watermarked: owned.creationData.watermarked !== false,
+    },
+  };
+}
+
 export type RevokeCreationResult =
   | { status: 'revoked' }
   | { status: 'not_found' }

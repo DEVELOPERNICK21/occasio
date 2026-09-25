@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
 import { env } from '../../../shared/config/env';
-import { createShareLink } from '../data/creationRepository';
+import {
+  createShareLink,
+  updateShareLink,
+} from '../data/creationRepository';
 import { resolveCreationMedia } from '../data/photoRefs';
 import { CreationApiError } from '../data/types';
 import { shouldShowPaywall } from '../domain/quota';
@@ -14,6 +17,8 @@ type State = {
   error: string | null;
   paywallRequired: boolean;
   result: CreateCreationResponse | null;
+  /** True when the last successful save was a PATCH (same URL). */
+  wasUpdated: boolean;
 };
 
 const initialState: State = {
@@ -21,6 +26,7 @@ const initialState: State = {
   error: null,
   paywallRequired: false,
   result: null,
+  wasUpdated: false,
 };
 
 type Options = {
@@ -38,25 +44,51 @@ export function useCreateShareLink(options: Options = {}) {
         setState((s) => ({
           ...s,
           error: 'Add template, photo, and recipient name first.',
+          wasUpdated: false,
         }));
         return null;
       }
 
+      const editingId = draft.editingCreationId?.trim() || null;
+      const isEdit = Boolean(editingId);
+
       if (
+        !isEdit &&
         shouldShowPaywall(cardsCreatedThisMonth, tier, {
           bypassQuota: env.devRelaxedQuota,
         })
       ) {
-        setState((s) => ({ ...s, paywallRequired: true, error: null }));
+        setState((s) => ({
+          ...s,
+          paywallRequired: true,
+          error: null,
+          wasUpdated: false,
+        }));
         return null;
       }
 
-      setState({ isLoading: true, error: null, paywallRequired: false, result: null });
+      setState({
+        isLoading: true,
+        error: null,
+        paywallRequired: false,
+        result: null,
+        wasUpdated: false,
+      });
 
       try {
-        const { photoRefs, mediaUrls } = await resolveCreationMedia(draft.photoUris);
-        const result = await createShareLink(draft, photoRefs, mediaUrls);
-        setState({ isLoading: false, error: null, paywallRequired: false, result });
+        const { photoRefs, mediaUrls } = await resolveCreationMedia(
+          draft.photoUris,
+        );
+        const result = isEdit
+          ? await updateShareLink(editingId!, draft, photoRefs, mediaUrls)
+          : await createShareLink(draft, photoRefs, mediaUrls);
+        setState({
+          isLoading: false,
+          error: null,
+          paywallRequired: false,
+          result,
+          wasUpdated: isEdit,
+        });
         return result;
       } catch (e) {
         if (e instanceof CreationApiError && e.code === 'QUOTA_EXCEEDED') {
@@ -65,6 +97,7 @@ export function useCreateShareLink(options: Options = {}) {
             error: null,
             paywallRequired: true,
             result: null,
+            wasUpdated: false,
           });
           return null;
         }
@@ -75,6 +108,7 @@ export function useCreateShareLink(options: Options = {}) {
           error: message,
           paywallRequired: false,
           result: null,
+          wasUpdated: false,
         });
         return null;
       }

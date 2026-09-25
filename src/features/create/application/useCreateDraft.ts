@@ -4,6 +4,8 @@ import {
   readCreationDraft,
   writeCreationDraft,
 } from '../data/createDraftStorage';
+import { fetchOwnedCreation } from '../data/creationRepository';
+import { CreationApiError } from '../data/types';
 import {
   defaultTemplateIdForType,
   occasionFromTemplateType,
@@ -18,6 +20,24 @@ import {
 } from '../domain/types';
 
 const PERSIST_DEBOUNCE_MS = 300;
+
+const TEMPLATE_TYPES = new Set<TemplateType>([
+  'birthday',
+  'anniversary',
+  'sorry',
+  'proposal',
+  'mothers_day',
+  'fathers_day',
+  'thank_you',
+  'congratulations',
+  'just_because',
+]);
+
+function parseTemplateType(value: string): TemplateType | null {
+  return TEMPLATE_TYPES.has(value as TemplateType)
+    ? (value as TemplateType)
+    : null;
+}
 
 export function useCreateDraft() {
   const [draft, setDraft] = useState<CreationDraft>(EMPTY_CREATION_DRAFT);
@@ -110,6 +130,17 @@ export function useCreateDraft() {
     void clearCreationDraft();
   }, []);
 
+  /** Drop edit markers after a successful PATCH so the next create is fresh. */
+  const clearEditing = useCallback(() => {
+    setDraft((d) => ({
+      ...d,
+      editingCreationId: null,
+      editingShareSlug: null,
+      editingShareUrl: null,
+      editingExpiresAt: null,
+    }));
+  }, []);
+
   const startWish = useCallback(
     (partial: Partial<Pick<CreationDraft, 'templateType' | 'recipientName'>>) => {
       const templateType = partial.templateType ?? 'birthday';
@@ -142,7 +173,49 @@ export function useCreateDraft() {
     });
   }, []);
 
+  /**
+   * History → Edit: hydrate draft from owned creation (same share URL on save).
+   */
+  const loadForEdit = useCallback(async (creationId: string): Promise<string | null> => {
+    try {
+      const card = await fetchOwnedCreation(creationId);
+      const templateType = parseTemplateType(card.templateType) ?? 'birthday';
+      const photoUris =
+        card.mediaUrls.length > 0
+          ? card.mediaUrls
+          : [];
+
+      if (photoUris.length < 1) {
+        return 'This card has no photos to edit. Create a new card instead.';
+      }
+
+      setDraft({
+        ...EMPTY_CREATION_DRAFT,
+        templateType,
+        templateId: card.templateId ?? defaultTemplateIdForType(templateType),
+        occasion: occasionFromTemplateType(templateType),
+        photoUris,
+        recipientName: card.recipientName,
+        fromName: card.fromName ?? '',
+        message: card.message ?? '',
+        experienceMode: card.experienceMode,
+        balloonLine: card.balloonLine ?? '',
+        editingCreationId: card.creationId,
+        editingShareSlug: card.shareSlug,
+        editingShareUrl: card.shareUrl,
+        editingExpiresAt: card.expiresAt,
+      });
+      return null;
+    } catch (error) {
+      if (error instanceof CreationApiError) {
+        return error.message;
+      }
+      return 'Could not load this card for editing.';
+    }
+  }, []);
+
   const canPreview = canPreviewDraft(draft);
+  const isEditing = Boolean(draft.editingCreationId);
 
   return {
     draft,
@@ -157,9 +230,12 @@ export function useCreateDraft() {
     setBalloonLine,
     setExperienceMode,
     reset,
+    clearEditing,
     startWish,
     startQuickCreate,
     startFromAudience,
+    loadForEdit,
     canPreview,
+    isEditing,
   };
 }

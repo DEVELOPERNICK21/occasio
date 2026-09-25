@@ -71,6 +71,28 @@ Server also persists on the creation document (not echoed in the response body t
 | `UPLOAD_MISSING` | 400 | photoRefs not found in storage |
 | `INTERNAL` | 500 | Retry |
 
+## `GET /v1/creations/:creationId` (auth)
+
+Load an owned card for edit-after-create. Requires `Authorization: Bearer <Firebase ID token>` and a matching `user_creations/{creationId}` row.
+
+**Response 200** — creation fields including `shareSlug`, `shareUrl`, `expiresAt`, `mediaUrls`, message, template, etc.
+
+**Errors:** `UNAUTHORIZED` 401/403 · `NOT_FOUND` 404 · `EXPIRED` 410
+
+## `PATCH /v1/creations/:creationId` (auth)
+
+Update card content **in place**. Same `shareSlug` / `shareUrl`. **No quota charge.** Body matches `POST /v1/creations`.
+
+**Response 200** — same shape as create (`creationId`, `shareSlug`, `shareUrl`, `expiresAt`, `watermarked`).
+
+**Errors:** `UNAUTHORIZED` 401/403 · `NOT_FOUND` 404 · `EXPIRED` 410 · `VALIDATION_ERROR` 400
+
+## `DELETE /v1/creations/:creationId` (auth)
+
+Expire the public share link and remove History. Ownership via `user_creations/{creationId}`.
+
+**Response:** `204` empty body.
+
 ## `POST /v1/uploads/presign`
 
 Get signed URL for client → R2/Firebase Storage upload.

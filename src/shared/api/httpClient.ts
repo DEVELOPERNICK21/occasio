@@ -1,7 +1,7 @@
 import { HttpError, type HttpErrorCode } from './errors';
 
 type RequestOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: Record<string, string>;
 };
@@ -85,6 +85,14 @@ export const httpClient = {
     headers?: Record<string, string>,
   ) {
     return httpRequest<T>(baseUrl, path, { method: 'POST', body, headers });
+  },
+  patch<T>(
+    baseUrl: string,
+    path: string,
+    body?: unknown,
+    headers?: Record<string, string>,
+  ) {
+    return httpRequest<T>(baseUrl, path, { method: 'PATCH', body, headers });
   },
   delete<T>(baseUrl: string, path: string, headers?: Record<string, string>) {
     return httpRequest<T>(baseUrl, path, { method: 'DELETE', headers });
