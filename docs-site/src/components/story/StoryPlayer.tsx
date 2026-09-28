@@ -9,6 +9,7 @@ import { BalloonPopScene } from '@/components/story/BalloonPopScene';
 import { CandleScene } from '@/components/story/CandleScene';
 import { EnvelopeScene } from '@/components/story/EnvelopeScene';
 import { GiftScene } from '@/components/story/GiftScene';
+import { LampScene } from '@/components/story/LampScene';
 import { LetterScene } from '@/components/story/LetterScene';
 import { LetterWriteScene } from '@/components/story/LetterWriteScene';
 import { PhotoDeckScene } from '@/components/story/PhotoDeckScene';
@@ -67,6 +68,21 @@ export function StoryPlayer({ card, slug }: Props) {
 
   if (resolved.mode === 'classic' || !scene) {
     return <ClassicFallback card={card} slug={slug} />;
+  }
+
+  const skipToMessage = () => setIndex(resolved.scenes.length - 1);
+
+  if (scene === 'lamp') {
+    return (
+      <LampScene
+        recipientName={card.recipientName}
+        templateType={card.templateType}
+        step={index + 1}
+        total={resolved.scenes.length}
+        onComplete={advance}
+        onSkip={skipToMessage}
+      />
+    );
   }
 
   return (
@@ -130,7 +146,7 @@ export function StoryPlayer({ card, slug }: Props) {
           <button
             type="button"
             className="story-skip"
-            onClick={() => setIndex(resolved.scenes.length - 1)}
+            onClick={skipToMessage}
           >
             Skip to message
           </button>

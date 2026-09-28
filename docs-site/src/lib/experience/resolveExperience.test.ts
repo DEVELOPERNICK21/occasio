@@ -39,6 +39,7 @@ describe('resolveExperience', () => {
     });
     assert.equal(r.mode, 'story');
     assert.deepEqual(r.scenes, [
+      'lamp',
       'balloons',
       'candle',
       'gift',
@@ -59,6 +60,7 @@ describe('resolveExperience', () => {
     });
     assert.equal(r.mode, 'story');
     assert.deepEqual(r.scenes, [
+      'lamp',
       'balloons',
       'gift',
       'photo_deck',
@@ -76,6 +78,7 @@ describe('resolveExperience', () => {
       recipientName: 'Sam',
     });
     assert.deepEqual(r.scenes, [
+      'lamp',
       'balloons',
       'candle',
       'gift',
@@ -93,6 +96,7 @@ describe('resolveExperience', () => {
       recipientName: 'Alex',
     });
     assert.deepEqual(r.scenes, [
+      'lamp',
       'balloons',
       'candle',
       'gift',

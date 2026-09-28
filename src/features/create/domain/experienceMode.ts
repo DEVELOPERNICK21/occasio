@@ -37,7 +37,7 @@ export function storyBeatHint(templateType: TemplateType | null): string {
     return '';
   }
   if (CANDLE_TYPES.has(templateType)) {
-    return 'They’ll open balloons, candle, gift, photos, envelope, letter, then your card.';
+    return 'They’ll open lamp, balloons, candle, gift, photos, envelope, letter, then your card.';
   }
-  return 'They’ll open balloons, gift, photos, envelope, letter, then your card.';
+  return 'They’ll open lamp, balloons, gift, photos, envelope, letter, then your card.';
 }

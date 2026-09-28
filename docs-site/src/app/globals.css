@@ -923,6 +923,30 @@ body {
   background: var(--bg);
   padding: 3rem 1rem;
   overflow: hidden;
+  isolation: isolate;
+}
+
+.wish-recipient-page::before,
+.wish-recipient-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wish-recipient-page::before {
+  background:
+    radial-gradient(65% 50% at 10% 6%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%),
+    radial-gradient(60% 45% at 94% 96%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 72%),
+    radial-gradient(circle at 1.5px 1.5px, color-mix(in srgb, var(--ink) 11%, transparent) 1.2px, transparent 1.8px) 0 0 / 22px 22px;
+}
+
+.wish-recipient-page::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.2 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
 }
 
 .wish-recipient-inner {
@@ -2492,4 +2516,429 @@ body {
   transition: transform 0.55s ease, opacity 0.55s ease;
   transform: translateY(16px) rotate(20deg);
   opacity: 0.25;
+}
+
+/* ---------- Story: lamp (dark room opener) ---------- */
+
+.lamp-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: #0b0a09;
+  color: #cfc7b9;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.lamp-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0, transparent 75%);
+  transition: opacity 0.25s ease;
+}
+
+.lamp-stage.is-dark .lamp-grid {
+  opacity: 0.25;
+}
+
+.lamp-hud {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8c857a;
+}
+
+.lamp-hud p {
+  margin: 0;
+}
+
+.lamp-hud b {
+  font-weight: 500;
+  color: #efe7d8;
+}
+
+.lamp-hud--left {
+  left: 16px;
+}
+
+.lamp-hud--right {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 3;
+}
+
+.lamp-pill {
+  appearance: none;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cfc7b9;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.lamp-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.lamp-pill--replace {
+  margin-top: 8px;
+  color: #f5c97a;
+  border-color: rgba(245, 201, 122, 0.35);
+}
+
+.lamp-copy {
+  position: absolute;
+  top: var(--content-top, 40%);
+  left: 0;
+  right: 0;
+  z-index: 1;
+  padding: 0 1rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.lamp-title {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: clamp(2.2rem, min(10.5vw, 10vh), 6.2rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  color: transparent;
+  background-image: radial-gradient(
+    700px circle at var(--lx, 50%) var(--ly, -200px),
+    #fbf3e2 0,
+    #eee3cc 160px,
+    #9a9288 330px,
+    #3a3734 520px,
+    #2a2826 700px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.lamp-title__hl {
+  color: transparent;
+  background-image: radial-gradient(
+    700px circle at var(--lx, 50%) var(--ly, -200px),
+    #f7dc9c 0,
+    #e2bd73 180px,
+    #8d7446 380px,
+    #3e3528 600px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.lamp-stage.is-dark .lamp-title,
+.lamp-stage.is-dark .lamp-title__hl {
+  background-image: none;
+  color: rgba(255, 255, 255, 0.06);
+}
+
+.lamp-sub {
+  max-width: 34rem;
+  margin: clamp(0.8rem, 2.5vh, 1.4rem) auto 0;
+  font-size: clamp(0.9rem, min(2.8vw, 2.4vh), 1.15rem);
+  line-height: 1.55;
+  color: #b7afa2;
+  transition: color 0.25s ease;
+}
+
+.lamp-stage.is-dark .lamp-sub {
+  color: #3a3836;
+}
+
+.lamp-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lamp-clock {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  fill: rgba(255, 255, 255, 0.16);
+}
+
+.lamp-cone,
+.lamp-halo {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.lamp-stage.is-lit .lamp-cone,
+.lamp-stage.is-lit .lamp-halo {
+  opacity: 1;
+}
+
+.lamp-rim {
+  fill: #24221f;
+  transition: fill 0.18s ease;
+}
+
+.lamp-stage.is-lit .lamp-rim {
+  fill: #f6dfae;
+}
+
+.lamp-glass--lit {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.lamp-stage.is-lit .lamp-glass--lit {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(255, 214, 140, 0.95))
+    drop-shadow(0 0 22px rgba(255, 190, 90, 0.55));
+}
+
+.lamp-filament {
+  stroke: #6b5a48;
+  stroke-width: 0.9;
+  transition: stroke 0.18s ease;
+}
+
+.lamp-stage.is-lit .lamp-filament {
+  stroke: #fffdf6;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 1.5px rgba(255, 150, 40, 1)) drop-shadow(0 0 4px rgba(255, 190, 90, 0.9));
+}
+
+.lamp-stage.is-lit .lamp-title.is-flicker,
+.lamp-stage.is-lit .lamp-cone.is-flicker,
+.lamp-stage.is-lit .lamp-glass--lit.is-flicker {
+  animation: lamp-flicker 0.45s steps(1, end);
+}
+
+@keyframes lamp-flicker {
+  0% { opacity: 1; }
+  15% { opacity: 0.35; }
+  30% { opacity: 1; }
+  50% { opacity: 0.55; }
+  65% { opacity: 1; }
+}
+
+/* Frosted-glass wall plate with a glossy rocker. */
+.lamp-switch {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(28, 27, 26, 0.55);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.65),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Diagonal glass reflection. */
+.lamp-switch::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -60%;
+  width: 70%;
+  height: 160%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: rotate(22deg);
+  pointer-events: none;
+}
+
+.lamp-switch__label {
+  position: relative;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.38);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Clear glass rocker — backlit amber when the light is on. */
+.lamp-switch__toggle {
+  appearance: none;
+  position: relative;
+  width: 26px;
+  height: 46px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 8px;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.34) 0%,
+      rgba(255, 255, 255, 0.1) 44%,
+      rgba(255, 255, 255, 0.03) 56%,
+      rgba(255, 255, 255, 0.14) 100%),
+    rgba(20, 19, 18, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow:
+    0 5px 10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 6px rgba(255, 255, 255, 0.06);
+  transform: perspective(90px) rotateX(-12deg);
+  transition: transform 0.14s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+/* Curved specular highlight on the glass. */
+.lamp-switch__toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 45%;
+  height: 55%;
+  border-radius: 6px 3px 12px 3px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.lamp-switch__toggle.is-on {
+  transform: perspective(90px) rotateX(12deg);
+  border-color: rgba(255, 214, 150, 0.55);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 196, 100, 0.6), rgba(255, 160, 60, 0.16) 55%, transparent 80%),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.04) 48%,
+      rgba(255, 255, 255, 0.22) 100%),
+    rgba(40, 28, 16, 0.35);
+  box-shadow:
+    0 -1px 4px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(255, 180, 80, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 8px rgba(255, 190, 100, 0.35);
+}
+
+.lamp-switch__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  margin: -1px 0 0 -5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lamp-switch__toggle.is-on .lamp-switch__dot {
+  background: #ffd27a;
+  box-shadow: 0 0 4px rgba(255, 190, 80, 1), 0 0 10px rgba(255, 170, 60, 0.7);
+}
+
+.lamp-shard {
+  position: absolute;
+  z-index: 3;
+  width: 6px;
+  height: 7px;
+  margin: -3px 0 0 -3px;
+  background: rgba(255, 245, 225, 0.85);
+  clip-path: polygon(50% 0, 100% 100%, 0 80%);
+  pointer-events: none;
+  animation: lamp-shard 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes lamp-shard {
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+.lamp-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  pointer-events: none;
+}
+
+.lamp-bottom > * {
+  pointer-events: auto;
+}
+
+.lamp-continue {
+  min-width: 12rem;
+}
+
+.lamp-progress {
+  display: flex;
+  gap: 8px;
+}
+
+.lamp-skip {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #8c857a;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.lamp-hint {
+  margin: 0;
+  padding: 0 1rem;
+  max-width: 30rem;
+  text-align: center;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #6e685f;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lamp-stage .is-flicker {
+    animation: none;
+  }
+
+  .lamp-shard {
+    animation-duration: 0.01s;
+  }
 }

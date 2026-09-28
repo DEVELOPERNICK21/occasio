@@ -25,6 +25,10 @@ import { BillingError, isPurchaseCancelled } from './billingErrors';
 let configured = false;
 
 function apiKeyForPlatform(): string | null {
+  // Debug builds are sideloaded, where Play/App Store billing can't complete.
+  if (__DEV__ && revenueCatConfig.testApiKey) {
+    return revenueCatConfig.testApiKey;
+  }
   const platform = appPlatform();
   if (platform === 'android' && revenueCatConfig.androidApiKey) {
     return revenueCatConfig.androidApiKey;

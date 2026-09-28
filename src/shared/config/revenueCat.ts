@@ -9,7 +9,8 @@
 export const revenueCatConfig = {
   /** Shared Test Store key — used when platform-specific keys are empty. */
   testApiKey: 'test_rjZzlhclstStOVZQJORtmFKGbdh',
-  androidApiKey: '',
+  /** Google Play app `com.occasio.greetings` — used by release builds. */
+  androidApiKey: 'goog_AldUMUxDVYoUQqEFJAksKcgKodk',
   iosApiKey: '',
 } as const;
 

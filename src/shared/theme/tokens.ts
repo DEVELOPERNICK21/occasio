@@ -21,6 +21,14 @@ export const colors = {
   errorSoft: '#FEE4E2',
   success: '#027A48',
   white: '#FFFFFF',
+  /** Celebration palette — occasion accents already used in templateTheme. */
+  rose: '#E07A8A',
+  roseSoft: '#FCE3E8',
+  amberSoft: '#FDEBD0',
+  sage: '#5B7A6E',
+  sageSoft: '#DCEBE4',
+  butter: '#F9D56E',
+  butterSoft: '#FFF4D1',
 } as const;
 
 export const spacing = {

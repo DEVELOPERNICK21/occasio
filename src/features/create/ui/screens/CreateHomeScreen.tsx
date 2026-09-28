@@ -1,7 +1,7 @@
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useScrollToTop } from '@react-navigation/native';
+import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import { useEffect, useMemo, useRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { CalendarDays } from 'lucide-react-native';
@@ -17,10 +17,11 @@ import { OccasionCardSkeleton } from '../../../../shared/ui/SkeletonLayouts';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { CreateStackParamList, MainTabParamList } from '../../../../shared/navigation/types';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
-import { MilestoneCard } from '../components/MilestoneCard';
+import { useBadgeCelebration } from '../../application/useBadgeCelebration';
+import { BadgeCelebration } from '../components/BadgeCelebration';
 import { CreateWishPill } from '../components/CreateWishPill';
-import { CreateHomeHero } from '../components/CreateHomeHero';
-import { AmbientWishField } from '../components/AmbientWishField';
+import { HomeHeroStage } from '../components/HomeHeroStage';
+import { WishJourneyCard } from '../components/WishJourneyCard';
 import { AudienceCard } from '../components/AudienceCard';
 import { UpcomingOccasionCard } from '../components/UpcomingOccasionCard';
 import { VaultNudgeCard } from '../components/VaultNudgeCard';
@@ -31,11 +32,11 @@ import type { Audience } from '../../domain/templateSchema';
 import {
   countWishesThisMonth,
   getCreateHomeHero,
-  getMilestoneCardContent,
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
   shouldShowVaultNudge,
 } from '../../domain/createHome';
+import { computeWishJourney } from '../../domain/wishJourney';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<CreateStackParamList, 'CreateHome'>,
@@ -47,8 +48,9 @@ const birthdayTheme = getTemplateTheme('birthday');
 export function CreateHomeScreen({ navigation }: Props) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
+  const isFocused = useIsFocused();
 
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useAuth();
   const { tier } = usePaywall();
   const { startFromAudience, startQuickCreate } = useCreateDraftContext();
   const { people, isLoading: vaultLoading } = useVaultPeople(isSignedIn);
@@ -62,9 +64,14 @@ export function CreateHomeScreen({ navigation }: Props) {
     () => (isSignedIn && !historyLoading ? countWishesThisMonth(entries) : 0),
     [entries, historyLoading, isSignedIn],
   );
-  const milestone = useMemo(
-    () => getMilestoneCardContent(wishCount, isSignedIn, people.length),
-    [isSignedIn, people.length, wishCount],
+  const journey = useMemo(
+    () => computeWishJourney(isSignedIn ? entries : [], isSignedIn ? people.length : 0),
+    [entries, isSignedIn, people.length],
+  );
+  const { celebrating, dismiss: dismissCelebration } = useBadgeCelebration(
+    isSignedIn ? (user?.uid ?? null) : null,
+    journey.badges,
+    isFocused && isSignedIn && !historyLoading && !vaultLoading,
   );
   const quotaNotice = freeQuotaNotice(wishCount, tier);
 
@@ -83,7 +90,7 @@ export function CreateHomeScreen({ navigation }: Props) {
     [isSignedIn, people.length],
   );
 
-  const showMilestone = !historyLoading || !isSignedIn;
+  const showJourney = !historyLoading || !isSignedIn;
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.createStarted);
@@ -139,25 +146,22 @@ export function CreateHomeScreen({ navigation }: Props) {
   };
 
   return (
-    <Screen
-      title="Create"
-      hideHeader
-      scrollRef={scrollRef}
-      ambient={<AmbientWishField />}
-    >
-      <CreateHomeHero
+    <Screen title="Create" hideHeader scrollRef={scrollRef}>
+      <HomeHeroStage
         greeting={hero.greeting}
         headline={hero.headline}
         line={hero.line}
       />
 
+      <Text style={styles.gridTitle}>Who is it for?</Text>
       <View style={styles.grid}>
-        {AUDIENCE_OPTIONS.map((option) => (
+        {AUDIENCE_OPTIONS.map((option, index) => (
           <AudienceCard
             key={option.id}
             audience={option.id}
             label={option.label}
             cue={option.cue}
+            index={index}
             onPress={() => pickAudience(option.id)}
           />
         ))}
@@ -166,6 +170,8 @@ export function CreateHomeScreen({ navigation }: Props) {
       <View style={styles.engagementSection}>
         <CreateWishPill onPress={handleQuickWish} />
         {quotaNotice ? <Text style={styles.quota}>{quotaNotice}</Text> : null}
+
+        {showJourney ? <WishJourneyCard journey={journey} /> : null}
 
         {isSignedIn && !showVaultNudge ? (
           <UpcomingSection
@@ -188,16 +194,9 @@ export function CreateHomeScreen({ navigation }: Props) {
             onPress={handleVaultNudge}
           />
         ) : null}
-
-        {showMilestone ? (
-          <MilestoneCard
-            eyebrow={milestone.eyebrow}
-            headline={milestone.headline}
-            headlineHighlight={milestone.headlineHighlight}
-            body={milestone.body}
-          />
-        ) : null}
       </View>
+
+      <BadgeCelebration badge={celebrating} onDismiss={dismissCelebration} />
     </Screen>
   );
 }
@@ -294,12 +293,18 @@ function UpcomingSection({
 }
 
 const styles = StyleSheet.create({
+  gridTitle: {
+    marginTop: spacing.lg,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightSemibold,
+    color: colors.ink,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     rowGap: spacing.sm,
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
   quota: {
     marginTop: -spacing.xs,

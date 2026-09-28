@@ -24,7 +24,14 @@
     "error": { "value": "#B42318", "type": "color" },
     "errorSoft": { "value": "#FEE4E2", "type": "color" },
     "success": { "value": "#027A48", "type": "color" },
-    "white": { "value": "#FFFFFF", "type": "color" }
+    "white": { "value": "#FFFFFF", "type": "color" },
+    "rose": { "value": "#E07A8A", "type": "color" },
+    "roseSoft": { "value": "#FCE3E8", "type": "color" },
+    "amberSoft": { "value": "#FDEBD0", "type": "color" },
+    "sage": { "value": "#5B7A6E", "type": "color" },
+    "sageSoft": { "value": "#DCEBE4", "type": "color" },
+    "butter": { "value": "#F9D56E", "type": "color" },
+    "butterSoft": { "value": "#FFF4D1", "type": "color" }
   },
   "typography": {
     "fontDisplay": { "value": "Plus Jakarta Sans, system-ui, sans-serif", "type": "fontFamily" },

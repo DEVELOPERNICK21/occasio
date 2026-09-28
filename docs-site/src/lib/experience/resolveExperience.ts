@@ -24,8 +24,8 @@ export function defaultExperienceMode(templateType: string): ExperienceMode {
 
 /**
  * Story pack by moment:
- * birthday / anniversary — balloons → candle → gift → photos? → envelope → letter
- * thank you / congratulations / just because — balloons → gift → photos? → envelope → letter
+ * birthday / anniversary — lamp → balloons → candle → gift → photos? → envelope → letter
+ * thank you / congratulations / just because — lamp → balloons → gift → photos? → envelope → letter
  */
 export function resolveExperience(
   card: ExperienceCardInput,
@@ -46,7 +46,7 @@ export function resolveExperience(
   }
 
   const photos = (card.mediaUrls ?? []).map((u) => u.trim()).filter(Boolean);
-  const scenes: SceneId[] = ['balloons'];
+  const scenes: SceneId[] = ['lamp', 'balloons'];
   if (CANDLE_TYPES.has(card.templateType)) {
     scenes.push('candle');
   }

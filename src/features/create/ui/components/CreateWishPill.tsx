@@ -23,8 +23,8 @@ export function CreateWishPill({ onPress }: Props) {
       <View style={styles.iconWrap}>
         <Heart
           size={16}
-          color={colors.accent}
-          fill={colors.accentSoft}
+          color={colors.white}
+          fill={colors.white}
           strokeWidth={2}
           absoluteStrokeWidth
         />
@@ -46,13 +46,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 1.5,
+    borderColor: colors.roseSoft,
     backgroundColor: colors.surface,
   },
   pressed: {
     opacity: 0.88,
-    backgroundColor: colors.sidebar,
+    backgroundColor: colors.roseSoft,
   },
   iconWrap: {
     width: 36,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.sidebar,
+    backgroundColor: colors.rose,
   },
   copy: {
     flex: 1,

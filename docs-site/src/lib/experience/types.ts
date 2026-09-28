@@ -1,6 +1,7 @@
 export type ExperienceMode = 'story' | 'classic';
 
 export type SceneId =
+  | 'lamp'
   | 'balloons'
   | 'candle'
   | 'gift'
