@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { env } from '../../../../shared/config/env';
@@ -18,6 +18,7 @@ import { recommendTemplates } from '../../domain/recommendTemplates';
 import type { TemplateDefinition } from '../../domain/templateSchema';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import type { TemplateType } from '../../domain/types';
+import { ArrangePhotosSheet } from '../components/ArrangePhotosSheet';
 import { DesignFrameCard } from '../components/DesignFrameCard';
 import { getCreateStep } from '../createSteps';
 
@@ -38,6 +39,10 @@ const TEMPLATE_CUES: Record<string, string> = {
   G02: 'Tall photo with side stories',
   G03: 'Banner plus a photo grid',
   G04: 'Full photo with a snapshot inset',
+  G05: 'Three taped prints on paper',
+  G06: 'Bold words around one photo',
+  G07: 'Four photos, huge headline',
+  G08: 'One photo in a soft blur',
 };
 
 const STYLE_TONES: Record<
@@ -69,8 +74,9 @@ const STYLE_TONES: Record<
 
 export function TemplateRecommendScreen({ navigation }: Props) {
   const { width } = useWindowDimensions();
-  const { draft, setTemplateId } = useCreateDraftContext();
+  const { draft, setTemplateId, setPhotoUris } = useCreateDraftContext();
   const { templates } = useTemplateCatalog();
+  const [arranging, setArranging] = useState<TemplateDefinition | null>(null);
 
   const occasionTheme = useMemo(() => {
     const occasion = draft.occasion;
@@ -100,11 +106,37 @@ export function TemplateRecommendScreen({ navigation }: Props) {
     }
   }, [draft.audience, draft.occasion, navigation]);
 
+  const photos = useMemo(() => draft.photoUris.filter(Boolean), [draft.photoUris]);
+
   const selectTemplate = (templateId: string) => {
     setTemplateId(templateId);
     trackEvent(AnalyticsEvents.templateSelected, { templateId });
     navigation.navigate('Details');
   };
+
+  const openTemplate = (template: TemplateDefinition) => {
+    if (photos.length > 1) {
+      setArranging(template);
+    } else {
+      selectTemplate(template.id);
+    }
+  };
+
+  const confirmArrangement = (ordered: string[]) => {
+    if (!arranging) return;
+    setPhotoUris(ordered);
+    const templateId = arranging.id;
+    setArranging(null);
+    selectTemplate(templateId);
+  };
+
+  const toneFor = (template: TemplateDefinition) => ({
+    ...STYLE_TONES[template.style],
+    accent: occasionTheme.accent,
+    wash: occasionTheme.softBackground,
+    photo: occasionTheme.orbPrimary,
+    photoAlt: occasionTheme.orbSecondary,
+  });
 
   const headline = occasionHeadline(draft.occasion) ?? 'Your words';
   const cardWidth = (width - spacing.lg * 2 - spacing.sm) / 2;
@@ -127,32 +159,33 @@ export function TemplateRecommendScreen({ navigation }: Props) {
           </Text>
         ) : (
           <View style={styles.grid}>
-            {recommended.map((template, index) => {
-              const baseTone = STYLE_TONES[template.style];
-              const tone = {
-                ...baseTone,
-                accent: occasionTheme.accent,
-                wash: occasionTheme.softBackground,
-                photo: occasionTheme.orbPrimary,
-                photoAlt: occasionTheme.orbSecondary,
-              };
-              return (
-                <DesignFrameCard
-                  key={template.id}
-                  template={template}
-                  cue={TEMPLATE_CUES[template.id] ?? occasionTheme.emotionalCue}
-                  headline={headline}
-                  photoUris={draft.photoUris}
-                  tone={tone}
-                  width={cardWidth}
-                  recommended={index === 0 && recommended.length > 1}
-                  onPress={() => selectTemplate(template.id)}
-                />
-              );
-            })}
+            {recommended.map((template, index) => (
+              <DesignFrameCard
+                key={template.id}
+                template={template}
+                cue={TEMPLATE_CUES[template.id] ?? occasionTheme.emotionalCue}
+                headline={headline}
+                photoUris={draft.photoUris}
+                tone={toneFor(template)}
+                width={cardWidth}
+                recommended={index === 0 && recommended.length > 1}
+                onPress={() => openTemplate(template)}
+              />
+            ))}
           </View>
         )}
       </ScrollView>
+      {arranging ? (
+        <ArrangePhotosSheet
+          key={arranging.id}
+          template={arranging}
+          photoUris={photos}
+          headline={headline}
+          tone={toneFor(arranging)}
+          onClose={() => setArranging(null)}
+          onConfirm={confirmArrangement}
+        />
+      ) : null}
     </Screen>
   );
 }

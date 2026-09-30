@@ -38,7 +38,7 @@ const DEFAULT: StoryCopy = {
   lampTitle: lampTitle('Thinking of you,', 'Thinking of', 'you'),
   balloonsTitle: 'Pop the balloons',
   balloonsSub: 'One tap at a time',
-  candleTitle: (name) => `Blow the candle, ${name}`,
+  candleTitle: (name) => `Blow the candles, ${name}`,
   candleSubLit: 'Make a wish, then tap the cake',
   candleSubOut: 'Wish made — beautifully',
   giftTitle: (name, open) => (open ? `For ${name}` : `A gift for ${name}`),
@@ -53,7 +53,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
   birthday: {
     lampTitle: lampTitle('Happy birthday,', 'Happy', 'birthday'),
     balloonsTitle: 'Pop the balloons',
-    candleTitle: (name) => `Blow the candle, ${name}`,
+    candleTitle: (name) => `Blow the candles, ${name}`,
     candleSubLit: 'Make a wish, then tap the cake',
     candleSubOut: 'Wish made — beautifully',
     giftTitle: (name, open) =>

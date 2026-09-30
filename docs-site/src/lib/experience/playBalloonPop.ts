@@ -125,6 +125,71 @@ export function playCandleBlow(): void {
   }
 }
 
+function playNoiseBurst(
+  duration: number,
+  freqFrom: number,
+  freqTo: number,
+  volume: number,
+  type: BiquadFilterType,
+): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const buffer = ctx.createBuffer(
+      1,
+      Math.ceil(ctx.sampleRate * duration),
+      ctx.sampleRate,
+    );
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i += 1) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * t);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = type;
+    filter.frequency.setValueAtTime(freqFrom, now);
+    filter.frequency.exponentialRampToValueAtTime(freqTo, now + duration);
+    filter.Q.value = 1;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration);
+
+    window.setTimeout(() => {
+      void ctx.close();
+    }, duration * 1000 + 200);
+  } catch {
+    // ignore
+  }
+}
+
+/** Box rattle when the gift is shaken. */
+export function playGiftRattle(): void {
+  playNoiseBurst(0.16, 700, 260, 0.4, 'bandpass');
+}
+
+/** Knife swish through frosting. */
+export function playCakeSlice(): void {
+  playNoiseBurst(0.32, 3200, 1400, 0.28, 'highpass');
+}
+
 /** Paper / ribbon rustle for unwrapping a gift. */
 export function playGiftUnwrap(): void {
   if (typeof window === 'undefined') return;

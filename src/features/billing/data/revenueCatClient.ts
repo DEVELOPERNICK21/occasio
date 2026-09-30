@@ -11,10 +11,11 @@ import { appPlatform } from '../../../shared/platform/runtime';
 import type { BillingCustomerSnapshot, BillingPlan } from '../domain/types';
 import type { SubscriptionTier } from '../../vault/domain/types';
 import {
-  PACKAGE_LIFETIME,
   PACKAGE_MONTHLY,
+  PACKAGE_SINGLE_WISH,
   PACKAGE_YEARLY,
 } from '../domain/entitlements';
+import { countPurchasedWishCredits } from '../domain/wishCredits';
 import {
   activeEntitlementIdsFromRecord,
   hasProEntitlement,
@@ -76,8 +77,8 @@ export function snapshotFromCustomerInfo(info: CustomerInfo): BillingCustomerSna
 
 function packageTitle(pkg: PurchasesPackage): string {
   const id = pkg.identifier.toLowerCase();
-  if (id.includes(PACKAGE_LIFETIME) || pkg.packageType === Purchases.PACKAGE_TYPE.LIFETIME) {
-    return 'Lifetime';
+  if (id.includes(PACKAGE_SINGLE_WISH)) {
+    return 'One wish';
   }
   if (id.includes(PACKAGE_YEARLY) || pkg.packageType === Purchases.PACKAGE_TYPE.ANNUAL) {
     return 'Yearly';
@@ -90,8 +91,8 @@ function packageTitle(pkg: PurchasesPackage): string {
 
 function packagePeriodLabel(pkg: PurchasesPackage): string {
   const id = pkg.identifier.toLowerCase();
-  if (id.includes(PACKAGE_LIFETIME) || pkg.packageType === Purchases.PACKAGE_TYPE.LIFETIME) {
-    return 'One-time purchase';
+  if (id.includes(PACKAGE_SINGLE_WISH)) {
+    return 'One-time, for your next wish';
   }
   if (id.includes(PACKAGE_YEARLY) || pkg.packageType === Purchases.PACKAGE_TYPE.ANNUAL) {
     return 'Billed yearly';
@@ -220,6 +221,17 @@ export async function fetchHasPro(): Promise<boolean> {
 
   const info = await Purchases.getCustomerInfo();
   return hasProFromCustomerInfo(info);
+}
+
+export async function fetchPurchasedWishCredits(): Promise<number> {
+  if (!configured) {
+    return 0;
+  }
+
+  const info = await Purchases.getCustomerInfo();
+  return countPurchasedWishCredits(
+    info.nonSubscriptionTransactions.map((t) => t.productIdentifier),
+  );
 }
 
 export async function fetchBillingPlans(): Promise<BillingPlan[]> {

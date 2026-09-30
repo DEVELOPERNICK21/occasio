@@ -13,6 +13,9 @@ export type BillingCustomerSnapshot = {
   originalAppUserId: string | null;
 };
 
+/** How a wish beyond the free monthly allowance can be created, if at all. */
+export type ExtraWishAccess = 'pro' | 'credit' | 'none';
+
 export type PaywallPresentResult =
   | 'purchased'
   | 'restored'

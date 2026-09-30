@@ -4,6 +4,30 @@ import {
   hasProEntitlement,
   tierFromEntitlements,
 } from '../../src/features/billing/domain/mapTier';
+import {
+  availableWishCredits,
+  countPurchasedWishCredits,
+} from '../../src/features/billing/domain/wishCredits';
+
+describe('wish credits', () => {
+  it('counts only single-wish purchases', () => {
+    expect(
+      countPurchasedWishCredits([
+        'occasio_wish_single',
+        'occasio_pro_lifetime',
+        'single_wish',
+        'occasio_wish_single',
+      ]),
+    ).toBe(3);
+  });
+
+  it('subtracts used credits and never goes negative', () => {
+    expect(availableWishCredits(3, 1)).toBe(2);
+    expect(availableWishCredits(1, 1)).toBe(0);
+    expect(availableWishCredits(1, 4)).toBe(0);
+    expect(availableWishCredits(0, -2)).toBe(0);
+  });
+});
 
 describe('billing entitlements', () => {
   it('maps occasio_pro to personal tier', () => {

@@ -16,6 +16,7 @@ import {
   configureRevenueCat,
   fetchBillingPlans,
   fetchHasPro,
+  fetchPurchasedWishCredits,
   fetchSubscriptionTier,
   purchaseBillingPlan,
   restoreBillingPurchases,
@@ -28,7 +29,9 @@ import {
 } from '../data/revenueCatUi';
 import { isBillingError, isPurchaseCancelled } from '../data/billingErrors';
 import { mirrorSubscriptionTier } from '../data/userTierMirror';
-import type { BillingPlan, PaywallPresentResult } from '../domain/types';
+import { incrementWishCreditsUsed, readWishCreditsUsed } from '../data/wishCreditStore';
+import { availableWishCredits } from '../domain/wishCredits';
+import type { BillingPlan, ExtraWishAccess, PaywallPresentResult } from '../domain/types';
 
 type BillingContextValue = {
   tier: SubscriptionTier;
@@ -44,6 +47,10 @@ type BillingContextValue = {
   openCustomerCenter: () => Promise<void>;
   refresh: () => Promise<void>;
   clearError: () => void;
+  /** Fresh check (not cached state) for a wish beyond the free monthly allowance. */
+  resolveExtraWish: () => Promise<ExtraWishAccess>;
+  /** Call once after a wish created with a purchased credit is saved. */
+  consumeWishCredit: () => Promise<void>;
 };
 
 const BillingContext = createContext<BillingContextValue | null>(null);
@@ -215,6 +222,40 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
+  const userId = user?.uid ?? null;
+
+  const resolveExtraWish = useCallback(async (): Promise<ExtraWishAccess> => {
+    if (!canUseRevenueCat()) {
+      return 'none';
+    }
+    try {
+      if (await fetchHasPro()) {
+        return 'pro';
+      }
+      if (!userId) {
+        return 'none';
+      }
+      const [purchased, used] = await Promise.all([
+        fetchPurchasedWishCredits(),
+        readWishCreditsUsed(userId),
+      ]);
+      return availableWishCredits(purchased, used) > 0 ? 'credit' : 'none';
+    } catch (e) {
+      if (__DEV__) {
+        console.warn('[Occasio] Extra wish check failed', e);
+      }
+      return 'none';
+    }
+  }, [userId]);
+
+  const consumeWishCredit = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
+    await incrementWishCreditsUsed(userId);
+    trackEvent(AnalyticsEvents.wishCreditUsed);
+  }, [userId]);
+
   const value = useMemo(
     () => ({
       tier,
@@ -230,6 +271,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       openCustomerCenter,
       refresh,
       clearError,
+      resolveExtraWish,
+      consumeWishCredit,
     }),
     [
       tier,
@@ -245,6 +288,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       openCustomerCenter,
       refresh,
       clearError,
+      resolveExtraWish,
+      consumeWishCredit,
     ],
   );
 

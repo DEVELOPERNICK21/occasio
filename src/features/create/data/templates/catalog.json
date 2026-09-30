@@ -174,5 +174,85 @@
       { "key": "headline", "role": "headline", "default": "Happy Birthday" },
       { "key": "body", "role": "body", "default": "One for the album." }
     ]
+  },
+  {
+    "id": "G05",
+    "title": "Scrapbook",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "scrapbook",
+    "photoSlots": 3,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Taped in, kept forever." }
+    ]
+  },
+  {
+    "id": "G06",
+    "title": "Poster",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "elegant",
+    "layoutId": "poster_type",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Front page news." }
+    ]
+  },
+  {
+    "id": "G07",
+    "title": "Big words",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "big_words",
+    "photoSlots": 4,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Said loud, meant softly." }
+    ]
+  },
+  {
+    "id": "G08",
+    "title": "Framed",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "minimal",
+    "layoutId": "framed_blur",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Just this one." }
+    ]
   }
 ]

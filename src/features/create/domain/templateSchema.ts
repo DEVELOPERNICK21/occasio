@@ -20,7 +20,11 @@ export type LayoutId =
   | 'film_strip'
   | 'asymmetric_split'
   | 'story_mosaic'
-  | 'polaroid_overlay';
+  | 'polaroid_overlay'
+  | 'scrapbook'
+  | 'poster_type'
+  | 'big_words'
+  | 'framed_blur';
 
 export type PhotoSlotCount = 1 | 2 | 3 | 4 | 5;
 
@@ -53,6 +57,10 @@ const LAYOUT_IDS = new Set<LayoutId>([
   'asymmetric_split',
   'story_mosaic',
   'polaroid_overlay',
+  'scrapbook',
+  'poster_type',
+  'big_words',
+  'framed_blur',
 ]);
 
 function isAudience(v: unknown): v is Audience {

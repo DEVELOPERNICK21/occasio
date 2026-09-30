@@ -54,7 +54,7 @@ export function freeQuotaNotice(
     return null;
   }
   if (remaining === 0) {
-    return 'Free card used this month — a plan unlocks more when you are ready.';
+    return 'Free card used this month — buy one more wish or pick a plan when you are ready.';
   }
   if (remaining === 1) {
     return '1 free card left this month.';

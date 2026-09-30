@@ -36,4 +36,7 @@ export const AnalyticsEvents = {
   subscribeSuccess: 'subscribe_success',
   subscribeFailed: 'subscribe_failed',
   restoreSuccess: 'restore_success',
+  wishCreditUsed: 'wish_credit_used',
+  appleSignInStarted: 'apple_sign_in_started',
+  appleSignInFailed: 'apple_sign_in_failed',
 } as const;

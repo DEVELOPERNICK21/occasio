@@ -50,7 +50,7 @@ export function AccountScreen() {
     if (!isConfigured) {
       Alert.alert(
         'Billing unavailable',
-        'Configure RevenueCat products (monthly, yearly, lifetime) and rebuild.',
+        'Configure RevenueCat products (monthly, yearly, one wish) and rebuild.',
       );
       return;
     }

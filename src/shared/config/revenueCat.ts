@@ -11,7 +11,8 @@ export const revenueCatConfig = {
   testApiKey: 'test_rjZzlhclstStOVZQJORtmFKGbdh',
   /** Google Play app `com.occasio.greetings` — used by release builds. */
   androidApiKey: 'goog_AldUMUxDVYoUQqEFJAksKcgKodk',
-  iosApiKey: '',
+  /** App Store app `com.occasio.ios` — used by release builds. */
+  iosApiKey: 'appl_YGUxmXJZsprHOzNOQEXelybdsjn',
 } as const;
 
 export function isRevenueCatConfigured(): boolean {

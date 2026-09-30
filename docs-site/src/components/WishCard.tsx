@@ -17,10 +17,77 @@ type Props = {
 function CollageHero({
   layoutId,
   photos,
+  greeting,
+  displayName,
 }: {
   layoutId: WishLayoutId;
   photos: string[];
+  greeting: string;
+  displayName: string;
 }) {
+  const heading = greeting.replace(/[,.]\s*$/, '');
+
+  if (layoutId === 'scrapbook') {
+    return (
+      <div className="wish-card-hero wish-card-hero--scrap wish-reveal wish-reveal--photo">
+        {[0, 1, 2].map((i) => (
+          <figure key={i} className={`wish-card-scrap__print wish-card-scrap__print--${i}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[i]} alt="" className="wish-card-photo" />
+            <span className="wish-card-scrap__tape" />
+          </figure>
+        ))}
+      </div>
+    );
+  }
+
+  if (layoutId === 'poster_type') {
+    return (
+      <div className="wish-card-hero wish-card-hero--poster wish-reveal wish-reveal--photo">
+        <p className="wish-card-poster__word">{heading}</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[0]} alt="" className="wish-card-photo" />
+        <p className="wish-card-poster__word">{displayName}</p>
+      </div>
+    );
+  }
+
+  if (layoutId === 'big_words') {
+    const words = heading
+      .toLowerCase()
+      .replace(/[,.!]/g, '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 4);
+    return (
+      <div className="wish-card-hero wish-card-hero--words wish-reveal wish-reveal--photo">
+        {[0, 1, 2, 3].map((i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={photos[i]} alt="" className="wish-card-photo" />
+        ))}
+        <div className="wish-card-words" aria-hidden>
+          {words.map((word, i) => (
+            <span key={`${word}-${i}`}>{word}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (layoutId === 'framed_blur') {
+    return (
+      <div className="wish-card-hero wish-card-hero--framed wish-reveal wish-reveal--photo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[0]} alt="" className="wish-card-photo wish-card-framed__blur" />
+        <figure className="wish-card-framed__mount">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photos[0]} alt="" className="wish-card-photo" />
+          <figcaption>{heading}</figcaption>
+        </figure>
+      </div>
+    );
+  }
+
   if (layoutId === 'film_strip') {
     return (
       <div className="wish-card-hero wish-card-hero--strip wish-reveal wish-reveal--photo">
@@ -93,6 +160,10 @@ const COLLAGE_LAYOUTS: WishLayoutId[] = [
   'asymmetric_split',
   'story_mosaic',
   'polaroid_overlay',
+  'scrapbook',
+  'poster_type',
+  'big_words',
+  'framed_blur',
 ];
 
 export function WishCard({
@@ -171,7 +242,12 @@ export function WishCard({
             <img src={photos[1]} alt="" className="wish-card-photo" />
           </div>
         ) : isCollage && hasPhoto ? (
-          <CollageHero layoutId={layoutId} photos={photos} />
+          <CollageHero
+            layoutId={layoutId}
+            photos={photos}
+            greeting={greeting}
+            displayName={displayName}
+          />
         ) : hasPhoto ? (
           <div className="wish-card-hero wish-reveal wish-reveal--photo">
             {/* eslint-disable-next-line @next/next/no-img-element */}

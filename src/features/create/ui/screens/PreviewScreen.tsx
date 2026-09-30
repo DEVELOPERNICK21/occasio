@@ -29,7 +29,14 @@ export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
   const { isSignedIn } = useAuth();
   const { entries } = useHistory(isSignedIn);
-  const { open: openPaywall, isConfigured, tier, error: billingError } = usePaywall();
+  const {
+    open: openPaywall,
+    isConfigured,
+    tier,
+    error: billingError,
+    resolveExtraWish,
+    consumeWishCredit,
+  } = usePaywall();
   const cardsCreatedThisMonth = useMemo(
     () => (isSignedIn ? countWishesThisMonth(entries) : 0),
     [entries, isSignedIn],
@@ -38,6 +45,8 @@ export function PreviewScreen({ navigation }: Props) {
     useCreateShareLink({
       cardsCreatedThisMonth,
       tier,
+      resolveExtraWish,
+      consumeWishCredit,
     });
   const quotaNotice = isEditing
     ? null
@@ -57,7 +66,7 @@ export function PreviewScreen({ navigation }: Props) {
     if (!isConfigured) {
       Alert.alert(
         'Upgrade needed',
-        'Billing is not ready yet. Add your RevenueCat offering (monthly / yearly / lifetime) and rebuild.',
+        'Billing is not ready yet. Add your RevenueCat offering (monthly / yearly / one wish) and rebuild.',
       );
       reset();
       return;

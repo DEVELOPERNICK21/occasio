@@ -55,7 +55,7 @@ export function DesignFrameCard({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${template.title}. ${cue}`}
-      accessibilityHint="Continues to add photos for this design"
+      accessibilityHint="Choose this design and arrange your photos in it"
       onPress={onPress}
       onPressIn={() => {
         scale.value = withSpring(0.97, PRESS_SPRING);

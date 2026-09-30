@@ -104,7 +104,7 @@ describe('quota', () => {
   it('tells remaining free cards before the user starts work', () => {
     expect(freeQuotaNotice(0, 'free')).toBe('1 free card left this month.');
     expect(freeQuotaNotice(1, 'free')).toBe(
-      'Free card used this month — a plan unlocks more when you are ready.',
+      'Free card used this month — buy one more wish or pick a plan when you are ready.',
     );
     expect(freeQuotaNotice(0, 'personal')).toBeNull();
   });

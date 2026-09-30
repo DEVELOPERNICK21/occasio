@@ -5,7 +5,11 @@ export type WishLayoutId =
   | "film_strip"
   | "asymmetric_split"
   | "story_mosaic"
-  | "polaroid_overlay";
+  | "polaroid_overlay"
+  | "scrapbook"
+  | "poster_type"
+  | "big_words"
+  | "framed_blur";
 
 /**
  * Mirrors the seed catalog in the app
@@ -22,6 +26,10 @@ const LAYOUT_BY_TEMPLATE_ID: Record<string, WishLayoutId> = {
   G02: "asymmetric_split",
   G03: "story_mosaic",
   G04: "polaroid_overlay",
+  G05: "scrapbook",
+  G06: "poster_type",
+  G07: "big_words",
+  G08: "framed_blur",
 };
 
 const MIN_PHOTOS: Record<WishLayoutId, number> = {
@@ -32,6 +40,10 @@ const MIN_PHOTOS: Record<WishLayoutId, number> = {
   asymmetric_split: 4,
   story_mosaic: 5,
   polaroid_overlay: 2,
+  scrapbook: 3,
+  poster_type: 1,
+  big_words: 4,
+  framed_blur: 1,
 };
 
 /** Cards created before frames shipped fall back to the original layout. */

@@ -72,33 +72,40 @@ describe('homeSelectionFromTemplateType', () => {
 });
 
 describe('loadCatalog', () => {
-  it('returns 9 templates', () => {
-    expect(loadCatalog()).toHaveLength(9);
+  it('returns 13 templates', () => {
+    expect(loadCatalog()).toHaveLength(13);
   });
 });
 
 describe('parseTemplateCatalog', () => {
-  it('parses the seed catalog (9 templates)', () => {
+  it('parses the seed catalog (13 templates)', () => {
     const parsed = parseTemplateCatalog(catalogJson);
-    expect(parsed).toHaveLength(9);
+    expect(parsed).toHaveLength(13);
     expect(parsed.map((t) => t.id).sort()).toEqual(
-      ['B01', 'B04', 'B10', 'G01', 'G02', 'G03', 'G04', 'L06', 'T01'].sort(),
+      [
+        'B01', 'B04', 'B10', 'G01', 'G02', 'G03', 'G04',
+        'G05', 'G06', 'G07', 'G08', 'L06', 'T01',
+      ].sort(),
     );
   });
 
-  it('accepts collage layout ids and photoSlots 3–5', () => {
+  it('accepts collage layout ids and photoSlots 1–5', () => {
     const collage = parseTemplateCatalog(catalogJson).filter((t) =>
       t.id.startsWith('G'),
     );
     expect(collage.map((t) => t.layoutId).sort()).toEqual(
       [
         'asymmetric_split',
+        'big_words',
         'film_strip',
+        'framed_blur',
         'polaroid_overlay',
+        'poster_type',
+        'scrapbook',
         'story_mosaic',
       ].sort(),
     );
-    expect(collage.map((t) => t.photoSlots).sort()).toEqual([2, 3, 4, 5]);
+    expect(collage.map((t) => t.photoSlots).sort()).toEqual([1, 1, 2, 3, 3, 4, 4, 5]);
   });
 
   it('rejects invalid catalog entries', () => {
@@ -118,7 +125,7 @@ describe('recommendTemplates', () => {
     }).map((t) => t.id);
     expect(ids[0]).toBe('B04');
     expect(ids.length).toBeGreaterThanOrEqual(1);
-    expect(ids.length).toBeLessThanOrEqual(8);
+    expect(ids.length).toBeLessThanOrEqual(12);
   });
 
   it('hides B04 when only 1 photo allowed', () => {
@@ -142,8 +149,22 @@ describe('recommendTemplates', () => {
       maxPhotosAllowed: 5,
     }).map((t) => t.id);
     expect(ids).toEqual(
-      expect.arrayContaining(['G01', 'G02', 'G03', 'G04']),
+      expect.arrayContaining([
+        'G01', 'G02', 'G03', 'G04', 'G05', 'G06', 'G07', 'G08',
+      ]),
     );
+  });
+
+  it('offers the single-photo Poster and Framed frames with 1 photo', () => {
+    const ids = recommendTemplates({
+      audience: 'friend',
+      occasion: 'birthday',
+      catalog,
+      maxPhotosAllowed: 1,
+    }).map((t) => t.id);
+    expect(ids).toEqual(expect.arrayContaining(['G06', 'G08']));
+    expect(ids).not.toContain('G05');
+    expect(ids).not.toContain('G07');
   });
 
   it('hides multi-photo collages when only 2 photos are allowed', () => {

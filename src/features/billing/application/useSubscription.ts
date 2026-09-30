@@ -19,5 +19,7 @@ export function useSubscription() {
     openCustomerCenter: billing.openCustomerCenter,
     refresh: billing.refresh,
     clearError: billing.clearError,
+    resolveExtraWish: billing.resolveExtraWish,
+    consumeWishCredit: billing.consumeWishCredit,
   };
 }

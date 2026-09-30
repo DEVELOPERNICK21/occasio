@@ -3,7 +3,7 @@ import { colors, radius, spacing, typography } from '../../../../shared/theme/to
 import { Text } from '../../../../shared/ui/Text';
 import type { LayoutId } from '../../domain/templateSchema';
 
-type Tone = {
+export type FrameTone = {
   wash: string;
   photo: string;
   photoAlt: string;
@@ -14,10 +14,19 @@ type Tone = {
 type Props = {
   layoutId: LayoutId;
   title: string;
-  tone: Tone;
+  tone: FrameTone;
   /** The photos already picked — the tile previews the real card, not a mock. */
   photoUris?: string[];
+  height?: number;
 };
+
+const SCRAP_PRINTS = [
+  { top: '4%', left: '4%', width: '50%', transform: [{ rotate: '-6deg' }] },
+  { top: '10%', right: '4%', width: '44%', transform: [{ rotate: '5deg' }] },
+  { bottom: '2%', left: '24%', width: '50%', transform: [{ rotate: '-2deg' }] },
+] as const;
+
+const SCRAP_TAPE = [colors.butter, colors.rose, colors.sage] as const;
 
 function PhotoFill({ uri, fallback }: { uri?: string; fallback: string }) {
   if (!uri) {
@@ -52,10 +61,13 @@ export function DesignFramePreview({
   title,
   tone,
   photoUris = [],
+  height,
 }: Props) {
+  const stageStyle = [styles.stage, height ? { height } : null];
+
   if (layoutId === 'minimal_fullscreen') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.fullBleed}>
           <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
           <View style={styles.fullBleedShade} />
@@ -72,7 +84,7 @@ export function DesignFramePreview({
 
   if (layoutId === 'dual_editorial') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.dualRow}>
           <View style={styles.dualPrimary}>
             <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
@@ -95,7 +107,7 @@ export function DesignFramePreview({
 
   if (layoutId === 'film_strip') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.stripCol}>
           <MiniSlot uri={photoUris[0]} fallback={tone.photo} />
           <MiniSlot uri={photoUris[1]} fallback={tone.photoAlt} />
@@ -107,7 +119,7 @@ export function DesignFramePreview({
 
   if (layoutId === 'asymmetric_split') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.asymGrid}>
           <View style={styles.asymTop}>
             <View style={styles.asymLeft}>
@@ -124,7 +136,7 @@ export function DesignFramePreview({
 
   if (layoutId === 'story_mosaic') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.mosaicGrid}>
           <MiniSlot uri={photoUris[0]} fallback={tone.photo} style={styles.mosaicBanner} />
           <View style={styles.mosaicRow}>
@@ -142,7 +154,7 @@ export function DesignFramePreview({
 
   if (layoutId === 'polaroid_overlay') {
     return (
-      <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
         <View style={styles.polaroidStage}>
           <View style={styles.polaroidBase}>
             <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
@@ -155,9 +167,89 @@ export function DesignFramePreview({
     );
   }
 
+  if (layoutId === 'scrapbook') {
+    return (
+      <View style={[stageStyle, { backgroundColor: colors.butterSoft }]}>
+        <View style={styles.scrapStage}>
+          {SCRAP_PRINTS.map((print, i) => (
+            <View key={i} style={[styles.scrapPrint, print]}>
+              <View style={styles.scrapPhoto}>
+                <PhotoFill uri={photoUris[i]} fallback={i % 2 ? tone.photoAlt : tone.photo} />
+              </View>
+              <View style={[styles.scrapTape, { backgroundColor: SCRAP_TAPE[i] }]} />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'poster_type') {
+    return (
+      <View style={[stageStyle, styles.posterStage, { backgroundColor: tone.accent }]}>
+        <Text style={styles.posterWord} numberOfLines={1} adjustsFontSizeToFit>
+          {title.toUpperCase()}
+        </Text>
+        <MiniSlot uri={photoUris[0]} fallback={tone.photo} />
+        <View style={styles.posterRule} />
+      </View>
+    );
+  }
+
+  if (layoutId === 'big_words') {
+    const words = title.toLowerCase().replace(/[,.!]/g, '').split(/\s+/).filter(Boolean).slice(0, 3);
+    return (
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
+        <View style={styles.quadGrid}>
+          {[0, 1, 2, 3].map((i) => (
+            <View key={i} style={styles.quadCell}>
+              <PhotoFill uri={photoUris[i]} fallback={i % 3 ? tone.photoAlt : tone.photo} />
+            </View>
+          ))}
+          <View style={styles.quadWords} pointerEvents="none">
+            {words.map((word, i) => (
+              <Text
+                key={`${word}-${i}`}
+                style={[styles.quadWord, { textAlign: i % 2 ? 'right' : 'left' }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                {word}
+              </Text>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'framed_blur') {
+    return (
+      <View style={[stageStyle, { backgroundColor: tone.wash }]}>
+        <View style={styles.framedStage}>
+          {photoUris[0] ? (
+            <Image
+              source={{ uri: photoUris[0] }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+              blurRadius={10}
+            />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: tone.photoAlt }]} />
+          )}
+          <View style={styles.framedMount}>
+            <View style={styles.framedPhoto}>
+              <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   // editorial_portrait — photo above, warm letter band below
   return (
-    <View style={[styles.stage, { backgroundColor: tone.wash }]}>
+    <View style={[stageStyle, { backgroundColor: tone.wash }]}>
       <View style={styles.portraitStack}>
         <View style={styles.portraitPhoto}>
           <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
@@ -333,6 +425,99 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 3,
+  },
+  scrapStage: {
+    flex: 1,
+  },
+  scrapPrint: {
+    position: 'absolute',
+    padding: 3,
+    paddingBottom: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 1,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.14,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  scrapPhoto: {
+    aspectRatio: 1,
+    overflow: 'hidden',
+  },
+  scrapTape: {
+    position: 'absolute',
+    top: -4,
+    left: '32%',
+    width: '36%',
+    height: 8,
+    opacity: 0.75,
+  },
+  posterStage: {
+    gap: 4,
+  },
+  posterWord: {
+    color: colors.white,
+    fontSize: typography.sizeLg,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  posterRule: {
+    height: 8,
+    width: '70%',
+    borderRadius: 2,
+    backgroundColor: colors.white,
+    opacity: 0.9,
+  },
+  quadGrid: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  quadCell: {
+    width: '49%',
+    height: '49%',
+    flexGrow: 1,
+    overflow: 'hidden',
+  },
+  quadWords: {
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 6,
+  },
+  quadWord: {
+    color: colors.butter,
+    fontSize: typography.sizeXl,
+    fontWeight: '800',
+    letterSpacing: -1,
+    textShadowColor: 'rgba(42, 34, 32, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  framedStage: {
+    flex: 1,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  framedMount: {
+    width: '58%',
+    padding: 4,
+    backgroundColor: colors.surface,
+    borderRadius: 2,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  framedPhoto: {
+    aspectRatio: 4 / 5,
+    overflow: 'hidden',
   },
   polaroidStage: {
     flex: 1,

@@ -1,11 +1,15 @@
 import { occasionHeadline } from '../../domain/audienceOccasion';
 import type { Occasion, TemplateDefinition } from '../../domain/templateSchema';
 import { AsymmetricSplit } from './layouts/AsymmetricSplit';
+import { BigWords } from './layouts/BigWords';
 import { DualEditorial } from './layouts/DualEditorial';
 import { EditorialPortrait } from './layouts/EditorialPortrait';
 import { FilmStrip } from './layouts/FilmStrip';
+import { FramedBlur } from './layouts/FramedBlur';
 import { MinimalFullscreen } from './layouts/MinimalFullscreen';
 import { PolaroidOverlay } from './layouts/PolaroidOverlay';
+import { PosterType } from './layouts/PosterType';
+import { Scrapbook } from './layouts/Scrapbook';
 import { StoryMosaic } from './layouts/StoryMosaic';
 
 export type LayoutProps = {
@@ -74,6 +78,14 @@ export function TemplateRenderer({
       return <StoryMosaic {...layoutProps} />;
     case 'polaroid_overlay':
       return <PolaroidOverlay {...layoutProps} />;
+    case 'scrapbook':
+      return <Scrapbook {...layoutProps} />;
+    case 'poster_type':
+      return <PosterType {...layoutProps} />;
+    case 'big_words':
+      return <BigWords {...layoutProps} />;
+    case 'framed_blur':
+      return <FramedBlur {...layoutProps} />;
     case 'editorial_portrait':
     default:
       return <EditorialPortrait {...layoutProps} />;
