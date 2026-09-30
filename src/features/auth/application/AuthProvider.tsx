@@ -16,6 +16,7 @@ import {
   signInWithEmail,
   signInWithGoogle,
   signOut,
+  deleteAccount,
   subscribeAuthState,
 } from '../data/authRepository';
 import { syncPendingHistoryEntries } from '../../history/application/useHistory';
@@ -38,6 +39,8 @@ type AuthContextValue = {
   dismissSoftAuth: () => void;
   completeSoftAuth: () => void;
   signOutUser: () => Promise<void>;
+  /** Permanently deletes the account and all its data. */
+  deleteAccountUser: () => Promise<void>;
   signInGoogle: () => Promise<void>;
   /** False on Android and iOS < 13 — hide the Apple button then. */
   canSignInWithApple: boolean;
@@ -107,6 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     trackEvent(AnalyticsEvents.signOut);
   }, []);
 
+  const deleteAccountUser = useCallback(async () => {
+    await deleteAccount();
+    trackEvent(AnalyticsEvents.accountDeleted);
+  }, []);
+
   const signInGoogle = useCallback(async () => {
     const signedInUser = await signInWithGoogle();
     setUser(signedInUser);
@@ -151,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dismissSoftAuth,
       completeSoftAuth,
       signOutUser,
+      deleteAccountUser,
       signInGoogle,
       canSignInWithApple,
       signInApple,
@@ -166,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dismissSoftAuth,
       completeSoftAuth,
       signOutUser,
+      deleteAccountUser,
       signInGoogle,
       canSignInWithApple,
       signInApple,

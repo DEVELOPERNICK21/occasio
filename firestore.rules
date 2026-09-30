@@ -6,22 +6,40 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Tier and wish-credit fields are written by Cloud Functions from
+    // RevenueCat data only. Clients may touch nothing but their push tokens,
+    // so a modified app cannot grant itself a paid plan or free credits.
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['fcmTokens']);
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmTokens']);
     }
 
     match /relationships/{relationshipId} {
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.userId;
-      allow read, update, delete: if request.auth != null
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.userId == resource.data.userId;
     }
 
     match /user_creations/{entryId} {
+      // The card must already exist (created server-side), so ownership of an
+      // arbitrary made-up id cannot be claimed.
       allow create: if request.auth != null
-        && request.auth.uid == request.resource.data.userId;
-      allow read, update, delete: if request.auth != null
+        && request.auth.uid == request.resource.data.userId
+        && exists(/databases/$(database)/documents/creations/$(entryId));
+      allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.userId == resource.data.userId;
     }
 
     match /scheduled_sends/{sendId} {

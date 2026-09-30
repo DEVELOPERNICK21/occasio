@@ -28,7 +28,7 @@ import {
   presentProPaywallIfNeeded,
 } from '../data/revenueCatUi';
 import { isBillingError, isPurchaseCancelled } from '../data/billingErrors';
-import { mirrorSubscriptionTier } from '../data/userTierMirror';
+import { syncSubscriptionTier } from '../data/userTierMirror';
 import { incrementWishCreditsUsed, readWishCreditsUsed } from '../data/wishCreditStore';
 import { availableWishCredits } from '../domain/wishCredits';
 import type { BillingPlan, ExtraWishAccess, PaywallPresentResult } from '../domain/types';
@@ -117,7 +117,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    void mirrorSubscriptionTier(user.uid, tier).catch((e) => {
+    void syncSubscriptionTier(user.uid).catch((e) => {
       if (__DEV__) {
         console.warn('[Occasio] subscriptionTier mirror failed', e);
       }

@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   ambient: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 2,
     elevation: 2,
   },

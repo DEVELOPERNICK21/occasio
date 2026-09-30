@@ -206,6 +206,18 @@ export function AccountSignOutButton({ onPress }: { onPress: () => void }) {
   );
 }
 
+export function AccountDeleteButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.deleteAccount, pressed && styles.pressed]}
+    >
+      <Text style={styles.deleteAccountLabel}>Delete account and data</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
@@ -391,6 +403,16 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
     letterSpacing: 0.8,
     color: colors.accent,
+  },
+  deleteAccount: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteAccountLabel: {
+    fontSize: typography.sizeSm,
+    color: colors.muted,
+    textDecorationLine: 'underline',
   },
   pressed: {
     opacity: 0.92,

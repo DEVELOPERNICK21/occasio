@@ -28,6 +28,7 @@ export const AnalyticsEvents = {
   googleSignInFailed: 'google_sign_in_failed',
   signInSuccess: 'sign_in_success',
   signOut: 'sign_out',
+  accountDeleted: 'account_deleted',
   vaultSaveRequested: 'vault_save_requested',
   vaultPersonAdded: 'vault_person_added',
   vaultSavePromptTapped: 'vault_save_prompt_tapped',

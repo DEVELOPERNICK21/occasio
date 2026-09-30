@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { pruneFcmTokens, sendAutosendSent } from './fcm';
 import {
   channelDestinations,
-  mockDeliveryProviders,
+  deliveryProviders,
   type DeliveryProvider,
 } from './providers';
 import {
@@ -13,6 +13,9 @@ import {
 } from './types';
 
 const SCHEDULED_SENDS = 'scheduled_sends';
+const MAX_DISPATCH_ATTEMPTS = 3;
+/** A claim older than this is treated as a crashed worker and may be retaken. */
+const CLAIM_TTL_MS = 10 * 60 * 1000;
 
 export type DispatchResult = {
   status: ScheduledSendStatus;
@@ -108,7 +111,7 @@ export async function dispatchScheduledSend(
   db: FirebaseFirestore.Firestore,
   messaging: admin.messaging.Messaging,
   sendId: string,
-  providers: DeliveryProvider[] = mockDeliveryProviders(),
+  providers: DeliveryProvider[] = deliveryProviders(),
 ): Promise<DispatchResult> {
   const sendRef = db.collection(SCHEDULED_SENDS).doc(sendId);
   const snap = await sendRef.get();
@@ -158,6 +161,47 @@ export async function dispatchScheduledSend(
     };
   }
 
+  if (providers.length === 0) {
+    console.error('AUTOSEND_NO_PROVIDERS', { sendId });
+    await sendRef.update({
+      lastError: 'no_providers',
+      updatedAt: admin.firestore.Timestamp.now(),
+    });
+    return {
+      status: 'approved',
+      shareUrl,
+      deliveryChannelUsed: null,
+      lastError: 'no_providers',
+    };
+  }
+
+  // Claim so a concurrent approve + sweep cannot deliver the same wish twice.
+  const claimed = await db.runTransaction(async (tx) => {
+    const fresh = await tx.get(sendRef);
+    const freshData = fresh.data() ?? {};
+    if (freshData.status !== 'approved') {
+      return false;
+    }
+    const claimedAt = freshData.dispatchClaimedAt;
+    const claimedMs =
+      claimedAt && typeof claimedAt.toMillis === 'function'
+        ? (claimedAt.toMillis() as number)
+        : 0;
+    if (claimedMs && Date.now() - claimedMs < CLAIM_TTL_MS) {
+      return false;
+    }
+    tx.update(sendRef, { dispatchClaimedAt: admin.firestore.Timestamp.now() });
+    return true;
+  });
+  if (!claimed) {
+    return {
+      status: 'approved',
+      shareUrl,
+      deliveryChannelUsed: null,
+      lastError: null,
+    };
+  }
+
   const relationshipId = asString(data.relationshipId);
   const relSnap = relationshipId
     ? await db.collection('relationships').doc(relationshipId).get()
@@ -195,6 +239,7 @@ export async function dispatchScheduledSend(
       status: 'sent',
       deliveryChannelUsed,
       lastError: null,
+      dispatchClaimedAt: null,
       updatedAt: nowTs,
     });
     if (userId) {
@@ -214,13 +259,28 @@ export async function dispatchScheduledSend(
   }
 
   const failError = lastError ?? 'all_channels_failed';
+  const attempts =
+    (typeof data.dispatchAttempts === 'number' ? data.dispatchAttempts : 0) + 1;
+  const giveUp = attempts >= MAX_DISPATCH_ATTEMPTS;
+  if (giveUp) {
+    // Highest-severity failure class: point a Cloud Logging alert at this key.
+    console.error('AUTOSEND_DELIVERY_FAILED', {
+      sendId,
+      userId,
+      attempts,
+      error: failError,
+    });
+  }
   await sendRef.update({
-    status: 'failed',
+    // Stay `approved` so the 15-minute sweep retries until attempts run out.
+    status: giveUp ? 'failed' : 'approved',
     lastError: failError,
+    dispatchAttempts: attempts,
+    dispatchClaimedAt: null,
     updatedAt: nowTs,
   });
   return {
-    status: 'failed',
+    status: giveUp ? 'failed' : 'approved',
     shareUrl,
     deliveryChannelUsed: null,
     lastError: failError,

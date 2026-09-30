@@ -17,6 +17,7 @@ import {
   AccountTopBar,
 } from '../components/AccountProfileHeader';
 import {
+  AccountDeleteButton,
   AccountHelpCard,
   AccountNotificationsCard,
   AccountPrivacyCard,
@@ -32,6 +33,7 @@ type Props = {
   onRestorePurchases?: () => void;
   onManagePlan?: () => void;
   onSignOut: () => void;
+  onDeleteAccount?: () => Promise<void>;
 };
 
 export function AccountHomeScreen({
@@ -42,6 +44,7 @@ export function AccountHomeScreen({
   onRestorePurchases,
   onManagePlan,
   onSignOut,
+  onDeleteAccount,
 }: Props) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
@@ -62,6 +65,31 @@ export function AccountHomeScreen({
       hasPro || tier !== 'free'
         ? 'Manage or cancel your subscription in the store.'
         : 'Open Create and generate a link to see Occasio Pro plans.',
+    );
+  };
+
+  const confirmDelete = () => {
+    if (!onDeleteAccount) {
+      return;
+    }
+    Alert.alert(
+      'Delete your account?',
+      'This permanently removes your Vault, history, shared card links and photos. It cannot be undone. If you subscribed, cancel your plan in the App Store or Google Play as well — deleting your account does not cancel it.',
+      [
+        { text: 'Keep my account', style: 'cancel' },
+        {
+          text: 'Delete everything',
+          style: 'destructive',
+          onPress: () => {
+            onDeleteAccount().catch((e: unknown) => {
+              Alert.alert(
+                'Could not delete',
+                e instanceof Error ? e.message : 'Please try again.',
+              );
+            });
+          },
+        },
+      ],
     );
   };
 
@@ -106,6 +134,7 @@ export function AccountHomeScreen({
         <AccountPrivacyCard />
         <AccountHelpCard />
         <AccountSignOutButton onPress={onSignOut} />
+        {onDeleteAccount ? <AccountDeleteButton onPress={confirmDelete} /> : null}
       </ScrollView>
     </View>
   );

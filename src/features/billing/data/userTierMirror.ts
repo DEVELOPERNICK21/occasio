@@ -1,26 +1,19 @@
-import firestore from '@react-native-firebase/firestore';
-import type { SubscriptionTier } from '../../vault/domain/types';
-
-const VALID_TIERS: SubscriptionTier[] = ['free', 'personal', 'family'];
-
-function isSubscriptionTier(value: unknown): value is SubscriptionTier {
-  return typeof value === 'string' && VALID_TIERS.includes(value as SubscriptionTier);
-}
+import auth from '@react-native-firebase/auth';
+import { httpClient } from '../../../shared/api/httpClient';
+import { getApiBaseUrl } from '../../../shared/config/env';
 
 /**
- * Mirror RevenueCat-derived tier on users/{uid} for server-side autosend gates.
- * Client-only; cron reads this field (missing → free).
+ * Ask the server to re-read this user's RevenueCat state and write the tier
+ * to users/{uid}. Firestore rules block client writes to that field, so the
+ * server is the only writer and the auto-send cron can trust it.
  */
-export async function mirrorSubscriptionTier(
-  userId: string,
-  tier: SubscriptionTier,
-): Promise<void> {
-  if (!userId || !isSubscriptionTier(tier)) {
+export async function syncSubscriptionTier(userId: string): Promise<void> {
+  const current = auth().currentUser;
+  if (!userId || !current || current.uid !== userId) {
     return;
   }
-
-  await firestore()
-    .collection('users')
-    .doc(userId)
-    .set({ subscriptionTier: tier }, { merge: true });
+  const token = await current.getIdToken();
+  await httpClient.post(getApiBaseUrl(), '/v1/billing/sync', undefined, {
+    Authorization: `Bearer ${token}`,
+  });
 }

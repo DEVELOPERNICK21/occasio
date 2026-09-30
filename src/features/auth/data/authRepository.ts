@@ -1,7 +1,8 @@
 import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import { env } from '../../../shared/config/env';
+import { httpClient } from '../../../shared/api/httpClient';
+import { env, getApiBaseUrl } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
 import type { AuthUser } from '../domain/types';
 import { AuthError, mapFirebaseAuthError, mapGoogleSignInError } from './authErrors';
@@ -327,4 +328,35 @@ export async function signOut(): Promise<void> {
   } catch (error) {
     throw mapFirebaseAuthError(error);
   }
+}
+
+/**
+ * Permanently delete the account and everything tied to it (Vault, history,
+ * shared links, photos). The server does the deletion; we only sign out locally.
+ */
+export async function deleteAccount(): Promise<void> {
+  if (env.useMockAuth) {
+    mockUser = null;
+    notifyMockListeners();
+    return;
+  }
+
+  const token = await auth().currentUser?.getIdToken();
+  if (!token) {
+    throw new AuthError('UNKNOWN', 'Sign in again to delete your account.');
+  }
+
+  try {
+    await httpClient.delete(getApiBaseUrl(), '/v1/account', {
+      Authorization: `Bearer ${token}`,
+    });
+  } catch {
+    throw new AuthError(
+      'UNKNOWN',
+      'Could not delete your account right now. Check your connection and try again.',
+    );
+  }
+
+  await GoogleSignin.signOut().catch(() => undefined);
+  await auth().signOut().catch(() => undefined);
 }

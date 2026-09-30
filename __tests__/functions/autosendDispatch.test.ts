@@ -31,7 +31,9 @@ describe('autosend deadline rules', () => {
   });
 
   it('requires a photoRef or mediaUrl', () => {
-    expect(hasCreationPhotos(['p1'], [])).toBe(true);
+    expect(hasCreationPhotos(['uploads/guest/p1.jpg'], [])).toBe(true);
+    // `inline:N` refs carry no data, so they must not count as photos.
+    expect(hasCreationPhotos(['inline:0'], [])).toBe(false);
     expect(hasCreationPhotos([], ['https://cdn/x.jpg'])).toBe(true);
     expect(hasCreationPhotos([], [])).toBe(false);
     expect(hasCreationPhotos([''], [])).toBe(false);

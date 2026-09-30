@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'crypto';
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
-import { writeCreation } from '../creations';
+import { resolveMediaUrls, writeCreation } from '../creations';
 import { packFromRelationship, resolveAutoSendContent } from './content';
 import {
   buildIdempotencyKey,
@@ -21,7 +21,8 @@ import {
 } from './types';
 
 const PAGE_SIZE = 100;
-const REVIEW_WINDOW_MS = 24 * 60 * 60 * 1000;
+/** Sender's chance to stop or approve early; the sweep dispatches when it lapses. */
+const REVIEW_WINDOW_MS = 2 * 60 * 60 * 1000;
 const PAID_LINK_TTL_DAYS = 365;
 const SCHEDULED_SENDS = 'scheduled_sends';
 
@@ -133,7 +134,8 @@ function lastCreationFromDoc(
   return {
     templateType,
     templateId: typeof data.templateId === 'string' ? data.templateId : '',
-    photoRefs: photoRefs.length > 0 ? photoRefs : mediaUrls,
+    photoRefs,
+    mediaUrls,
     message: typeof data.message === 'string' ? data.message : '',
     fromName: typeof data.fromName === 'string' ? data.fromName : null,
   };
@@ -369,6 +371,7 @@ async function processOccasion(
       fromName: content.fromName,
       message: content.message,
       photoRefs: content.photoRefs,
+      mediaUrls: resolveMediaUrls(content.mediaUrls, content.photoRefs),
       userId: rel.userId,
       ttlDays: PAID_LINK_TTL_DAYS,
     });

@@ -25,12 +25,25 @@ export function istCalendarDate(now: Date): IstCalendarDate {
   };
 }
 
+function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
 export function matchesMonthDay(
   date: PersonDate | undefined,
-  today: Pick<IstCalendarDate, 'month' | 'day'>,
+  today: Pick<IstCalendarDate, 'month' | 'day'> & { year?: number },
 ): boolean {
   if (!date) return false;
-  return date.month === today.month && date.day === today.day;
+  if (date.month === today.month && date.day === today.day) return true;
+  // Feb 29 birthdays are celebrated on Feb 28 in non-leap years.
+  return (
+    date.month === 2 &&
+    date.day === 29 &&
+    today.month === 2 &&
+    today.day === 28 &&
+    today.year !== undefined &&
+    !isLeapYear(today.year)
+  );
 }
 
 export function buildIdempotencyKey(

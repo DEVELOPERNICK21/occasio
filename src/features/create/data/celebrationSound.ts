@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports -- native audio has no RN-free equivalent; kept out of ui/ on purpose
 import { Image, Platform } from 'react-native';
 import Sound from 'react-native-sound';
 import type { ScreenEffectId } from '../domain/occasionEffects';

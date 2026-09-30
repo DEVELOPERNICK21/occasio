@@ -2,9 +2,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /uploads/guest/{fileName} {
-      allow write: if request.resource != null
+      // Create-only: nobody can overwrite or delete another person's photo.
+      allow create: if request.resource != null
         && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && request.resource.contentType.matches('image/(jpeg|png|webp|heic)');
       allow read: if true;
     }
   }

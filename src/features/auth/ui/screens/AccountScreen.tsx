@@ -12,7 +12,7 @@ import { LoginScreen } from './LoginScreen';
 
 export function AccountScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const { user, isSignedIn, isLoading, signOutUser } = useAuth();
+  const { user, isSignedIn, isLoading, signOutUser, deleteAccountUser } = useAuth();
   const {
     tier,
     hasPro,
@@ -87,6 +87,7 @@ export function AccountScreen() {
       onSignOut={() => {
         void signOutUser();
       }}
+      onDeleteAccount={deleteAccountUser}
     />
   );
 }

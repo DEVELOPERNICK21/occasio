@@ -29,7 +29,7 @@ export async function sendAutosendReview(
     tokens: unique,
     notification: {
       title: `Review ${payload.personName}'s card`,
-      body: `Their ${occasionLabel} is today. You have 24 hours to review.`,
+      body: `Their ${occasionLabel} is today. You have 2 hours to review before it is sent.`,
     },
     data: {
       type: 'autosend_review',
@@ -72,8 +72,8 @@ export async function sendAutosendSent(
   const response = await messaging.sendEachForMulticast({
     tokens: unique,
     notification: {
-      title: `${payload.personName}'s card is ready`,
-      body: 'Share the link from Vault if you want to send it yourself.',
+      title: `Sent to ${payload.personName}`,
+      body: `Their ${payload.occasionType === 'anniversary' ? 'anniversary' : 'birthday'} card is on its way.`,
     },
     data: {
       type: 'autosend_sent',

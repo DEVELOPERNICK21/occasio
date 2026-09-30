@@ -27,6 +27,8 @@ export type AutoSendLastCreation = {
   templateType: string;
   templateId: string;
   photoRefs: string[];
+  /** Display URLs (inline data URLs or hosted). Empty for storage-only creations. */
+  mediaUrls?: string[];
   message: string;
   fromName: string | null;
 };
@@ -37,6 +39,8 @@ export type ResolvedAutoSendContent = {
   templateType: string;
   templateId: string | null;
   photoRefs: string[];
+  /** Display URLs already known for these photos; cron resolves the rest from storage paths. */
+  mediaUrls: string[];
   message: string;
   fromName: string | null;
   source: AutoSendContentSource;
@@ -84,11 +88,23 @@ export function isAutosendDispatchEnabled(): boolean {
   return process.env.OCCASIO_AUTOSEND_DISPATCH === 'true';
 }
 
+/** Refs like `inline:0` point at nothing once the source draft is gone. */
+export function isInlinePhotoRef(ref: string): boolean {
+  return /^inline:\d+$/.test(ref);
+}
+
+/**
+ * A card is only sendable when the recipient page can actually show a photo:
+ * either display URLs exist, or a ref points at real storage (not `inline:N`).
+ */
 export function hasCreationPhotos(
   photoRefs: unknown,
   mediaUrls: unknown,
 ): boolean {
-  return nonEmptyStrings(photoRefs).length > 0 || nonEmptyStrings(mediaUrls).length > 0;
+  if (nonEmptyStrings(mediaUrls).length > 0) {
+    return true;
+  }
+  return nonEmptyStrings(photoRefs).some((ref) => !isInlinePhotoRef(ref));
 }
 
 export function shouldAutoDispatchOnDeadline(

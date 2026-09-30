@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
+import { requireUid } from '../authUtil';
 import { dispatchScheduledSend } from './dispatch';
 import {
   hasCreationPhotos,
@@ -18,26 +19,6 @@ export type SweepResult = {
   incompletePack: number;
   approvedRetried: number;
 };
-
-async function requireUid(
-  req: Request,
-  auth: admin.auth.Auth,
-): Promise<string | null> {
-  const header = req.header('Authorization') ?? req.header('authorization');
-  if (!header || !header.startsWith('Bearer ')) {
-    return null;
-  }
-  const token = header.slice('Bearer '.length).trim();
-  if (!token) {
-    return null;
-  }
-  try {
-    const decoded = await auth.verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
 
 function sendIdParam(req: Request): string | null {
   const id = req.params.id;

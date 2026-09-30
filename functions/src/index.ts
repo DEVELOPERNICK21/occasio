@@ -2,120 +2,42 @@ import * as admin from 'firebase-admin';
 import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import express, { type Request, type Response } from 'express';
+import { handleDeleteAccount } from './account';
 import { handleAutosendCronRequest, runAutosendCron } from './autosend/cron';
+import {
+  handleBillingSync,
+  handleConsumeCredit,
+  handleRevenueCatWebhook,
+} from './billing';
 import {
   handleApproveScheduledSend,
   handleCancelScheduledSend,
+  sweepExpiredReviews,
 } from './autosend/review';
-import { writeCreation } from './creations';
 
 admin.initializeApp();
 
 const db = admin.firestore();
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
 
-const GUEST_LINK_TTL_DAYS_PROD = 30;
-const GUEST_LINK_TTL_DAYS_DEV = 3;
-
-function isDevRelaxedQuota(devModeRequested = false): boolean {
-  if (process.env.OCCASIO_DEV_RELAXED_QUOTA === 'true') {
-    return true;
-  }
-  if (process.env.FUNCTIONS_EMULATOR === 'true') {
-    return true;
-  }
-  return devModeRequested && process.env.OCCASIO_ALLOW_DEV_CREATE === 'true';
-}
-
-function guestLinkTtlDays(devModeRequested = false): number {
-  return isDevRelaxedQuota(devModeRequested)
-    ? GUEST_LINK_TTL_DAYS_DEV
-    : GUEST_LINK_TTL_DAYS_PROD;
-}
-
-app.post('/v1/creations', async (req: Request, res: Response) => {
-  const {
-    templateType,
-    templateId,
-    recipientName,
-    fromName,
-    message,
-    photoRefs,
-    devMode,
-  } = req.body as {
-    templateType?: string;
-    templateId?: string | null;
-    recipientName?: string;
-    fromName?: string;
-    message?: string;
-    photoRefs?: string[];
-    devMode?: boolean;
+/** Express 4 does not catch async rejections; without this a throw hangs the request. */
+function safe(
+  handler: (req: Request, res: Response) => Promise<void>,
+): (req: Request, res: Response) => void {
+  return (req, res) => {
+    handler(req, res).catch((error: unknown) => {
+      console.error('unhandled route error', req.path, error);
+      if (!res.headersSent) {
+        res.status(500).json({ code: 'INTERNAL' });
+      }
+    });
   };
-
-  if (!templateType || !recipientName?.trim() || !photoRefs?.length) {
-    res.status(400).json({ code: 'VALIDATION_ERROR' });
-    return;
-  }
-
-  const result = await writeCreation(db, {
-    templateType,
-    templateId,
-    recipientName: recipientName.trim(),
-    fromName,
-    message,
-    photoRefs,
-    userId: null,
-    ttlDays: guestLinkTtlDays(devMode === true),
-  });
-
-  res.status(201).json({
-    creationId: result.creationId,
-    shareSlug: result.shareSlug,
-    shareUrl: result.shareUrl,
-    expiresAt: result.expiresAt.toDate().toISOString(),
-    watermarked: true,
-  });
-});
-
-app.get('/v1/cards/:slug', async (req: Request, res: Response) => {
-  const { slug } = req.params;
-  const snapshot = await db
-    .collection('creations')
-    .where('shareSlug', '==', slug)
-    .limit(1)
-    .get();
-
-  if (snapshot.empty) {
-    res.status(404).json({ code: 'NOT_FOUND' });
-    return;
-  }
-
-  const doc = snapshot.docs[0].data();
-  const expiresAt = doc.expiresAt as admin.firestore.Timestamp;
-  if (expiresAt.toDate() < new Date()) {
-    res.status(410).json({ code: 'EXPIRED' });
-    return;
-  }
-
-  res.json({
-    recipientName: doc.recipientName,
-    message: doc.message,
-    templateType: doc.templateType,
-    templateId: doc.templateId ?? null,
-    mediaUrls: doc.mediaUrls ?? [],
-    fromName: doc.fromName ?? null,
-    reactionCount: doc.reactionCount ?? 0,
-  });
-});
-
-app.post('/v1/uploads/presign', (_req: Request, res: Response) => {
-  res.status(501).json({ code: 'NOT_IMPLEMENTED', message: 'R2 presign coming soon' });
-});
+}
 
 app.post(
   '/v1/scheduled-sends/:id/approve',
-  async (req: Request, res: Response) => {
+  safe(async (req, res) => {
     await handleApproveScheduledSend(
       req,
       res,
@@ -123,29 +45,76 @@ app.post(
       admin.messaging(),
       admin.auth(),
     );
-  },
+  }),
 );
 
 app.post(
   '/v1/scheduled-sends/:id/cancel',
-  async (req: Request, res: Response) => {
+  safe(async (req, res) => {
     await handleCancelScheduledSend(req, res, db, admin.auth());
-  },
+  }),
 );
 
-app.post('/v1/internal/autosend/run', async (req: Request, res: Response) => {
-  await handleAutosendCronRequest(req, res, db, admin.messaging());
-});
+app.post(
+  '/v1/internal/autosend/run',
+  safe(async (req, res) => {
+    await handleAutosendCronRequest(req, res, db, admin.messaging());
+  }),
+);
+
+app.post(
+  '/v1/billing/sync',
+  safe(async (req, res) => {
+    await handleBillingSync(req, res, db, admin.auth());
+  }),
+);
+
+app.post(
+  '/v1/billing/consume-credit',
+  safe(async (req, res) => {
+    await handleConsumeCredit(req, res, db, admin.auth());
+  }),
+);
+
+app.post(
+  '/v1/billing/webhook',
+  safe(async (req, res) => {
+    await handleRevenueCatWebhook(req, res, db);
+  }),
+);
+
+app.delete(
+  '/v1/account',
+  safe(async (req, res) => {
+    await handleDeleteAccount(req, res, db, admin.auth());
+  }),
+);
 
 export const api = onRequest({ region: 'asia-south1' }, app);
 
+/**
+ * Creation runs twice a day: the second pass catches a failed morning run
+ * (idempotent — existing sends are skipped).
+ */
 export const autosendDaily = onSchedule(
   {
-    schedule: '0 6 * * *',
+    schedule: '0 6,12 * * *',
     timeZone: 'Asia/Kolkata',
     region: 'asia-south1',
   },
   async () => {
     await runAutosendCron(db, new Date(), admin.messaging());
+  },
+);
+
+/** Dispatches lapsed review windows and retries failed deliveries. */
+export const autosendSweep = onSchedule(
+  {
+    schedule: 'every 15 minutes',
+    timeZone: 'Asia/Kolkata',
+    region: 'asia-south1',
+  },
+  async () => {
+    await sweepExpiredReviews(db, admin.messaging(), new Date());
   },
 );

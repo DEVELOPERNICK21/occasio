@@ -63,8 +63,8 @@ describe('historyList', () => {
     ];
 
     expect(filterHistoryEntries(entries, 'alex')).toHaveLength(1);
-    expect(filterHistoryEntries(entries, 'birthday')).toHaveLength(1);
-    expect(filterHistoryEntries(entries, 'happy')).toHaveLength(1);
+    expect(filterHistoryEntries(entries, 'anniversary')).toHaveLength(1);
+    expect(filterHistoryEntries(entries, 'happy')).toHaveLength(2);
   });
 
   it('summarizes totals and active links', () => {

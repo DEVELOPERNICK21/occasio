@@ -1,3 +1,4 @@
+import { isInlinePhotoRef } from './types';
 import type {
   AutoSendPack,
   RelationshipRecord,
@@ -42,10 +43,13 @@ export function resolveAutoSendContent(
   const { occasionType, pack, lastCreation } = input;
 
   if (pack && isPackEligible(pack)) {
+    // Inline refs carry no data — borrow display URLs from the linked creation.
+    const inlineOnly = pack.photoRefs.every(isInlinePhotoRef);
     return {
       templateType: pack.preferredTemplateType ?? occasionType,
       templateId: pack.preferredTemplateId,
       photoRefs: pack.photoRefs,
+      mediaUrls: inlineOnly ? (lastCreation?.mediaUrls ?? []) : [],
       message: pack.defaultMessage,
       fromName: pack.fromName,
       source: 'pack',
@@ -57,6 +61,7 @@ export function resolveAutoSendContent(
       templateType: lastCreation.templateType,
       templateId: lastCreation.templateId,
       photoRefs: lastCreation.photoRefs,
+      mediaUrls: lastCreation.mediaUrls ?? [],
       message: lastCreation.message,
       fromName: lastCreation.fromName,
       source: 'last_creation',
@@ -67,6 +72,7 @@ export function resolveAutoSendContent(
     templateType: occasionType,
     templateId: null,
     photoRefs: [],
+    mediaUrls: [],
     message: DEFAULT_MESSAGE,
     fromName: null,
     source: 'default',
