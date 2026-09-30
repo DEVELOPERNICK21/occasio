@@ -160,3 +160,55 @@ export function playTap(): void {
   const t = c.currentTime;
   tone(c, 220, t, 0.09, { type: 'sine', to: 120, gain: 0.16 });
 }
+
+/** Wax seal cracking: a dry snap plus a low thump. */
+export function playSealCrack(): void {
+  const c = audio();
+  if (!c) return;
+  const t = c.currentTime;
+  tone(c, 140, t, 0.16, { type: 'triangle', to: 60, gain: 0.22 });
+  const dur = 0.18;
+  const buf = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.2);
+  }
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 1800;
+  const g = c.createGain();
+  g.gain.value = 0.35;
+  src.connect(hp);
+  hp.connect(g);
+  g.connect(c.destination);
+  src.start(t);
+}
+
+/** Soft paper rustle as a letter unfolds. */
+export function playPaperRustle(): void {
+  const c = audio();
+  if (!c) return;
+  const t = c.currentTime;
+  const dur = 0.7;
+  const buf = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) {
+    const k = i / data.length;
+    data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * k) * (0.5 + 0.5 * Math.sin(k * 60));
+  }
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  const bp = c.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(2600, t);
+  bp.frequency.linearRampToValueAtTime(1400, t + dur);
+  bp.Q.value = 0.7;
+  const g = c.createGain();
+  g.gain.value = 0.22;
+  src.connect(bp);
+  bp.connect(g);
+  g.connect(c.destination);
+  src.start(t);
+}

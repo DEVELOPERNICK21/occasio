@@ -6,6 +6,7 @@ import { useJoy } from '@/components/story/fx/JoyProvider';
 import { Pip } from '@/components/story/fx/Pip';
 import { EnvelopeScene } from '@/components/story/EnvelopeScene';
 import { LetterScene } from '@/components/story/LetterScene';
+import { Letter3DScene } from '@/components/story/Letter3DScene';
 import { LetterWriteScene } from '@/components/story/LetterWriteScene';
 import { PhotoLineScene } from '@/components/story/PhotoLineScene';
 import { PhotoDeckScene } from '@/components/story/PhotoDeckScene';
@@ -59,6 +60,8 @@ export function HubScene({ card, slug, theme, onComplete, initialRoom = null }: 
 
   const [room, setRoom] = useState<Room | null>(initialRoom);
   const [step, setStep] = useState<LetterStep>('envelope');
+  const [flatLetter, setFlatLetter] = useState(false);
+  const failLetter = useCallback(() => setFlatLetter(true), []);
   const [opened, setOpened] = useState<Set<Room>>(new Set());
   const total = rooms.length;
   const allDone = opened.size >= total;
@@ -102,6 +105,17 @@ export function HubScene({ card, slug, theme, onComplete, initialRoom = null }: 
   }
 
   if (room === 'letter') {
+    // Real 3D envelope where WebGL works; the flat envelope + typewriter elsewhere.
+    if (!flatLetter && step !== 'read') {
+      return (
+        <Letter3DScene
+          card={card}
+          theme={theme}
+          onComplete={() => setStep('read')}
+          onFail={failLetter}
+        />
+      );
+    }
     if (step === 'envelope') {
       return (
         <EnvelopeScene

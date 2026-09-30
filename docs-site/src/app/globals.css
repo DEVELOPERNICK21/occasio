@@ -4657,3 +4657,31 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .story-contract__stamp, .story-contract__pad-hint { animation: none; }
 }
+
+/* ── 3D letter opening ───────────────────────────────────────────────── */
+.letter3d {
+  width: min(100%, 380px);
+  aspect-ratio: 1 / 1.24;
+  cursor: pointer;
+}
+.letter3d__ring {
+  position: absolute;
+  z-index: 4;
+  width: 86px;
+  height: 86px;
+  margin: -43px 0 0 -43px;
+  pointer-events: none;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+}
+.letter3d__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 6;
+}
+.letter3d__ring-fill {
+  fill: none;
+  stroke: var(--secondary);
+  stroke-width: 6;
+  stroke-linecap: round;
+}

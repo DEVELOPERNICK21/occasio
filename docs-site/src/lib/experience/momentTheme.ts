@@ -40,6 +40,19 @@ export type GiftStyle = {
   glow: string;
 };
 
+/** How the 3D envelope and letter look for this moment. */
+export type LetterStyle = {
+  envelope: string;
+  lining: string;
+  liningMotif: string;
+  wax: string;
+  paper: string;
+  ink: string;
+  accent: string;
+  /** Print on the envelope lining. */
+  pattern: 'dots' | 'hearts' | 'leaves' | 'stars' | 'doodles';
+};
+
 /** How the 3D cake is decorated for the moments that have a candle scene. */
 export type CakeStyle = {
   side: string;
@@ -68,6 +81,7 @@ export type MomentTheme = {
   starName: string;
   gift: GiftStyle;
   cake: CakeStyle;
+  letter: LetterStyle;
   gate: GateCopy;
 };
 
@@ -84,6 +98,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     starName: 'wishes',
     gift: { paper: '#FF5D7A', motif: '#FFFFFF', motif2: '#FFD166', ribbon: '#F2A900', ribbonSheen: '#FFE9A0', pattern: 'dots', glow: '#FFD166' },
     cake: { side: '#FF8FB1', icing: '#FFF6EE', sponge: '#F8DFA8', filling: '#FFB3C8', accent: '#D62839', sprinkles: ['#FFD166', '#3A86FF', '#06D6A0', '#FF5D7A', '#FFFFFF'], topper: 'cherry' },
+    letter: { envelope: '#FFB3C7', lining: '#FFF3D6', liningMotif: '#FFC233', wax: '#D62839', paper: '#FFFBF2', ink: '#3A2A3F', accent: '#F0476B', pattern: 'dots' },
     vars: {
       '--bg': '#FFF1E8',
       '--surface': '#FFFAF6',
@@ -122,6 +137,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     starName: 'hearts',
     gift: { paper: '#8E1B3A', motif: '#C93A5E', motif2: '#F5D7A1', ribbon: '#F1D9A4', ribbonSheen: '#FFF4D6', pattern: 'hearts', glow: '#FF9DB5' },
     cake: { side: '#5B2333', icing: '#8A3350', sponge: '#3A1A22', filling: '#C2415F', accent: '#F5C76B', sprinkles: ['#F5C76B', '#FF7A95', '#FFE3EA'], topper: 'heart' },
+    letter: { envelope: '#F1E3CC', lining: '#8E1B3A', liningMotif: '#E8C77A', wax: '#7A0F2B', paper: '#FFF8EC', ink: '#4A1E2D', accent: '#C93A5E', pattern: 'hearts' },
     vars: {
       '--bg': '#2A0D1E',
       '--surface': '#3E1731',
@@ -160,6 +176,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     starName: 'thanks',
     gift: { paper: '#F3E3B8', motif: '#8DBE72', motif2: '#D9822B', ribbon: '#5FA357', ribbonSheen: '#C9E8B5', pattern: 'leaves', glow: '#FFE29A' },
     cake: { side: '#F3E3B8', icing: '#FFFDF4', sponge: '#F8E7BB', filling: '#BFE0A8', accent: '#D9822B', sprinkles: ['#8DBE72', '#D9822B', '#FFFFFF'], topper: 'cherry' },
+    letter: { envelope: '#D9B98A', lining: '#F3E3B8', liningMotif: '#7FAF69', wax: '#3E7D48', paper: '#FFFDF4', ink: '#3B3222', accent: '#D9822B', pattern: 'leaves' },
     vars: {
       '--bg': '#FFF7E6',
       '--surface': '#FFFCF4',
@@ -198,6 +215,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     starName: 'cheers',
     gift: { paper: '#1B2A6B', motif: '#FFD166', motif2: '#FFFFFF', ribbon: '#F2A900', ribbonSheen: '#FFE9A0', pattern: 'stars', glow: '#FFD166' },
     cake: { side: '#26397F', icing: '#FFD166', sponge: '#F6E7B8', filling: '#FFC233', accent: '#FFD166', sprinkles: ['#FFD166', '#FFFFFF', '#4CC9F0'], topper: 'heart' },
+    letter: { envelope: '#22347F', lining: '#FFD166', liningMotif: '#FFFFFF', wax: '#F2A900', paper: '#FFFDF5', ink: '#1B2350', accent: '#F2A900', pattern: 'stars' },
     vars: {
       '--bg': '#0C1230',
       '--surface': '#161F47',
@@ -236,6 +254,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     starName: 'sparks',
     gift: { paper: '#B49BFF', motif: '#FFFFFF', motif2: '#FF8FAB', ribbon: '#FF8FAB', ribbonSheen: '#FFD6E2', pattern: 'doodles', glow: '#FFFFFF' },
     cake: { side: '#B49BFF', icing: '#FFF0F6', sponge: '#F9E4EE', filling: '#FF8FAB', accent: '#FF5D9E', sprinkles: ['#7C5CFF', '#FF8FAB', '#5EEAD4', '#FFD166'], topper: 'cherry' },
+    letter: { envelope: '#B49BFF', lining: '#FFE3EE', liningMotif: '#7C5CFF', wax: '#FF5D9E', paper: '#FFFDFF', ink: '#2C2350', accent: '#7C5CFF', pattern: 'doodles' },
     vars: {
       '--bg': '#F5F0FF',
       '--surface': '#FDFBFF',
