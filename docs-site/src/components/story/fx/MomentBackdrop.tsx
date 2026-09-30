@@ -125,8 +125,7 @@ function Shape({ kind, color }: { kind: string; color: string }) {
 
 type Layer = {
   items: Item[];
-  motion: 'rise' | 'fall' | 'float' | 'twinkle' | 'breathe';
-  className?: string;
+  motion: 'rise' | 'fall' | 'float' | 'twinkle';
 };
 
 function layersFor(id: BackdropId, colors: string[]): Layer[] {
@@ -136,21 +135,20 @@ function layersFor(id: BackdropId, colors: string[]): Layer[] {
         { items: makeItems(['balloon'], 7, colors, 11, [26, 48], [26, 44]), motion: 'rise' },
         { items: makeItems(['confetti', 'ring', 'confetti'], 14, colors, 12, [7, 12], [14, 24]), motion: 'fall' },
       ];
-    case 'candlelit':
+    case 'romance':
       return [
-        { items: makeItems(['bokeh'], 9, ['#FFB37A', '#FF86A8', '#FFD3A5'], 21, [50, 120], [7, 12]), motion: 'breathe' },
-        { items: makeItems(['petal'], 12, colors, 22, [14, 24], [16, 28]), motion: 'fall' },
-        { items: makeItems(['heart'], 5, ['#FF6F91'], 23, [12, 20], [22, 34]), motion: 'rise' },
+        { items: makeItems(['petal'], 14, colors, 22, [14, 24], [16, 28]), motion: 'fall' },
+        { items: makeItems(['heart'], 8, ['#FF6F91', '#E0446A', '#FFB3C7'], 23, [14, 24], [22, 34]), motion: 'rise' },
       ];
     case 'garden':
       return [
-        { items: makeItems(['leaf'], 10, ['#8FC66F', '#6FA76A', '#B7D98F'], 31, [16, 26], [16, 28]), motion: 'fall' },
-        { items: makeItems(['bokeh'], 14, ['#FFE29A', '#FFD166'], 32, [14, 30], [3, 6]), motion: 'twinkle' },
+        { items: makeItems(['leaf'], 12, ['#8FC66F', '#6FA76A', '#B7D98F'], 31, [16, 26], [16, 28]), motion: 'fall' },
+        { items: makeItems(['star'], 10, ['#F2A93B', '#FFC857'], 32, [8, 14], [3, 6]), motion: 'twinkle' },
       ];
-    case 'spotlight':
+    case 'celebration':
       return [
-        { items: makeItems(['star'], 16, ['#FFD166', '#FFF3B0', '#FFFFFF'], 41, [8, 18], [2.4, 5]), motion: 'twinkle' },
-        { items: makeItems(['confetti'], 10, colors, 42, [6, 10], [12, 20]), motion: 'fall' },
+        { items: makeItems(['star'], 14, ['#F2A900', '#3557E8', '#EF476F'], 41, [10, 20], [2.6, 5]), motion: 'twinkle' },
+        { items: makeItems(['confetti', 'ring'], 14, colors, 42, [6, 11], [12, 22]), motion: 'fall' },
       ];
     case 'doodle':
     default:
@@ -160,13 +158,24 @@ function layersFor(id: BackdropId, colors: string[]): Layer[] {
   }
 }
 
+const GARLAND_STRING = 'M-10 6Q100 44 200 22T410 6';
+
+function starPoints(cx: number, cy: number, r: number): string {
+  return Array.from({ length: 10 }, (_, i) => {
+    const rad = i % 2 === 0 ? r : r * 0.45;
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+    return `${(cx + Math.cos(a) * rad).toFixed(1)},${(cy + Math.sin(a) * rad).toFixed(1)}`;
+  }).join(' ');
+}
+
+/** Crisp decorations hung across the top of the screen, one per moment. */
 function Decor({ id }: { id: BackdropId }): ReactNode {
+  const heartPath = HEART;
   switch (id) {
     case 'party':
-      // Bunting garland across the top.
       return (
-        <svg className="mbd-bunting" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden>
-          <path d="M-10 6Q100 44 200 22T410 6" stroke="#8a5a6a" strokeWidth="1.6" fill="none" opacity=".55" />
+        <svg className="mbd-garland" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden>
+          <path d={GARLAND_STRING} stroke="#8a5a6a" strokeWidth="1.6" fill="none" opacity=".55" />
           {[
             [30, 20, '#FF4D6D'], [78, 30, '#FFB703'], [126, 34, '#3A86FF'], [174, 30, '#8338EC'],
             [222, 26, '#06D6A0'], [270, 22, '#FB5607'], [318, 18, '#FF4D6D'], [366, 14, '#FFB703'],
@@ -180,32 +189,59 @@ function Decor({ id }: { id: BackdropId }): ReactNode {
           ))}
         </svg>
       );
-    case 'candlelit':
+    case 'romance':
       return (
-        <>
-          <span className="mbd-glow mbd-glow--warm" />
-          <div className="mbd-stringlights" aria-hidden>
-            {Array.from({ length: 12 }, (_, i) => (
-              <i key={i} style={{ '--i': i } as CSSProperties} />
-            ))}
-          </div>
-        </>
+        <svg className="mbd-garland" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden>
+          <path d={GARLAND_STRING} stroke="#B76A80" strokeWidth="1.6" fill="none" opacity=".55" />
+          {[
+            [30, 20, '#E0446A'], [78, 30, '#FF8FA8'], [126, 34, '#C4325A'], [174, 30, '#FFB3C7'],
+            [222, 26, '#E0446A'], [270, 22, '#FF8FA8'], [318, 18, '#C4325A'], [366, 14, '#FFB3C7'],
+          ].map(([x, y, c]) => (
+            <g key={String(x)} transform={`translate(${Number(x) - 14} ${Number(y) - 2}) scale(1.16)`}>
+              <line x1="12" y1="0" x2="12" y2="4" stroke="#B76A80" strokeWidth="1" opacity=".6" />
+              <path d={heartPath} fill={String(c)} />
+            </g>
+          ))}
+        </svg>
       );
     case 'garden':
-      return <span className="mbd-sunrays" aria-hidden />;
-    case 'spotlight':
       return (
-        <>
-          <span className="mbd-beam mbd-beam--a" aria-hidden />
-          <span className="mbd-beam mbd-beam--b" aria-hidden />
-        </>
+        <svg className="mbd-garland" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden>
+          <path d={GARLAND_STRING} stroke="#5FA357" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".85" />
+          {[24, 66, 108, 150, 192, 234, 276, 318, 360].map((x, i) => {
+            const y = 8 + Math.sin((x / 400) * Math.PI * 2 - 0.4) * 10 + (x > 100 && x < 300 ? 14 : 4);
+            return (
+              <g key={x} transform={`translate(${x} ${y})`}>
+                <ellipse cx="0" cy="8" rx="11" ry="5" fill={i % 2 ? '#6FA76A' : '#8FC66F'} transform={`rotate(${i % 2 ? 40 : -40} 0 8)`} />
+                {i % 3 === 0 ? (
+                  <>
+                    <circle cx="0" cy="-1" r="5.5" fill="#FF8FA3" />
+                    <circle cx="0" cy="-1" r="2.2" fill="#FFC233" />
+                  </>
+                ) : null}
+              </g>
+            );
+          })}
+        </svg>
+      );
+    case 'celebration':
+      return (
+        <svg className="mbd-garland" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden>
+          <path d={GARLAND_STRING} stroke="#6B74A8" strokeWidth="1.6" fill="none" opacity=".55" />
+          {[
+            [30, 22, '#F2A900'], [78, 32, '#3557E8'], [126, 36, '#EF476F'], [174, 32, '#F2A900'],
+            [222, 28, '#3557E8'], [270, 24, '#EF476F'], [318, 20, '#F2A900'], [366, 16, '#3557E8'],
+          ].map(([x, y, c]) => (
+            <polygon key={String(x)} points={starPoints(Number(x), Number(y) + 12, 15)} fill={String(c)} />
+          ))}
+        </svg>
       );
     case 'doodle':
     default:
       return (
         <>
-          <span className="mbd-blob mbd-blob--a" aria-hidden />
-          <span className="mbd-blob mbd-blob--b" aria-hidden />
+          <span className="mbd-disc mbd-disc--a" aria-hidden />
+          <span className="mbd-disc mbd-disc--b" aria-hidden />
         </>
       );
   }
@@ -229,7 +265,7 @@ export function MomentBackdrop({ theme }: { theme: MomentTheme }) {
             style={
               {
                 left: `${item.left}%`,
-                ...(layer.motion === 'twinkle' || layer.motion === 'breathe'
+                ...(layer.motion === 'twinkle'
                   ? { top: `${item.top}%` }
                   : {}),
                 width: item.size,

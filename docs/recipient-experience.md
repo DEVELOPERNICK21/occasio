@@ -19,6 +19,12 @@ Scene order is decided in `resolveExperience.ts`; add or remove a scene there an
 `lib/experience/momentTheme.ts` holds palette, backdrop, celebration preset, mascot costume, gift wrap,
 cake style and the gate's jokes. A new moment is a new entry, not new CSS.
 
+## Look and feel
+
+Every moment is a light, crisp scene: flat colour, hard-edged decorations, solid white chips and cards. No
+frosted glass (`backdrop-filter`), no blurred bokeh or glows behind content, no dark themes. Celebrations use
+normal blending (never additive) so they stay visible on light backgrounds.
+
 ## 3D scenes
 
 The gift and the cake use three.js, loaded lazily (`gift3d/`). If WebGL is unavailable, or the GPU context is

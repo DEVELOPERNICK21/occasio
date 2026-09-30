@@ -17,9 +17,17 @@ export type LetterStageHandle = {
   skip: () => void;
 };
 
+export type LetterContent = {
+  greeting: string;
+  body: string;
+  signoff: string;
+  /** Optional photo taped to the letter. Must allow cross-origin canvas use, or it is skipped. */
+  photoUrl?: string | null;
+};
+
 type Props = {
   theme: MomentTheme;
-  text: string;
+  content: LetterContent;
   ariaLabel: string;
   onSealBroken: () => void;
   onUnfolded: () => void;
@@ -57,12 +65,33 @@ async function handwritingFamily(): Promise<string> {
   return family;
 }
 
+/** Load a photo for the letter; resolves null on any failure so it can never block opening. */
+function loadPhoto(url: string | null | undefined): Promise<HTMLImageElement | null> {
+  if (!url) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const img = new Image();
+    // Anonymous CORS: a photo without the right headers fails to load (skipped)
+    // instead of tainting the canvas and breaking the whole 3D scene.
+    img.crossOrigin = 'anonymous';
+    const timer = window.setTimeout(() => resolve(null), 2500);
+    img.onload = () => {
+      window.clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      window.clearTimeout(timer);
+      resolve(null);
+    };
+    img.src = url;
+  });
+}
+
 /**
  * The wax-sealed envelope. Press and hold the seal to break it; the envelope
  * opens and the letter unfolds. Keyboard users press Enter or Space.
  */
 export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterStage(
-  { theme, text, ariaLabel, onSealBroken, onUnfolded, onWritten, onFail },
+  { theme, content, ariaLabel, onSealBroken, onUnfolded, onWritten, onFail },
   ref,
 ) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -71,7 +100,7 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
   cb.current = { onSealBroken, onUnfolded, onWritten, onFail };
   const [ready, setReady] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; p: number } | null>(null);
-  const hold = useRef({ active: false, p: 0, raf: 0, last: 0, startX: 0, dragging: false, ticks: 0 });
+  const hold = useRef({ active: false, opened: false, p: 0, raf: 0, last: 0, startX: 0, dragging: false, ticks: 0 });
 
   useImperativeHandle(ref, () => ({ skip: () => ctrlRef.current?.skip() }));
 
@@ -94,14 +123,17 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
     let observer: ResizeObserver | null = null;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    Promise.all([import('./buildLetter'), handwritingFamily()])
-      .then(([{ createLetter }, fontFamily]) => {
+    Promise.all([import('./buildLetter'), handwritingFamily(), loadPhoto(content.photoUrl)])
+      .then(([{ createLetter }, fontFamily, photo]) => {
         if (cancelled) return;
         try {
           const ctrl = createLetter(canvas, {
             style: theme.letter,
             glow: theme.gift.glow,
-            text,
+            greeting: content.greeting,
+            body: content.body,
+            signoff: content.signoff,
+            photo,
             fontFamily,
             reducedMotion: reduced,
             onSealBroken: () => cb.current.onSealBroken(),
@@ -136,7 +168,7 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
       setReady(false);
       setRing(null);
     };
-  }, [theme.letter, theme.gift.glow, text]);
+  }, [theme.letter, theme.gift.glow, content.greeting, content.body, content.signoff, content.photoUrl]);
 
   const step = useCallback((now: number) => {
     const h = hold.current;
@@ -173,9 +205,10 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
   const down = (e: PointerEvent<HTMLDivElement>) => {
     const ctrl = ctrlRef.current;
     if (!ctrl) return;
-    if (ctrl.isOpened()) return;
     const h = hold.current;
-    h.active = true;
+    // Once opened, a press only tilts the letter. Before that it starts the hold.
+    h.active = !ctrl.isOpened();
+    h.opened = ctrl.isOpened();
     h.dragging = false;
     h.startX = e.clientX;
     h.ticks = 0;
@@ -190,7 +223,7 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
   };
   const move = (e: PointerEvent<HTMLDivElement>) => {
     const h = hold.current;
-    if (!h.active) return;
+    if (!h.active && !h.opened) return;
     const dx = e.clientX - h.startX;
     if (Math.abs(dx) > DRAG_PX) {
       h.dragging = true;
@@ -200,6 +233,7 @@ export const LetterStage = forwardRef<LetterStageHandle, Props>(function LetterS
   const up = () => {
     const h = hold.current;
     h.active = false;
+    h.opened = false;
     h.dragging = false;
     ctrlRef.current?.setYaw(0);
     cancelAnimationFrame(h.raf);

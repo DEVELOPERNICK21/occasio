@@ -3,7 +3,8 @@ import type { FxPreset } from './momentTheme';
 /**
  * Framework-free particle engine for the finale. Each moment gets its own show
  * (cannons, petals + hearts, fireworks, lanterns, stars) driven by simple
- * physics, so it reads as real objects and not a looping sticker. Shows play
+ * physics, so it reads as real objects and not a looping sticker. Everything
+ * draws with normal blending, so it stays visible on the light backgrounds. Shows play
  * once; more bursts only happen when the recipient taps.
  */
 export type Vec = { x: number; y: number };
@@ -141,7 +142,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           size: rand(1.6, 2.8),
-          color: i % 5 === 0 ? '#FFFFFF' : color,
+          color: i % 5 === 0 ? '#FFD166' : color,
           shape: 'spark',
           life: rand(70, 115),
           maxLife: 115,
@@ -162,7 +163,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
           vx: Math.cos(angle) * rand(0.2, 1),
           vy: Math.sin(angle) * rand(0.2, 1),
           size: 1.6,
-          color: '#FFF3B0',
+          color: '#F2A900',
           shape: 'sparkle',
           life: rand(30, 55),
           maxLife: 55,
@@ -347,7 +348,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
             x: rand(0, width),
             y: rand(0, height),
             size: rand(3, 6),
-            color: '#FFE3EA',
+            color: '#F2A93B',
             shape: 'sparkle',
             life: rand(90, 200),
             maxLife: 200,
@@ -374,7 +375,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
               vx: rand(-0.6, 0.6),
               vy: vy0,
               size: 2.4,
-              color: '#FFE9A8',
+              color: '#F2A900',
               shape: 'rocket',
               life: 400,
               maxLife: 400,
@@ -388,7 +389,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
           );
         }
         add(list);
-        add(cannons(['#FFD166', '#FFF3B0', '#FFFFFF', '#EF476F'], n(22), 0.9));
+        add(cannons(['#F2A900', '#EF476F', '#3557E8', '#06D6A0'], n(22), 0.9));
         break;
       }
       case 'lanterns': {
@@ -416,7 +417,7 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
             x: rand(0, width),
             y: rand(0, height),
             size: rand(2.5, 6),
-            color: pick(['#FFF3C4', '#FFE29A', '#FFFFFF']),
+            color: pick(['#F2A93B', '#FFB84D', '#FF8A3D']),
             shape: 'sparkle',
             life: rand(80, 220),
             maxLife: 220,
@@ -530,7 +531,6 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
         break;
       }
       case 'sparkle': {
-        ctx.globalCompositeOperation = 'lighter';
         const tw = 0.55 + 0.45 * Math.sin((p.maxLife - p.life) * 0.25);
         ctx.globalAlpha *= tw;
         ctx.fillStyle = p.color;
@@ -541,7 +541,6 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
         break;
       }
       case 'lantern': {
-        ctx.globalCompositeOperation = 'lighter';
         const flicker = 0.85 + 0.15 * Math.sin((p.maxLife - p.life) * 0.18 + p.swayPhase);
         const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size * 1.7);
         glow.addColorStop(0, `${p.color}CC`);
@@ -563,10 +562,8 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
       }
       case 'rocket':
       case 'spark': {
-        ctx.globalCompositeOperation = 'lighter';
         ctx.restore();
         ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
         // Trail: fading line through recent positions.
         if (p.trail.length > 1) {
           ctx.lineCap = 'round';

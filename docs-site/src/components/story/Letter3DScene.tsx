@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { LetterStage, type LetterStageHandle } from '@/components/story/gift3d/LetterStage';
+import { LetterStage, type LetterContent, type LetterStageHandle } from '@/components/story/gift3d/LetterStage';
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
@@ -29,14 +29,18 @@ export function Letter3DScene({ card, theme, onComplete, onFail }: Props) {
   const [state, setState] = useState<Stage>('sealed');
   const name = card.recipientName.trim() || 'you';
 
-  const text = useMemo(() => {
+  const content = useMemo<LetterContent>(() => {
     const from = card.fromName?.trim();
-    const message =
-      card.message?.trim() ||
-      'Thinking of you today — and always grateful you’re in my life.';
-    const sign = from ? `\n\nWith love,\n${from}` : '';
-    return `${wishGreeting(card.templateType)} ${name},\n\n${message}${sign}`;
-  }, [card.fromName, card.message, card.templateType, name]);
+    const photo = (card.mediaUrls ?? []).map((u) => u.trim()).find(Boolean) ?? null;
+    return {
+      greeting: `${wishGreeting(card.templateType)} ${name},`,
+      body:
+        card.message?.trim() ||
+        'Thinking of you today — and always grateful you’re in my life.',
+      signoff: from ? `With love,\n${from}` : '',
+      photoUrl: photo,
+    };
+  }, [card.fromName, card.mediaUrls, card.message, card.templateType, name]);
 
   const sealBroken = useCallback(() => {
     playSealCrack();
@@ -67,7 +71,7 @@ export function Letter3DScene({ card, theme, onComplete, onFail }: Props) {
       <LetterStage
         ref={stage}
         theme={theme}
-        text={text}
+        content={content}
         ariaLabel={state === 'sealed' ? 'Wax-sealed envelope. Press and hold, or press Enter, to open it.' : 'Your letter'}
         onSealBroken={sealBroken}
         onUnfolded={unfolded}

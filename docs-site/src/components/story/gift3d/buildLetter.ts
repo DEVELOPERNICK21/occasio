@@ -14,7 +14,10 @@ import {
 export type LetterOptions = {
   style: LetterStyle;
   glow: string;
-  text: string;
+  greeting: string;
+  body: string;
+  signoff: string;
+  photo: HTMLImageElement | null;
   fontFamily: string;
   reducedMotion: boolean;
   onSealBroken: () => void;
@@ -60,7 +63,14 @@ const BEAT = {
 } as const;
 
 function panelGeometry(index: number): THREE.PlaneGeometry {
-  const g = new THREE.PlaneGeometry(LETTER_W, PANEL_H);
+  const g = new THREE.PlaneGeometry(LETTER_W, PANEL_H, 14, 1);
+  // A gentle bow across the width so the sheet reads as paper, not a flat card.
+  const pos = g.attributes.position!;
+  for (let i = 0; i < pos.count; i += 1) {
+    const u = pos.getX(i) / LETTER_W + 0.5;
+    pos.setZ(i, Math.sin(u * Math.PI) * 0.06);
+  }
+  g.computeVertexNormals();
   const uv = g.attributes.uv!;
   for (let i = 0; i < uv.count; i += 1) {
     // Panels are stacked bottom to top; the texture's top row is v = 1.
@@ -190,7 +200,10 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
     ink: style.ink,
     accent: style.accent,
     fontFamily: opts.fontFamily,
-    text: opts.text,
+    greeting: opts.greeting,
+    body: opts.body,
+    signoff: opts.signoff,
+    photo: opts.photo,
   });
   textures.push(letterCanvas.texture);
   const sheetMat = new THREE.MeshStandardMaterial({
@@ -200,12 +213,13 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
     // A little self-light keeps cream paper looking cream, not grey, under tone mapping.
     emissive: new THREE.Color('#ffffff'),
     emissiveMap: letterCanvas.texture,
-    emissiveIntensity: 0.32,
+    emissiveIntensity: 0.5,
   });
   // The sheet hangs from its top edge, so unfolding always opens downward.
   const letterRoot = new THREE.Group();
   const letterTop0 = ENV_Y + PANEL_H / 2;
-  const LETTER_TOP_FINAL = 4.2;
+  const LETTER_SCALE = 1.38;
+  const LETTER_TOP_FINAL = 0.3 + 3 * PANEL_H * LETTER_SCALE;
   letterRoot.position.set(0, letterTop0, 0.012);
   scene.add(letterRoot);
 
@@ -283,7 +297,7 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
   const halves: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; spin: THREE.Vector3 }> = [];
 
   const camFrom = { pos: new THREE.Vector3(0, 2.3, 7.3), look: new THREE.Vector3(0, 1.05, 0) };
-  const camTo = { pos: new THREE.Vector3(0, 2.6, 8.7), look: new THREE.Vector3(0, 2.3, 0) };
+  const camTo = { pos: new THREE.Vector3(0, 2.7, 9.2), look: new THREE.Vector3(0, 2.55, 0) };
   const camLook = new THREE.Vector3();
   const tmp = new THREE.Vector3();
 
@@ -324,7 +338,8 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
     const opened = phase !== 'sealed';
     env.rotation.y += ((opened ? 0 : yawTarget) + (opened ? 0 : Math.sin(time * 0.8) * 0.05) - env.rotation.y) * (1 - Math.exp(-dt * 6));
     env.position.y = ENV_Y + (opened ? 0 : Math.sin(time * 1.5) * 0.025);
-    letterRoot.rotation.y = env.rotation.y;
+    // Before opening the letter rides with the envelope; after, the reader can tilt it.
+    letterRoot.rotation.y += ((opened ? yawTarget : env.rotation.y) - letterRoot.rotation.y) * (1 - Math.exp(-dt * 6));
 
     // Press-and-hold feedback on the seal
     if (phase === 'sealed') {
@@ -358,14 +373,15 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
       const out = easeInOut(prog(t, BEAT.out[0], BEAT.out[1]));
       letterRoot.position.y = lerp(letterTop0 + peek * 1.1, LETTER_TOP_FINAL, out);
       letterRoot.position.z = lerp(0.012, 0.9, out);
-      letterRoot.scale.setScalar(lerp(1, 1.16, out));
+      letterRoot.scale.setScalar(lerp(1, LETTER_SCALE, out));
       panelMiddle.rotation.x = Math.PI * (1 - easeInOut(prog(t, BEAT.unfoldMiddle[0], BEAT.unfoldMiddle[1])));
       panelBottom.rotation.x = -Math.PI * (1 - easeInOut(prog(t, BEAT.unfoldBottom[0], BEAT.unfoldBottom[1])));
 
       // Envelope steps back
-      env.position.y = lerp(ENV_Y, ENV_Y - 0.85, out);
-      env.position.z = lerp(0, -1.0, out);
-      env.scale.setScalar(lerp(1, 0.86, out));
+      // The envelope slips down and away so the letter has the stage to itself.
+      env.position.y = lerp(ENV_Y, ENV_Y - 3.9, out);
+      env.position.z = lerp(0, -1.2, out);
+      env.scale.setScalar(lerp(1, 0.8, out));
 
       // Camera glides to frame the whole sheet
       const c = easeInOut(prog(t, BEAT.camera[0], BEAT.camera[1]));
@@ -377,9 +393,9 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
       if (!unfoldedFired && t >= BEAT.unfolded) {
         unfoldedFired = true;
         phase = 'writing';
-        tmp.set(0, 2.3, 1);
+        tmp.set(0, 3.2, 1);
         confetti.burst(tmp.clone(), 80);
-        stage.flash.position.set(0, 2.4, 2);
+        stage.flash.position.set(0, 2.6, 3);
         stage.flash.intensity = 10;
         opts.onUnfolded();
       }
@@ -402,6 +418,7 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
     if (phase === 'done' && !reducedMotion) {
       // Once written, the sheet breathes a little.
       letterRoot.rotation.z = Math.sin(time * 0.9) * 0.012;
+      letterRoot.position.y = LETTER_TOP_FINAL + Math.sin(time * 1.3) * 0.03;
     }
 
     motes.rotation.y = time * 0.03;
@@ -442,7 +459,7 @@ export function createLetter(canvas: HTMLCanvasElement, opts: LetterOptions): Le
       finishNow();
     },
     setYaw(radians) {
-      yawTarget = clamp(radians, -0.6, 0.6);
+      yawTarget = clamp(radians, -0.7, 0.7);
     },
     sealScreen() {
       seal.updateWorldMatrix(true, false);

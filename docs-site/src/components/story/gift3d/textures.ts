@@ -369,7 +369,7 @@ export function makeSealTextures(wax: string): { color: THREE.CanvasTexture; bum
 
 export type LetterCanvas = {
   texture: THREE.CanvasTexture;
-  /** Draw the letter with the first `chars` characters of the message written in. */
+  /** Draw the letter with the first `chars` characters written in. */
   render: (chars: number) => void;
   total: number;
 };
@@ -379,60 +379,17 @@ export type LetterCanvasOptions = {
   ink: string;
   accent: string;
   fontFamily: string;
-  text: string;
+  greeting: string;
+  body: string;
+  /** e.g. "With love,\nSam". Empty for an unsigned letter. */
+  signoff: string;
+  /** Optional photo, taped to the lower corner. */
+  photo?: HTMLImageElement | null;
 };
 
-/**
- * The sheet itself, folded in thirds. Paper and creases are drawn once; only the
- * handwriting is redrawn as it "writes", so texture uploads stay small.
- */
-export function makeLetterCanvas(o: LetterCanvasOptions): LetterCanvas {
-  const W = 768;
-  const H = 1014;
-  const base = document.createElement('canvas');
-  base.width = W;
-  base.height = H;
-  const b = base.getContext('2d')!;
-  drawPaperBase(b, W, H, o.paper, 2200);
-
-  // Border with corner flourishes
-  b.strokeStyle = o.accent;
-  b.globalAlpha = 0.55;
-  b.lineWidth = 3;
-  b.strokeRect(34, 34, W - 68, H - 68);
-  b.lineWidth = 1.2;
-  b.strokeRect(44, 44, W - 88, H - 88);
-  b.globalAlpha = 1;
-  b.fillStyle = o.accent;
-  b.globalAlpha = 0.85;
-  heart(b, W / 2, 96, 34, 0);
-  b.globalAlpha = 1;
-
-  // Fold creases in thirds: a soft dark line with a light edge.
-  for (const y of [H / 3, (2 * H) / 3]) {
-    const g = b.createLinearGradient(0, y - 22, 0, y + 22);
-    g.addColorStop(0, 'rgba(0,0,0,0)');
-    g.addColorStop(0.48, 'rgba(60,40,20,0.14)');
-    g.addColorStop(0.52, 'rgba(255,255,255,0.35)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    b.fillStyle = g;
-    b.fillRect(0, y - 22, W, 44);
-  }
-
-  const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d')!;
-
-  const fontPx = 46;
-  const lineH = 66;
-  const left = 92;
-  const maxW = W - left * 2;
-  ctx.font = `${fontPx}px ${o.fontFamily}`;
-
-  // Wrap once, keeping paragraph breaks.
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
   const lines: string[] = [];
-  for (const para of o.text.split('\n')) {
+  for (const para of text.split('\n')) {
     if (para.trim() === '') {
       lines.push('');
       continue;
@@ -449,8 +406,133 @@ export function makeLetterCanvas(o: LetterCanvasOptions): LetterCanvas {
     }
     lines.push(line);
   }
-  const total = lines.reduce((n, l) => n + l.length, 0);
-  const startY = 190;
+  return lines;
+}
+
+/**
+ * The sheet itself, folded in thirds. Paper, creases and photo are drawn once;
+ * only the handwriting is redrawn as it "writes", so texture uploads stay small.
+ * The type size is the largest that fits the message, so short notes read big.
+ */
+export function makeLetterCanvas(o: LetterCanvasOptions): LetterCanvas {
+  const W = 768;
+  const H = 1014;
+  const left = 88;
+  const maxW = W - left * 2;
+  const hasPhoto = Boolean(o.photo);
+
+  // ── Static layer: paper, border, emblem, creases, photo
+  const base = document.createElement('canvas');
+  base.width = W;
+  base.height = H;
+  const b = base.getContext('2d')!;
+  drawPaperBase(b, W, H, o.paper, 2200);
+
+  b.strokeStyle = o.accent;
+  b.globalAlpha = 0.5;
+  b.lineWidth = 3;
+  b.strokeRect(30, 30, W - 60, H - 60);
+  b.lineWidth = 1.2;
+  b.strokeRect(41, 41, W - 82, H - 82);
+  b.globalAlpha = 1;
+  // corner dots
+  b.fillStyle = o.accent;
+  for (const [x, y] of [
+    [30, 30],
+    [W - 30, 30],
+    [30, H - 30],
+    [W - 30, H - 30],
+  ] as const) {
+    b.beginPath();
+    b.arc(x, y, 7, 0, TAU);
+    b.fill();
+  }
+  b.globalAlpha = 0.9;
+  heart(b, W / 2, 92, 38, 0);
+  b.globalAlpha = 1;
+
+  if (o.photo) {
+    const fw = 214;
+    const fh = 256;
+    const fx = W - left - fw + 8;
+    const fy = H - 96 - fh;
+    b.save();
+    b.translate(fx + fw / 2, fy + fh / 2);
+    b.rotate(0.06);
+    b.shadowColor = 'rgba(40,20,10,0.35)';
+    b.shadowBlur = 16;
+    b.shadowOffsetY = 6;
+    b.fillStyle = '#FFFEFA';
+    b.fillRect(-fw / 2, -fh / 2, fw, fh);
+    b.shadowColor = 'transparent';
+    const pw = fw - 24;
+    const ph = fh - 60;
+    const ir = o.photo.width / o.photo.height;
+    let sw = o.photo.width;
+    let sh = o.photo.height;
+    let sx = 0;
+    let sy = 0;
+    if (ir > pw / ph) {
+      sw = sh * (pw / ph);
+      sx = (o.photo.width - sw) / 2;
+    } else {
+      sh = sw / (pw / ph);
+      sy = (o.photo.height - sh) / 2;
+    }
+    b.drawImage(o.photo, sx, sy, sw, sh, -pw / 2, -fh / 2 + 12, pw, ph);
+    // washi tape
+    b.fillStyle = 'rgba(255,214,120,0.85)';
+    b.save();
+    b.translate(0, -fh / 2 + 4);
+    b.rotate(-0.08);
+    b.fillRect(-46, -14, 92, 28);
+    b.restore();
+    b.restore();
+  }
+
+  for (const y of [H / 3, (2 * H) / 3]) {
+    const g = b.createLinearGradient(0, y - 24, 0, y + 24);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(0.48, 'rgba(60,40,20,0.13)');
+    g.addColorStop(0.52, 'rgba(255,255,255,0.4)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    b.fillStyle = g;
+    b.fillRect(0, y - 24, W, 48);
+  }
+
+  // ── Layout: pick the largest type size that fits
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  const topY = 190;
+  const bottomReserve = hasPhoto ? 330 : 150;
+  const signLines = o.signoff ? o.signoff.split('\n') : [];
+  const signH = signLines.length ? 150 : 0;
+  const available = H - topY - bottomReserve - (hasPhoto ? 0 : signH);
+
+  let size = 40;
+  let bodyLines: string[] = [];
+  let greetingLines: string[] = [];
+  for (const candidate of [64, 60, 56, 52, 48, 44, 40, 36]) {
+    ctx.font = `${candidate * 1.16}px ${o.fontFamily}`;
+    const g = wrapText(ctx, o.greeting, maxW);
+    ctx.font = `${candidate}px ${o.fontFamily}`;
+    const bl = wrapText(ctx, o.body, maxW);
+    const height = g.length * candidate * 1.5 + candidate * 0.5 + bl.length * candidate * 1.42;
+    size = candidate;
+    greetingLines = g;
+    bodyLines = bl;
+    if (height <= available) break;
+  }
+  const bodyLine = size * 1.42;
+  const greetLine = size * 1.5;
+
+  const total =
+    greetingLines.reduce((n, l) => n + l.length, 0) +
+    bodyLines.reduce((n, l) => n + l.length, 0) +
+    signLines.reduce((n, l) => n + l.length, 0);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -459,21 +541,81 @@ export function makeLetterCanvas(o: LetterCanvasOptions): LetterCanvas {
   const render = (chars: number) => {
     ctx.clearRect(0, 0, W, H);
     ctx.drawImage(base, 0, 0);
-    ctx.font = `${fontPx}px ${o.fontFamily}`;
-    ctx.fillStyle = o.ink;
     ctx.textBaseline = 'alphabetic';
-    let left0 = chars;
-    lines.forEach((line, i) => {
-      if (left0 <= 0) return;
-      const part = line.slice(0, left0);
-      left0 -= line.length;
-      // A hair of wobble per line so it reads as handwriting, not print.
+    let remaining = chars;
+    let pen: { x: number; y: number } | null = null;
+
+    const write = (line: string, x: number, y: number, font: string, color: string, tilt: number) => {
+      if (remaining <= 0) return;
+      const part = line.slice(0, remaining);
+      remaining -= line.length;
       ctx.save();
-      ctx.translate(left, startY + i * lineH);
-      ctx.rotate(((i % 5) - 2) * 0.0025);
+      ctx.translate(x, y);
+      ctx.rotate(tilt);
+      ctx.font = font;
+      ctx.fillStyle = color;
       ctx.fillText(part, 0, 0);
+      if (remaining <= 0) pen = { x: x + ctx.measureText(part).width * Math.cos(tilt), y: y - size * 0.32 };
       ctx.restore();
+    };
+
+    let y = topY;
+    greetingLines.forEach((line, i) => {
+      write(line, left, y, `${size * 1.16}px ${o.fontFamily}`, o.accent, ((i % 3) - 1) * 0.002);
+      y += greetLine;
     });
+    y += size * 0.2;
+    bodyLines.forEach((line, i) => {
+      write(line, left, y, `${size}px ${o.fontFamily}`, o.ink, ((i % 5) - 2) * 0.0025);
+      y += bodyLine;
+    });
+
+    if (signLines.length) {
+      const sy = hasPhoto ? H - 96 - 58 * (signLines.length - 1) - 20 : Math.max(y + size * 0.6, H - bottomReserve - 40);
+      // Keep the sign-off clear of the photo: shrink it until it fits the free width.
+      const signMaxW = hasPhoto ? W - left * 2 - 240 : maxW;
+      const signFit = (line: string, px: number) => {
+        let f = px;
+        ctx.font = `${f}px ${o.fontFamily}`;
+        while (ctx.measureText(line).width > signMaxW && f > 24) {
+          f -= 2;
+          ctx.font = `${f}px ${o.fontFamily}`;
+        }
+        return f;
+      };
+      signLines.forEach((line, i) => {
+        const isName = i === signLines.length - 1 && signLines.length > 1;
+        const px = signFit(line, isName ? size * 1.25 : size * 0.95);
+        write(line, left, sy + i * size * 1.25, `${px}px ${o.fontFamily}`, isName ? o.accent : o.ink, -0.012);
+      });
+      // A flourish under the name once the whole letter is written.
+      if (remaining <= 0 && signLines.length > 1) {
+        const fy = sy + (signLines.length - 1) * size * 1.25 + 14;
+        ctx.strokeStyle = o.accent;
+        ctx.globalAlpha = 0.7;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(left, fy);
+        ctx.bezierCurveTo(left + 60, fy - 14, left + 110, fy + 12, left + 190, fy - 6);
+        ctx.bezierCurveTo(left + 230, fy - 14, left + 260, fy + 4, left + 300, fy - 4);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // The pen: a small glowing ink dot at the end of what has been written so far.
+    if (chars < total && pen) {
+      const p = pen as { x: number; y: number };
+      ctx.save();
+      ctx.shadowColor = o.accent;
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = o.accent;
+      ctx.beginPath();
+      ctx.arc(p.x + 8, p.y, 6, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
     texture.needsUpdate = true;
   };
   render(0);
