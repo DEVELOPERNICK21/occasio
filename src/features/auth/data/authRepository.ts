@@ -1,4 +1,5 @@
 import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { env } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
@@ -133,6 +134,83 @@ export async function signInWithGoogle(): Promise<AuthUser> {
   }
 }
 
+/** iOS 13+ only; Android would need Apple's web flow, which we don't offer. */
+export function isAppleSignInAvailable(): boolean {
+  return env.useMockAuth || appleAuth.isSupported;
+}
+
+export async function signInWithApple(): Promise<AuthUser> {
+  if (env.useMockAuth) {
+    mockUser = {
+      uid: 'mock-apple-user',
+      email: 'dev@privaterelay.appleid.com',
+      phoneNumber: null,
+      displayName: 'Dev User',
+      createdAt: new Date().toISOString(),
+    };
+    notifyMockListeners();
+    return mockUser;
+  }
+
+  try {
+    const response = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+    });
+    if (!response.identityToken) {
+      throw new AuthError('UNKNOWN', 'Apple did not return a sign-in token. Try again.');
+    }
+
+    const credential = auth.AppleAuthProvider.credential(
+      response.identityToken,
+      response.nonce,
+    );
+    const result = await auth().signInWithCredential(credential);
+    if (!result.user) {
+      throw new AuthError('UNKNOWN', 'Sign-in failed.');
+    }
+
+    // Apple shares the name only on the first authorization.
+    const fullName = [response.fullName?.givenName, response.fullName?.familyName]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    if (fullName && !result.user.displayName) {
+      await result.user.updateProfile({ displayName: fullName }).catch(() => undefined);
+      await result.user.reload().catch(() => undefined);
+      const refreshed = auth().currentUser;
+      if (refreshed) {
+        return mapUser(refreshed);
+      }
+    }
+    return mapUser(result.user);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : '';
+    if (code === appleAuth.Error.CANCELED) {
+      throw new AuthError('CANCELLED', 'Sign-in was cancelled.');
+    }
+    if (code === 'auth/account-exists-with-different-credential') {
+      throw new AuthError(
+        'UNKNOWN',
+        'This email already has an account. Sign in with Google or email instead.',
+      );
+    }
+    if (isFirebaseAuthError(error)) {
+      throw mapFirebaseAuthError(error);
+    }
+    if (__DEV__) {
+      console.warn('[auth] Apple sign-in failed', { code, error });
+    }
+    throw new AuthError('UNKNOWN', 'Apple sign-in failed. Try again.');
+  }
+}
+
 export async function signInWithEmail(email: string, password: string): Promise<AuthUser> {
   if (env.useMockAuth) {
     mockUser = {
@@ -203,7 +281,9 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
     if (signInMethods.length > 0 && !signInMethods.includes('password')) {
       throw new AuthError(
         'PASSWORD_RESET_UNAVAILABLE',
-        'This account uses Google sign-in, not a password. Go back and tap Continue with Google.',
+        signInMethods.includes('apple.com')
+          ? 'This account uses Sign in with Apple, not a password. Go back and tap Continue with Apple.'
+          : 'This account uses Google sign-in, not a password. Go back and tap Continue with Google.',
       );
     }
 

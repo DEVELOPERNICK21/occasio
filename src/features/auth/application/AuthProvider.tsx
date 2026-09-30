@@ -10,7 +10,9 @@ import {
 import { AnalyticsEvents, trackEvent } from '../../../shared/analytics/events';
 import {
   createAccountWithEmail,
+  isAppleSignInAvailable,
   sendPasswordResetEmail,
+  signInWithApple,
   signInWithEmail,
   signInWithGoogle,
   signOut,
@@ -37,6 +39,9 @@ type AuthContextValue = {
   completeSoftAuth: () => void;
   signOutUser: () => Promise<void>;
   signInGoogle: () => Promise<void>;
+  /** False on Android and iOS < 13 — hide the Apple button then. */
+  canSignInWithApple: boolean;
+  signInApple: () => Promise<void>;
   signInEmail: (email: string, password: string) => Promise<void>;
   createEmailAccount: (email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -109,6 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     trackSignIn('google');
   }, [trackSignIn]);
 
+  const canSignInWithApple = isAppleSignInAvailable();
+
+  const signInApple = useCallback(async () => {
+    const signedInUser = await signInWithApple();
+    setUser(signedInUser);
+    setStatus('signed_in');
+    trackSignIn('apple');
+  }, [trackSignIn]);
+
   const signInEmail = useCallback(async (email: string, password: string) => {
     const signedInUser = await signInWithEmail(email, password);
     setUser(signedInUser);
@@ -138,6 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       completeSoftAuth,
       signOutUser,
       signInGoogle,
+      canSignInWithApple,
+      signInApple,
       signInEmail,
       createEmailAccount,
       resetPassword,
@@ -151,6 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       completeSoftAuth,
       signOutUser,
       signInGoogle,
+      canSignInWithApple,
+      signInApple,
       signInEmail,
       createEmailAccount,
       resetPassword,

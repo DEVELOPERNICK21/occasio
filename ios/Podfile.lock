@@ -3388,6 +3388,8 @@ PODS:
   - RevenueCat (5.87.1)
   - RevenueCatUI (5.87.1):
     - RevenueCat (= 5.87.1)
+  - RNAppleAuthentication (2.5.1):
+    - React-Core
   - RNCAsyncStorage (2.2.0):
     - hermes-engine
     - RCTRequired
@@ -4043,6 +4045,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
@@ -4259,6 +4262,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNAppleAuthentication:
+    :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -4411,6 +4416,7 @@ SPEC CHECKSUMS:
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RevenueCat: 7d45133f048270481facf0f7b02530e503a01620
   RevenueCatUI: 9e9a56493980e8186af3344022a81835b4553413
+  RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
   RNCAsyncStorage: d90e523830fa7705f8c61632479abde871bc792f
   RNCClipboard: 7a7d4557bfd3370b35c99dfecd92ae7b9fc4948a
   RNFBApp: 7b9f35bc79fcd15ba62d56d80587aa8822d584f1

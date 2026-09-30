@@ -23,6 +23,7 @@ import {
   MIN_PASSWORD_LENGTH,
   normalizeEmail,
 } from '../../domain/email';
+import { AppleLogoIcon } from '../components/AppleLogoIcon';
 import { AuthLegalFooter } from '../components/AuthLegalFooter';
 import { GoogleGIcon } from '../components/GoogleGIcon';
 import { LoginAuthButton } from '../components/LoginAuthButton';
@@ -64,7 +65,8 @@ function LoginBackButton({
 
 export function LoginScreen({ onDismiss }: Props) {
   const insets = useSafeAreaInsets();
-  const { signInGoogle, signInEmail, createEmailAccount } = useAuthContext();
+  const { signInGoogle, canSignInWithApple, signInApple, signInEmail, createEmailAccount } =
+    useAuthContext();
   const passwordReset = usePasswordReset();
 
   const [step, setStep] = useState<Step>('welcome');
@@ -73,9 +75,11 @@ export function LoginScreen({ onDismiss }: Props) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'apple' | null>(null);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
+    setPendingProvider('google');
     setError(null);
     triggerCardHaptic();
     trackEvent(AnalyticsEvents.googleSignInStarted);
@@ -92,6 +96,29 @@ export function LoginScreen({ onDismiss }: Props) {
       });
     } finally {
       setIsLoading(false);
+      setPendingProvider(null);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    setPendingProvider('apple');
+    setError(null);
+    triggerCardHaptic();
+    trackEvent(AnalyticsEvents.appleSignInStarted);
+    try {
+      await signInApple();
+    } catch (e) {
+      if (isAuthError(e) && e.code === 'CANCELLED') {
+        return;
+      }
+      setError(isAuthError(e) ? e.message : 'Apple sign-in failed. Try again.');
+      trackEvent(AnalyticsEvents.appleSignInFailed, {
+        code: isAuthError(e) ? e.code : 'unknown',
+      });
+    } finally {
+      setIsLoading(false);
+      setPendingProvider(null);
     }
   };
 
@@ -325,12 +352,22 @@ export function LoginScreen({ onDismiss }: Props) {
 
           <View style={styles.actions}>
             {error ? <Text style={styles.errorCentered}>{error}</Text> : null}
+            {canSignInWithApple ? (
+              <LoginAuthButton
+                label="Continue with Apple"
+                icon={<AppleLogoIcon />}
+                variant="apple"
+                onPress={handleAppleSignIn}
+                loading={pendingProvider === 'apple'}
+                disabled={isLoading}
+              />
+            ) : null}
             <LoginAuthButton
               label="Continue with Google"
               icon={<GoogleGIcon />}
               variant="google"
               onPress={handleGoogleSignIn}
-              loading={isLoading}
+              loading={pendingProvider === 'google'}
               disabled={isLoading}
             />
             <LoginAuthButton

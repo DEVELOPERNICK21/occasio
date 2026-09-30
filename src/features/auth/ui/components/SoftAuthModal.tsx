@@ -16,7 +16,9 @@ import {
   normalizeEmail,
 } from '../../domain/email';
 import { gatedActionLabel } from '../../domain/gatedActions';
+import { AppleLogoIcon } from './AppleLogoIcon';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { LoginAuthButton } from './LoginAuthButton';
 
 type Step = 'choose' | 'email' | 'forgot';
 
@@ -26,6 +28,8 @@ export function SoftAuthModal() {
     dismissSoftAuth,
     completeSoftAuth,
     signInGoogle,
+    canSignInWithApple,
+    signInApple,
     signInEmail,
     createEmailAccount,
   } = useAuthContext();
@@ -82,6 +86,26 @@ export function SoftAuthModal() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    setError(null);
+    trackEvent(AnalyticsEvents.appleSignInStarted);
+    try {
+      await signInApple();
+      completeSoftAuth();
+    } catch (e) {
+      if (isAuthError(e) && e.code === 'CANCELLED') {
+        return;
+      }
+      setError(isAuthError(e) ? e.message : 'Apple sign-in failed. Try again.');
+      trackEvent(AnalyticsEvents.appleSignInFailed, {
+        code: isAuthError(e) ? e.code : 'unknown',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEmailSubmit = async () => {
     const email = normalizeEmail(emailInput);
     if (!isValidEmail(email)) {
@@ -121,12 +145,22 @@ export function SoftAuthModal() {
           <Text style={styles.eyebrow}>{isSignUp ? 'Create account' : 'Sign in'}</Text>
           <Text style={styles.title}>Continue to {gatedActionLabel(action)}</Text>
           <Text style={styles.body}>
-            Create and share stay free. Google or email — no SMS charges.
+            Create and share stay free. {canSignInWithApple ? 'Apple, Google' : 'Google'} or
+            email — no SMS charges.
           </Text>
 
           {step === 'choose' ? (
             <View style={styles.form}>
               {error ? <Text style={styles.error}>{error}</Text> : null}
+              {canSignInWithApple ? (
+                <LoginAuthButton
+                  label="Continue with Apple"
+                  icon={<AppleLogoIcon />}
+                  variant="apple"
+                  onPress={handleAppleSignIn}
+                  disabled={isLoading}
+                />
+              ) : null}
               <Button
                 label="Continue with Google"
                 onPress={handleGoogleSignIn}

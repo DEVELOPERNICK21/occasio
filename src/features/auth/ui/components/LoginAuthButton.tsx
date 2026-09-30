@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 
-type Variant = 'google' | 'primary';
+type Variant = 'google' | 'apple' | 'primary';
 
 type Props = {
   label: string;
@@ -14,6 +14,12 @@ type Props = {
   loading?: boolean;
 };
 
+const VARIANT_STYLE = {
+  google: { button: 'google', label: 'labelGoogle', spinner: colors.accent },
+  apple: { button: 'apple', label: 'labelPrimary', spinner: colors.white },
+  primary: { button: 'primary', label: 'labelPrimary', spinner: colors.white },
+} as const;
+
 export function LoginAuthButton({
   label,
   icon,
@@ -23,6 +29,7 @@ export function LoginAuthButton({
   loading = false,
 }: Props) {
   const isDisabled = disabled || loading;
+  const look = VARIANT_STYLE[variant];
 
   return (
     <Pressable
@@ -32,27 +39,17 @@ export function LoginAuthButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        variant === 'google' ? styles.google : styles.primary,
+        styles[look.button],
         pressed && !isDisabled && styles.pressed,
         isDisabled && styles.disabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'google' ? colors.accent : colors.white}
-        />
+        <ActivityIndicator size="small" color={look.spinner} />
       ) : (
         <>
           <View style={styles.icon}>{icon}</View>
-          <Text
-            style={[
-              styles.label,
-              variant === 'google' ? styles.labelGoogle : styles.labelPrimary,
-            ]}
-          >
-            {label}
-          </Text>
+          <Text style={[styles.label, styles[look.label]]}>{label}</Text>
         </>
       )}
     </Pressable>
@@ -78,6 +75,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
+  },
+  apple: {
+    backgroundColor: colors.ink,
   },
   primary: {
     backgroundColor: colors.accentHover,

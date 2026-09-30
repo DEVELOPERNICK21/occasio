@@ -6,7 +6,7 @@ export type GatedAction =
   | 'autosend_enable'
   | 'subscription_manage';
 
-export type AuthSignInMethod = 'google' | 'email';
+export type AuthSignInMethod = 'google' | 'apple' | 'email';
 
 export type AuthUser = {
   uid: string;

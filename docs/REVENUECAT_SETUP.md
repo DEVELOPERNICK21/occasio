@@ -19,13 +19,13 @@ cd ios && pod install && cd ..
 
 ### 2. Products / packages (current offering)
 
-| Package ID | Type |
-|---|---|
-| `lifetime` | Non-consumable / lifetime |
-| `yearly` | Annual subscription |
-| `monthly` | Monthly subscription |
+| Package ID | Store product (iOS / Android) | Type |
+|---|---|---|
+| `$rc_monthly` | `occasio_pro_monthly` / `occasio_pro:monthly` | Monthly subscription |
+| `$rc_annual` | `occasio_pro_yearly` / `occasio_pro:yearly` | Annual subscription |
+| `single_wish` | `occasio_wish_single` (both stores) | Consumable — one wish beyond the free monthly allowance |
 
-Attach each product to entitlement **`occasio_pro`**. Set this offering as **Current**.
+Attach the two subscriptions to entitlement **`occasio_pro`**. Do **not** attach `single_wish` — the app counts those purchases (`nonSubscriptionTransactions`) against `users/{uid}.wishCreditsUsed`. Set this offering as **Current**.
 
 ### 3. Paywall + Customer Center
 
