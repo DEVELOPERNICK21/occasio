@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
 import { defaultExperienceMode, resolveExperience } from './resolveExperience';
 
 describe('defaultExperienceMode', () => {
@@ -29,7 +28,7 @@ describe('resolveExperience', () => {
     assert.deepEqual(r.scenes, []);
   });
 
-  it('birthday with photos gets full story pack including candle', () => {
+  it('birthday gets the candle scene, then the hub, then the finale', () => {
     const r = resolveExperience({
       templateType: 'birthday',
       mediaUrls: ['https://x/a.jpg', 'https://x/b.jpg'],
@@ -38,20 +37,11 @@ describe('resolveExperience', () => {
       experienceMode: null,
     });
     assert.equal(r.mode, 'story');
-    assert.deepEqual(r.scenes, [
-      'lamp',
-      'balloons',
-      'candle',
-      'gift',
-      'photo_deck',
-      'envelope',
-      'letter_write',
-      'letter',
-    ]);
+    assert.deepEqual(r.scenes, ['gate', 'lamp', 'balloons', 'candle', 'gift', 'hub', 'finale']);
     assert.ok(r.revealLine.length > 0);
   });
 
-  it('thank_you story skips candle', () => {
+  it('thank_you skips the candle', () => {
     const r = resolveExperience({
       templateType: 'thank_you',
       mediaUrls: ['https://x/a.jpg'],
@@ -59,50 +49,35 @@ describe('resolveExperience', () => {
       recipientName: 'Sam',
     });
     assert.equal(r.mode, 'story');
-    assert.deepEqual(r.scenes, [
-      'lamp',
-      'balloons',
-      'gift',
-      'photo_deck',
-      'envelope',
-      'letter_write',
-      'letter',
-    ]);
+    assert.deepEqual(r.scenes, ['gate', 'lamp', 'balloons', 'gift', 'hub', 'finale']);
   });
 
-  it('birthday without photos skips photo_deck', () => {
+  it('the hub is always present, so photos and reasons never change the scene order', () => {
+    const base = { templateType: 'anniversary', message: 'Us.', recipientName: 'Sam' };
+    const bare = resolveExperience({ ...base, mediaUrls: [] });
+    const rich = resolveExperience({
+      ...base,
+      mediaUrls: ['https://x/a.jpg', '   '],
+      reasons: ['You laugh at my jokes'],
+    });
+    assert.deepEqual(bare.scenes, rich.scenes);
+    assert.ok(bare.scenes.includes('hub'));
+  });
+
+  it('just_because gets the joke contract, other moments do not', () => {
+    const card = { mediaUrls: [], message: 'Hi.', recipientName: 'Sam' };
+    assert.ok(resolveExperience({ ...card, templateType: 'just_because' }).scenes.includes('contract'));
+    assert.ok(!resolveExperience({ ...card, templateType: 'birthday' }).scenes.includes('contract'));
+  });
+
+  it('always opens with the gate and closes on the finale', () => {
     const r = resolveExperience({
-      templateType: 'birthday',
+      templateType: 'congratulations',
       mediaUrls: [],
-      message: 'Happy day.',
+      message: 'Well done.',
       recipientName: 'Sam',
     });
-    assert.deepEqual(r.scenes, [
-      'lamp',
-      'balloons',
-      'candle',
-      'gift',
-      'envelope',
-      'letter_write',
-      'letter',
-    ]);
-  });
-
-  it('filters blank media urls before deciding photo_deck', () => {
-    const r = resolveExperience({
-      templateType: 'anniversary',
-      mediaUrls: ['', '  '],
-      message: 'Still us.',
-      recipientName: 'Alex',
-    });
-    assert.deepEqual(r.scenes, [
-      'lamp',
-      'balloons',
-      'candle',
-      'gift',
-      'envelope',
-      'letter_write',
-      'letter',
-    ]);
+    assert.equal(r.scenes[0], 'gate');
+    assert.equal(r.scenes[r.scenes.length - 1], 'finale');
   });
 });

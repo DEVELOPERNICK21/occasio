@@ -1,6 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import { Gift3DStage, type GiftStageHandle } from '@/components/story/gift3d/Gift3DStage';
+import { momentThemeFor } from '@/lib/experience/momentTheme';
+import { playShimmer } from '@/lib/experience/sfx';
+import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { playGiftRattle, playGiftUnwrap } from '@/lib/experience/playBalloonPop';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
@@ -83,10 +88,11 @@ function Rose({ cx, cy, r, petal, deep }: (typeof ROSES)[number]) {
   );
 }
 
-export function GiftScene({ templateType, recipientName, onComplete }: Props) {
+function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
   const uid = useId().replace(/:/g, '');
   const name = recipientName.trim() || 'you';
   const copy = storyCopyFor(templateType);
+  const { award } = useJoy();
   const [phase, setPhase] = useState<Phase>('wrapped');
   const [shakes, setShakes] = useState(0);
   const timerRef = useRef<number | null>(null);
@@ -103,14 +109,16 @@ export function GiftScene({ templateType, recipientName, onComplete }: Props) {
     if (phase !== 'wrapped') return;
     const next = shakes + 1;
     setShakes(next);
+    award(`gift:shake:${next}`);
     if (next < SHAKES_TO_OPEN) {
       playGiftRattle();
       return;
     }
     playGiftUnwrap();
+    award('gift:open');
     setPhase('opening');
     timerRef.current = window.setTimeout(() => setPhase('open'), 950);
-  }, [phase, shakes]);
+  }, [phase, shakes, award]);
 
   const remaining = SHAKES_TO_OPEN - shakes;
 
@@ -317,6 +325,119 @@ export function GiftScene({ templateType, recipientName, onComplete }: Props) {
           Continue
         </button>
       </div>
+      <TapToContinue active={phase === 'open'} onContinue={onComplete} />
     </section>
   );
+}
+
+/** The line under the name on the gift tag; never repeats the name itself. */
+function tagLineFor(templateType: string): string {
+  switch (templateType) {
+    case 'birthday':
+      return 'Happy birthday';
+    case 'anniversary':
+      return 'Happy anniversary';
+    case 'thank_you':
+      return 'Thank you';
+    case 'congratulations':
+      return 'Congratulations';
+    default:
+      return 'Just because';
+  }
+}
+
+function GiftScene3D({
+  templateType,
+  recipientName,
+  onComplete,
+  onFail,
+}: Props & { onFail: () => void }) {
+  const name = recipientName.trim() || 'you';
+  const theme = momentThemeFor(templateType);
+  const copy = storyCopyFor(templateType);
+  const { award } = useJoy();
+  const stage = useRef<GiftStageHandle>(null);
+  const [phase, setPhase] = useState<Phase>('wrapped');
+  const [shakes, setShakes] = useState(0);
+  const open = phase !== 'wrapped';
+  const remaining = SHAKES_TO_OPEN - shakes;
+
+  const tap = useCallback(
+    (at: { x: number; y: number }) => {
+      if (phase !== 'wrapped') return;
+      const next = shakes + 1;
+      setShakes(next);
+      award(`gift:shake:${next}`, 1, at);
+      if (next < SHAKES_TO_OPEN) {
+        playGiftRattle();
+        stage.current?.shake(next);
+        return;
+      }
+      playGiftUnwrap();
+      playShimmer();
+      award('gift:open', 1, { x: at.x, y: at.y - 40 });
+      setPhase('opening');
+      stage.current?.open();
+    },
+    [award, phase, shakes],
+  );
+
+  return (
+    <section
+      className={`story-gift story-gift--${phase}`}
+      aria-label={open ? `For ${name}` : `A gift for ${name}`}
+    >
+      <h2 className="story-scene-title">{copy.giftTitle(name, open)}</h2>
+      <p className="story-scene-sub">{copy.giftSub(open)}</p>
+
+      <Gift3DStage
+        ref={stage}
+        theme={theme}
+        name={name}
+        line={tagLineFor(templateType)}
+        disabled={phase !== 'wrapped'}
+        ariaLabel={
+          phase === 'wrapped'
+            ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap' : 'taps'} to open`
+            : 'Gift unwrapped'
+        }
+        onTap={tap}
+        onOpened={() => setPhase('open')}
+        onFail={onFail}
+      />
+
+      <div className="story-hint-row" aria-live="polite">
+        {phase === 'wrapped' ? (
+          <span className="story-hint-chip">
+            {shakes === 0 ? 'Tap to shake it · drag to turn it' : 'Again!'}
+            <span className="story-hint-dots" aria-hidden>
+              {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
+                <span key={i} className={i < shakes ? 'is-on' : undefined} />
+              ))}
+            </span>
+          </span>
+        ) : null}
+      </div>
+
+      <div className="story-cta">
+        <button
+          type="button"
+          className="landing-btn-primary"
+          disabled={phase !== 'open'}
+          onClick={onComplete}
+        >
+          Continue
+        </button>
+      </div>
+      <TapToContinue active={phase === 'open'} onContinue={onComplete} />
+    </section>
+  );
+}
+
+/** Real 3D gift where WebGL works; the flat SVG gift everywhere else. */
+export function GiftScene(props: Props) {
+  const [flat, setFlat] = useState(false);
+  const fail = useCallback(() => setFlat(true), []);
+  if (flat) return <GiftSceneSvg {...props} />;
+  return <GiftScene3D {...props} onFail={fail} />;
 }

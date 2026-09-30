@@ -31,6 +31,12 @@ export async function GET(_request: Request, context: RouteContext) {
       { status: 410 },
     );
   }
+  if (result.status === 'locked') {
+    return NextResponse.json(
+      { code: 'LOCKED', message: 'This card needs a passcode' },
+      { status: 403 },
+    );
+  }
   if (result.status === 'not_found') {
     return NextResponse.json(
       { code: 'NOT_FOUND', message: 'Card not found' },
@@ -48,5 +54,6 @@ export async function GET(_request: Request, context: RouteContext) {
     mediaUrls: card.mediaUrls ?? [],
     fromName: card.fromName,
     reactionCount: card.reactionCount ?? 0,
+    reasons: card.reasons ?? [],
   });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { recordCardReaction } from '@/lib/creationsServer';
 import { isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
+import { clientIp, rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -8,7 +9,7 @@ type RouteContext = {
   params: Promise<{ slug: string }>;
 };
 
-export async function POST(_request: Request, context: RouteContext) {
+export async function POST(request: Request, context: RouteContext) {
   if (!isFirebaseAdminConfigured()) {
     return NextResponse.json(
       { code: 'INTERNAL', message: 'Server is not configured' },
@@ -22,6 +23,10 @@ export async function POST(_request: Request, context: RouteContext) {
       { code: 'NOT_FOUND', message: 'Card not found' },
       { status: 404 },
     );
+  }
+
+  if (!rateLimit(`react:${clientIp(request)}:${slug}`, 3, 60 * 60 * 1000)) {
+    return NextResponse.json({ code: 'THROTTLED' }, { status: 429 });
   }
 
   const reactionCount = await recordCardReaction(slug);

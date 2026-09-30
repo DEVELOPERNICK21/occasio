@@ -31,6 +31,13 @@ export type CreationDraft = {
    * "You are so special".
    */
   balloonLine: string;
+  /** Up to 5 short "reasons" the recipient opens one tap at a time. Blank rows are ignored. */
+  reasons: string[];
+  /** Optional 4-digit code the recipient must enter. Empty = no lock (or keep the existing one when editing). */
+  passcode: string;
+  passcodeHint: string;
+  /** True when the card being edited already has a passcode (the code itself is never returned). */
+  hasPasscode: boolean;
   /**
    * When set, Preview saves via PATCH (same share URL) instead of create.
    */
@@ -59,6 +66,10 @@ export const EMPTY_CREATION_DRAFT: CreationDraft = {
   message: '',
   experienceMode: null,
   balloonLine: '',
+  reasons: [],
+  passcode: '',
+  passcodeHint: '',
+  hasPasscode: false,
   editingCreationId: null,
   editingShareSlug: null,
   editingShareUrl: null,

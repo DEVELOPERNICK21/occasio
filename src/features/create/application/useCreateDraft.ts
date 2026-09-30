@@ -118,6 +118,18 @@ export function useCreateDraft() {
     setDraft((d) => ({ ...d, balloonLine }));
   }, []);
 
+  const setReasons = useCallback((reasons: string[]) => {
+    setDraft((d) => ({ ...d, reasons }));
+  }, []);
+
+  const setPasscode = useCallback((passcode: string) => {
+    setDraft((d) => ({ ...d, passcode: passcode.replace(/\D/g, '').slice(0, 4) }));
+  }, []);
+
+  const setPasscodeHint = useCallback((passcodeHint: string) => {
+    setDraft((d) => ({ ...d, passcodeHint: passcodeHint.slice(0, 60) }));
+  }, []);
+
   const setExperienceMode = useCallback(
     (experienceMode: CreationDraft['experienceMode']) => {
       setDraft((d) => ({ ...d, experienceMode }));
@@ -200,6 +212,9 @@ export function useCreateDraft() {
         message: card.message ?? '',
         experienceMode: card.experienceMode,
         balloonLine: card.balloonLine ?? '',
+        reasons: card.reasons ?? [],
+        passcodeHint: card.passcodeHint ?? '',
+        hasPasscode: card.hasPasscode === true,
         editingCreationId: card.creationId,
         editingShareSlug: card.shareSlug,
         editingShareUrl: card.shareUrl,
@@ -228,6 +243,9 @@ export function useCreateDraft() {
     setFromName,
     setMessage,
     setBalloonLine,
+    setReasons,
+    setPasscode,
+    setPasscodeHint,
     setExperienceMode,
     reset,
     clearEditing,

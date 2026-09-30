@@ -44,6 +44,8 @@ export function isCreationDraftEmpty(draft: CreationDraft): boolean {
     draft.fromName.trim() === '' &&
     draft.message.trim() === '' &&
     draft.balloonLine.trim() === '' &&
+    draft.reasons.every((r) => r.trim() === '') &&
+    draft.passcode === '' &&
     (draft.editingCreationId === null || draft.editingCreationId.trim() === '')
   );
 }
@@ -111,6 +113,16 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
       : null;
   const balloonLine =
     typeof record.balloonLine === 'string' ? record.balloonLine : '';
+  const reasons = Array.isArray(record.reasons)
+    ? record.reasons.filter((r): r is string => typeof r === 'string').slice(0, 5)
+    : [];
+  const passcode =
+    typeof record.passcode === 'string' && /^\d{0,4}$/.test(record.passcode)
+      ? record.passcode
+      : '';
+  const passcodeHint =
+    typeof record.passcodeHint === 'string' ? record.passcodeHint.slice(0, 60) : '';
+  const hasPasscode = record.hasPasscode === true;
   const editingCreationId =
     typeof record.editingCreationId === 'string' &&
     record.editingCreationId.trim() !== ''
@@ -143,6 +155,10 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     message,
     experienceMode,
     balloonLine,
+    reasons,
+    passcode,
+    passcodeHint,
+    hasPasscode,
     editingCreationId,
     editingShareSlug,
     editingShareUrl,

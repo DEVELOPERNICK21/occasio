@@ -11,7 +11,7 @@ import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreat
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useTemplateCatalog } from '../../application/useTemplateCatalog';
-import { shareMessage } from '../../domain/shareLink';
+import { shareMessage, storyCaption } from '../../domain/shareLink';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import { AnimatedWishCard } from '../components/AnimatedWishCard';
 import { OccasionStickerShower } from '../components/OccasionStickerShower';
@@ -22,6 +22,8 @@ import type {
   LinkCreationParam,
   MainTabParamList,
 } from '../../../../shared/navigation/types';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
@@ -43,6 +45,7 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
   const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
   const { shareUrl, expiresAt, creationId, shareSlug, wasUpdated } = route.params;
   const [copied, setCopied] = useState(false);
+  const [captionCopied, setCaptionCopied] = useState(false);
   const theme = useMemo(() => getTemplateTheme(draft.templateType), [draft.templateType]);
   const definition = draft.templateId ? getById(draft.templateId) : null;
 
@@ -100,6 +103,13 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
     } catch {
       // User cancelled share sheet
     }
+  };
+
+  const handleCopyCaption = () => {
+    Clipboard.setString(storyCaption(draft.templateType, draft.recipientName, shareUrl));
+    triggerSuccessHaptic();
+    trackEvent(AnalyticsEvents.cardShared, { channel: 'story_caption' });
+    setCaptionCopied(true);
   };
 
   const handleCopied = () => {
@@ -203,6 +213,11 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
 
       <ScreenActions>
         <Button label={sendLabel} onPress={handleShare} />
+        <Button
+          label={captionCopied ? 'Caption copied' : 'Copy a caption for your story'}
+          variant="secondary"
+          onPress={handleCopyCaption}
+        />
       </ScreenActions>
 
       <View style={[styles.nudge, { borderColor: theme.accent }]}>

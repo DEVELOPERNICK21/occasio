@@ -19,7 +19,7 @@ export default async function OpengraphImage({ params }: Props) {
   const { slug } = await params;
   const result = await fetchRecipientCard(slug);
 
-  if (result.kind !== 'card') {
+  if (result.kind !== 'card' && result.kind !== 'locked') {
     return new ImageResponse(
       (
         <div
@@ -47,11 +47,9 @@ export default async function OpengraphImage({ params }: Props) {
     );
   }
 
-  const { card } = result;
-  const photo = card.mediaUrls?.[0];
-  const message =
-    card.message ??
-    `Someone sent ${card.recipientName} a wish on Occasio.`;
+  // Teaser only: the preview never shows the sender's photo or message.
+  const card = result.kind === 'card' ? result.card : null;
+  const from = card?.fromName?.trim();
 
   return new ImageResponse(
     (
@@ -60,113 +58,53 @@ export default async function OpengraphImage({ params }: Props) {
           width: '100%',
           height: '100%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#fdf6f2',
-          padding: 40,
+          background: 'linear-gradient(135deg, #fdf6f2 0%, #f7c9b6 100%)',
+          fontFamily: 'Georgia, serif',
+          textAlign: 'center',
+          padding: 60,
         }}
       >
-        <div
+        <p
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: 420,
-            height: 520,
-            borderRadius: 20,
-            overflow: 'hidden',
-            border: '1px solid #e8ddd4',
-            background: '#fffdf8',
-            boxShadow: '0 8px 32px rgba(28, 25, 20, 0.1)',
+            fontSize: 26,
+            color: '#c94e4a',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            margin: 0,
           }}
         >
-          {photo ? (
-            <div style={{ width: '100%', height: 220, display: 'flex' }}>
-              <img
-                src={photo}
-                alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                width: '100%',
-                height: 160,
-                background: '#fceee8',
-              }}
-            />
-          )}
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '32px 36px',
-              textAlign: 'center',
-            }}
-          >
-            <p
-              style={{
-                fontSize: 22,
-                color: '#e8615d',
-                fontFamily: 'Georgia, serif',
-                fontWeight: 600,
-                margin: 0,
-              }}
-            >
-              {wishGreeting(card.templateType)}
-            </p>
-            <p
-              style={{
-                fontSize: 40,
-                color: '#f6a94a',
-                fontFamily: 'Georgia, serif',
-                fontWeight: 600,
-                margin: '8px 0 0',
-                lineHeight: 1.1,
-              }}
-            >
-              {card.recipientName}
-            </p>
-            <p
-              style={{
-                fontSize: 20,
-                color: '#6f675c',
-                fontStyle: 'italic',
-                fontFamily: 'Georgia, serif',
-                margin: '20px 0 0',
-                lineHeight: 1.45,
-              }}
-            >
-              {truncate(message, 100)}
-            </p>
-            {card.fromName ? (
-              <p
-                style={{
-                  fontSize: 18,
-                  color: '#6f675c',
-                  fontFamily: 'Georgia, serif',
-                  margin: '16px 0 0',
-                }}
-              >
-                With love, {card.fromName}
-              </p>
-            ) : null}
-            <p
-              style={{
-                fontSize: 14,
-                color: '#857371',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginTop: 'auto',
-              }}
-            >
-              Occasio
-            </p>
-          </div>
-        </div>
+          {card ? wishGreeting(card.templateType).replace(/,$/, '') : 'A surprise'}
+        </p>
+        <p
+          style={{
+            fontSize: 84,
+            color: '#2a2220',
+            fontWeight: 600,
+            margin: '24px 0 0',
+            lineHeight: 1.05,
+          }}
+        >
+          {card ? truncate(card.recipientName, 24) : 'For you'}
+        </p>
+        <p style={{ fontSize: 36, color: '#4d4340', margin: '32px 0 0' }}>
+          {from
+            ? `${truncate(from, 28)} made you something`
+            : 'Someone made you something'}
+        </p>
+        <p
+          style={{
+            fontSize: 22,
+            color: '#857371',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            marginTop: 56,
+          }}
+        >
+          Tap to open · Occasio
+        </p>
       </div>
     ),
     { ...size },

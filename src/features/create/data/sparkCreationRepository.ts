@@ -1,6 +1,7 @@
 import { env } from '../../../shared/config/env';
 import { httpClient } from '../../../shared/api/httpClient';
 import { HttpError } from '../../../shared/api/errors';
+import { cleanReasons, isValidPasscode } from '../domain/creationRules';
 import type { CreationDraft } from '../domain/types';
 import type {
   CreateCreationResponse,
@@ -64,6 +65,13 @@ function creationBody(
       : {}),
     ...(draft.experienceMode === 'story' || draft.experienceMode === 'classic'
       ? { experienceMode: draft.experienceMode }
+      : {}),
+    reasons: cleanReasons(draft.reasons),
+    ...(isValidPasscode(draft.passcode)
+      ? {
+          passcode: draft.passcode,
+          passcodeHint: draft.passcodeHint.trim(),
+        }
       : {}),
     ...(env.devRelaxedQuota ? { devMode: true } : {}),
   };

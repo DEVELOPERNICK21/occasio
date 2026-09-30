@@ -14,6 +14,8 @@ export type StoryCopy = {
   candleSubOut: string;
   giftTitle: (name: string, open: boolean) => string;
   giftSub: (open: boolean) => string;
+  reasonsTitle: string;
+  reasonsSub: string;
   photosTitle: string;
   photoCaptions: string[];
   envelopeTitle: (name: string) => string;
@@ -43,6 +45,8 @@ const DEFAULT: StoryCopy = {
   candleSubOut: 'Wish made — beautifully',
   giftTitle: (name, open) => (open ? `For ${name}` : `A gift for ${name}`),
   giftSub: (open) => (open ? 'A little joy, just for you' : 'Tap to unwrap'),
+  reasonsTitle: 'A few reasons',
+  reasonsSub: 'Tap each one',
   photosTitle: 'Sweet moments',
   photoCaptions: ['A quiet smile', 'This one', 'Remember this', 'Us'],
   envelopeTitle: (name) => `A letter for ${name}`,
@@ -60,6 +64,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
       open ? `Happy birthday, ${name}` : `A gift for ${name}`,
     giftSub: (open) =>
       open ? 'Something small, from the heart' : 'Tap to unwrap',
+    reasonsTitle: 'Reasons you are loved',
     photosTitle: 'Birthday memories',
     photoCaptions: ['Happy birthday', 'This one', 'Your smile', 'Celebrate'],
   },
@@ -73,6 +78,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
       open ? `For you, ${name}` : `Something for ${name}`,
     giftSub: (open) =>
       open ? 'A chapter you share' : 'Tap to unwrap',
+    reasonsTitle: 'Everything I love about you',
     photosTitle: 'Our chapter',
     photoCaptions: ['Still us', 'This day', 'Together', 'Always'],
     envelopeTitle: (name) => `Written for ${name}`,
@@ -84,6 +90,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
       open ? `Thank you, ${name}` : `For ${name}`,
     giftSub: (open) =>
       open ? 'It mattered — truly' : 'Tap to open',
+    reasonsTitle: 'Reasons I am grateful',
     photosTitle: 'Moments that mattered',
     photoCaptions: ['Grateful', 'This one', 'Because of you', 'Thank you'],
     envelopeTitle: (name) => `A note for ${name}`,
@@ -96,6 +103,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
       open ? `Well done, ${name}` : `A gift for ${name}`,
     giftSub: (open) =>
       open ? 'You earned this moment' : 'Tap to unwrap',
+    reasonsTitle: 'Why we are proud',
     photosTitle: 'Worth celebrating',
     photoCaptions: ['You did it', 'Proud', 'This win', 'Cheers'],
     envelopeTitle: (name) => `For ${name}`,

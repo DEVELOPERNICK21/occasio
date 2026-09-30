@@ -3,6 +3,12 @@ import { defaultExperienceMode } from '@/lib/experience/resolveExperience';
 import { normalizeBalloonLine } from '@/lib/experience/splitRevealLine';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
+import {
+  PASSCODE_PATTERN,
+  hashPasscode,
+  newPasscodeSalt,
+  verifyPasscode,
+} from '@/lib/passcode';
 import { generateShareSlug } from '@/lib/shareSlug';
 
 const GUEST_LINK_TTL_DAYS_PROD = 30;
@@ -23,7 +29,18 @@ export type CreateCreationInput = {
   balloonLine?: string;
   /** Ignored unless server is in dev-relaxed mode. */
   devMode?: boolean;
+  /** Up to 5 short "reasons I love you" lines revealed one tap at a time. */
+  reasons?: string[];
+  /** 4-digit code the recipient must enter. `null` clears it on update; omitted keeps it. */
+  passcode?: string | null;
+  passcodeHint?: string;
 };
+
+const MAX_REASONS = 5;
+const MAX_REASON_CHARS = 90;
+const MAX_HINT_CHARS = 60;
+const UNLOCK_MAX_FAILS = 5;
+const UNLOCK_LOCK_MS = 15 * 60 * 1000;
 
 export type CreateCreationResult = {
   creationId: string;
@@ -177,6 +194,37 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
     ? normalizeBalloonLine(rawBalloon)
     : undefined;
 
+  const rawReasons = Array.isArray(input.reasons) ? input.reasons : [];
+  const reasons = rawReasons
+    .filter((r): r is string => typeof r === 'string')
+    .map((r) => r.trim())
+    .filter(Boolean);
+  if (reasons.length > MAX_REASONS) {
+    throw new ApiRouteError(
+      400,
+      'VALIDATION_ERROR',
+      `Add up to ${MAX_REASONS} reasons`,
+    );
+  }
+  if (reasons.some((r) => r.length > MAX_REASON_CHARS)) {
+    throw new ApiRouteError(400, 'VALIDATION_ERROR', 'A reason is too long');
+  }
+
+  let passcode: string | null | undefined;
+  if (input.passcode === null) {
+    passcode = null;
+  } else if (typeof input.passcode === 'string' && input.passcode !== '') {
+    if (!PASSCODE_PATTERN.test(input.passcode)) {
+      throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Passcode must be 4 digits');
+    }
+    passcode = input.passcode;
+  }
+  const passcodeHint =
+    typeof input.passcodeHint === 'string' ? input.passcodeHint.trim() : '';
+  if (passcodeHint.length > MAX_HINT_CHARS) {
+    throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Passcode hint is too long');
+  }
+
   const devMode = input.devMode === true;
   const experienceMode =
     input.experienceMode === 'story' || input.experienceMode === 'classic'
@@ -193,8 +241,35 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
     mediaUrls,
     ...(balloonLine ? { balloonLine } : {}),
     ...(experienceMode ? { experienceMode } : {}),
+    reasons,
+    ...(passcode !== undefined ? { passcode } : {}),
+    ...(passcodeHint ? { passcodeHint } : {}),
     devMode,
   };
+}
+
+/** Firestore fields for the optional passcode gate. Only a salted hash is stored. */
+function passcodeFields(
+  input: CreateCreationInput,
+): Record<string, unknown> {
+  if (input.passcode === null) {
+    return {
+      passcodeHash: FieldValue.delete(),
+      passcodeSalt: FieldValue.delete(),
+      passcodeHint: FieldValue.delete(),
+    };
+  }
+  if (typeof input.passcode === 'string') {
+    const salt = newPasscodeSalt();
+    return {
+      passcodeHash: hashPasscode(input.passcode, salt),
+      passcodeSalt: salt,
+      passcodeHint: input.passcodeHint ?? null,
+      unlockFails: 0,
+      unlockLockedUntil: null,
+    };
+  }
+  return {};
 }
 
 export async function createCreation(
@@ -224,6 +299,8 @@ export async function createCreation(
     balloonLine: input.balloonLine
       ? normalizeBalloonLine(input.balloonLine)
       : null,
+    reasons: input.reasons ?? [],
+    ...passcodeFields(input),
     shareSlug,
     watermarked: true,
     viewCount: 0,
@@ -244,6 +321,7 @@ export async function createCreation(
 
 export type CardLookupResult =
   | { status: 'found'; card: RecipientCard }
+  | { status: 'locked'; hint: string | null }
   | { status: 'expired' }
   | { status: 'not_found' };
 
@@ -270,9 +348,21 @@ export async function lookupCardBySlug(slug: string): Promise<CardLookupResult> 
   const recipientName = doc.recipientName as string | undefined;
   if (!recipientName) return { status: 'not_found' };
 
+  if (typeof doc.passcodeHash === 'string') {
+    return {
+      status: 'locked',
+      hint: typeof doc.passcodeHint === 'string' ? doc.passcodeHint : null,
+    };
+  }
+
+  return { status: 'found', card: cardFromDoc(doc, recipientName) };
+}
+
+function cardFromDoc(
+  doc: FirebaseFirestore.DocumentData,
+  recipientName: string,
+): RecipientCard {
   return {
-    status: 'found',
-    card: {
       recipientName,
       message: (doc.message as string | null) ?? null,
       templateType: (doc.templateType as string) ?? 'birthday',
@@ -290,8 +380,100 @@ export async function lookupCardBySlug(slug: string): Promise<CardLookupResult> 
         typeof doc.balloonLine === 'string' && doc.balloonLine.trim()
           ? normalizeBalloonLine(doc.balloonLine)
           : null,
-    },
+      reasons: Array.isArray(doc.reasons)
+        ? (doc.reasons as unknown[]).filter(
+            (r): r is string => typeof r === 'string' && r.trim().length > 0,
+          )
+        : [],
   };
+}
+
+export type UnlockResult =
+  | { status: 'unlocked'; card: RecipientCard }
+  | { status: 'wrong'; attemptsLeft: number }
+  | { status: 'throttled'; retryAfterSec: number }
+  | { status: 'not_found' }
+  | { status: 'expired' };
+
+/** Check a passcode server-side; the card body is only returned on success. */
+export async function unlockCardBySlug(
+  slug: string,
+  code: string,
+  now = new Date(),
+): Promise<UnlockResult> {
+  if (!isFirebaseAdminConfigured()) return { status: 'not_found' };
+
+  const db = getAdminFirestore();
+  const snapshot = await db
+    .collection('creations')
+    .where('shareSlug', '==', slug)
+    .limit(1)
+    .get();
+  if (snapshot.empty) return { status: 'not_found' };
+
+  const ref = snapshot.docs[0]!.ref;
+  const doc = snapshot.docs[0]!.data();
+  const expiresAt = doc.expiresAt as Timestamp | undefined;
+  if (expiresAt && expiresAt.toDate() < now) return { status: 'expired' };
+
+  const recipientName = doc.recipientName as string | undefined;
+  if (!recipientName) return { status: 'not_found' };
+
+  // No passcode set: nothing to unlock.
+  if (
+    typeof doc.passcodeHash !== 'string' ||
+    typeof doc.passcodeSalt !== 'string'
+  ) {
+    return { status: 'unlocked', card: cardFromDoc(doc, recipientName) };
+  }
+
+  const lockedUntil = (doc.unlockLockedUntil as Timestamp | null | undefined)?.toDate();
+  if (lockedUntil && lockedUntil > now) {
+    return {
+      status: 'throttled',
+      retryAfterSec: Math.ceil((lockedUntil.getTime() - now.getTime()) / 1000),
+    };
+  }
+
+  if (verifyPasscode(code, doc.passcodeSalt, doc.passcodeHash)) {
+    await ref.update({ unlockFails: 0, unlockLockedUntil: null });
+    return { status: 'unlocked', card: cardFromDoc(doc, recipientName) };
+  }
+
+  const fails = ((doc.unlockFails as number | undefined) ?? 0) + 1;
+  if (fails >= UNLOCK_MAX_FAILS) {
+    await ref.update({
+      unlockFails: 0,
+      unlockLockedUntil: Timestamp.fromMillis(now.getTime() + UNLOCK_LOCK_MS),
+    });
+    return { status: 'throttled', retryAfterSec: UNLOCK_LOCK_MS / 1000 };
+  }
+  await ref.update({ unlockFails: fails });
+  return { status: 'wrong', attemptsLeft: UNLOCK_MAX_FAILS - fails };
+}
+
+export const CARD_EVENT_TYPES = ['opened', 'finished', 'replayed', 'cta'] as const;
+export type CardEventType = (typeof CARD_EVENT_TYPES)[number];
+
+/** Anonymous funnel counters (opened → finished → replayed → cta) for growth metrics. */
+export async function recordCardEvent(
+  slug: string,
+  type: CardEventType,
+): Promise<boolean> {
+  if (!isFirebaseAdminConfigured()) return false;
+
+  const db = getAdminFirestore();
+  const snapshot = await db
+    .collection('creations')
+    .where('shareSlug', '==', slug)
+    .limit(1)
+    .get();
+  if (snapshot.empty) return false;
+
+  await snapshot.docs[0]!.ref.update({
+    [`stats.${type}`]: FieldValue.increment(1),
+  });
+  return true;
 }
 
 export async function getCardBySlug(slug: string): Promise<RecipientCard | null> {
@@ -314,6 +496,9 @@ export type OwnedCreation = {
   mediaUrls: string[];
   experienceMode: 'story' | 'classic' | null;
   balloonLine: string | null;
+  reasons: string[];
+  hasPasscode: boolean;
+  passcodeHint: string | null;
 };
 
 export type OwnedCreationResult =
@@ -431,6 +616,14 @@ export async function getOwnedCreation(
         typeof doc.balloonLine === 'string' && doc.balloonLine.trim()
           ? normalizeBalloonLine(doc.balloonLine)
           : null,
+      reasons: Array.isArray(doc.reasons)
+        ? (doc.reasons as unknown[]).filter(
+            (r): r is string => typeof r === 'string',
+          )
+        : [],
+      hasPasscode: typeof doc.passcodeHash === 'string',
+      passcodeHint:
+        typeof doc.passcodeHint === 'string' ? doc.passcodeHint : null,
     },
   };
 }
@@ -473,6 +666,8 @@ export async function updateCreation(
     balloonLine: input.balloonLine
       ? normalizeBalloonLine(input.balloonLine)
       : null,
+    reasons: input.reasons ?? [],
+    ...passcodeFields(input),
     updatedAt: Timestamp.now(),
     updatedBy: uid,
   });

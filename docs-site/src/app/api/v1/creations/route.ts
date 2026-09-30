@@ -5,6 +5,7 @@ import {
   validateCreateInput,
 } from '@/lib/creationsServer';
 import { isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
+import { clientIp, rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,13 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { code: 'INTERNAL', message: 'Server is not configured' },
       { status: 503 },
+    );
+  }
+
+  if (!rateLimit(`create:${clientIp(request)}`, 20, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { code: 'THROTTLED', message: 'Too many cards from this network. Try again later.' },
+      { status: 429 },
     );
   }
 

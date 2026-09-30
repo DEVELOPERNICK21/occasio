@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useId, useMemo, useState } from 'react';
+import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { chunkRevealWords } from '@/lib/experience/chunkRevealWords';
 import { playBalloonPop } from '@/lib/experience/playBalloonPop';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
@@ -117,6 +119,7 @@ export function BalloonPopScene({
   onComplete,
 }: Props) {
   const reactId = useId().replace(/:/g, '');
+  const { award } = useJoy();
   const copy = storyCopyFor(templateType);
   const words = useMemo(
     () => chunkRevealWords(revealLine, COUNT),
@@ -134,14 +137,15 @@ export function BalloonPopScene({
   );
 
   const popBalloon = useCallback(
-    (index: number) => {
+    (index: number, at?: { x: number; y: number }) => {
       if (popped[index]) return;
       playBalloonPop();
+      award(`balloon:${index}`, 1, at);
       setBurstAt(index);
       window.setTimeout(() => setBurstAt(null), 420);
       setPopped((prev) => prev.map((v, j) => (j === index ? true : v)));
     },
-    [popped],
+    [popped, award],
   );
 
   return (
@@ -166,7 +170,7 @@ export function BalloonPopScene({
                 isPopped ? `Revealed: ${word}` : `Balloon — tap to reveal a word`
               }
               disabled={isPopped}
-              onClick={() => popBalloon(i)}
+              onClick={(e) => popBalloon(i, { x: e.clientX, y: e.clientY })}
             >
               {!isPopped ? (
                 <BalloonSvg
@@ -208,6 +212,7 @@ export function BalloonPopScene({
           Continue
         </button>
       </div>
+      <TapToContinue active={allPopped} onContinue={onComplete} />
     </section>
   );
 }

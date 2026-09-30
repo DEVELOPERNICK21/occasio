@@ -384,3 +384,35 @@ describe('createHome', () => {
     ).toBe('Someone you care about has a date soon. Start with who it’s for.');
   });
 });
+
+describe('viral-loop draft rules', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const rules = require('../../src/features/create/domain/creationRules');
+  const shareLink = require('../../src/features/create/domain/shareLink');
+
+  const ready = {
+    ...EMPTY_CREATION_DRAFT,
+    templateId: 'B01',
+    photoUris: ['file://a.jpg'],
+    recipientName: 'Aanya',
+  };
+
+  it('cleans reasons: trims, drops blanks, caps count and length', () => {
+    const cleaned = rules.cleanReasons(['  one  ', '', 'x'.repeat(200), 'a', 'b', 'c', 'd']);
+    expect(cleaned).toHaveLength(5);
+    expect(cleaned[0]).toBe('one');
+    expect(cleaned[1].length).toBe(90);
+  });
+
+  it('blocks sharing with a half-typed passcode', () => {
+    expect(rules.canGenerateShareLink({ ...ready, passcode: '' })).toBe(true);
+    expect(rules.canGenerateShareLink({ ...ready, passcode: '1408' })).toBe(true);
+    expect(rules.canGenerateShareLink({ ...ready, passcode: '14' })).toBe(false);
+  });
+
+  it('writes a caption that carries the link', () => {
+    const caption = shareLink.storyCaption('birthday', 'Aanya', 'https://x/c/abc');
+    expect(caption).toContain('Aanya');
+    expect(caption.endsWith('https://x/c/abc')).toBe(true);
+  });
+});

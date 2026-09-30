@@ -1,12 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapToContinue } from '@/components/story/fx/TapToContinue';
 
 type Props = {
   urls: string[];
   onComplete: () => void;
   title?: string;
   captions?: string[];
+  /** Accepted so the hub can swap layouts freely; the deck does not print it. */
+  fromName?: string | null;
 };
 
 const BEHIND = [
@@ -24,6 +28,7 @@ export function PhotoDeckScene({
   captions,
 }: Props) {
   const photos = urls.map((u) => u.trim()).filter(Boolean);
+  const { award } = useJoy();
   const [top, setTop] = useState(0);
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
@@ -45,13 +50,14 @@ export function PhotoDeckScene({
 
   const finishDismiss = useCallback((dir: 'left' | 'right') => {
     setExiting(dir);
+    award(`photo:${top}`);
     window.setTimeout(() => {
       setTop((t) => t + 1);
       setDx(0);
       setDy(0);
       setExiting(null);
     }, 280);
-  }, []);
+  }, [award, top]);
 
   const dismissTop = useCallback(
     (dir: 'left' | 'right' = dx >= 0 ? 'right' : 'left') => {
@@ -70,6 +76,7 @@ export function PhotoDeckScene({
             Continue
           </button>
         </div>
+        <TapToContinue active={done} onContinue={onComplete} />
       </section>
     );
   }

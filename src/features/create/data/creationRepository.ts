@@ -63,6 +63,9 @@ function mockOwnedCreation(draft: CreationDraft, creationId: string): OwnedCreat
     mediaUrls: draft.photoUris,
     experienceMode: draft.experienceMode,
     balloonLine: draft.balloonLine.trim() || null,
+    reasons: draft.reasons,
+    hasPasscode: false,
+    passcodeHint: null,
   };
 }
 
@@ -226,6 +229,10 @@ const EMPTY_EDIT_DRAFT: CreationDraft = {
   message: '',
   experienceMode: null,
   balloonLine: '',
+  reasons: [],
+  passcode: '',
+  passcodeHint: '',
+  hasPasscode: false,
   editingCreationId: null,
   editingShareSlug: null,
   editingShareUrl: null,

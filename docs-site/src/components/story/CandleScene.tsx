@@ -8,6 +8,11 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
+import { CakeStage, type CakeStageHandle } from '@/components/story/gift3d/CakeStage';
+import { useJoy } from '@/components/story/fx/JoyProvider';
+import { useMicBlow } from '@/components/story/fx/useMicBlow';
+import { momentThemeFor } from '@/lib/experience/momentTheme';
+import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { playCakeSlice, playCandleBlow } from '@/lib/experience/playBalloonPop';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
@@ -105,13 +110,14 @@ function CakeBody() {
   );
 }
 
-export function CandleScene({
+function CandleSceneSvg({
   recipientName,
   templateType = 'birthday',
   onComplete,
 }: Props) {
   const name = recipientName.trim() || 'you';
   const copy = storyCopyFor(templateType);
+  const { award } = useJoy();
   const [candles, setCandles] = useState<CandleState[]>(() => CANDLES.map(() => 'lit'));
   const [smoke, setSmoke] = useState<boolean[]>(() => CANDLES.map(() => false));
   const [phase, setPhase] = useState<Phase>('candles');
@@ -153,6 +159,7 @@ export function CandleScene({
 
   const blowCandle = useCallback(
     (i: number) => {
+      award(`candle:${i}`);
       setCandles((prev) => prev.map((s, j) => (j === i ? 'blowing' : s)));
       later(() => {
         setCandles((prev) => prev.map((s, j) => (j === i ? 'out' : s)));
@@ -160,7 +167,7 @@ export function CandleScene({
       }, 320);
       later(() => setSmoke((prev) => prev.map((s, j) => (j === i ? false : s))), 1600);
     },
-    [later],
+    [later, award],
   );
 
   const puff = useCallback(() => {
@@ -232,10 +239,11 @@ export function CandleScene({
 
   const cutCake = useCallback(() => {
     playCakeSlice();
+    award('cake:cut');
     setTrail(null);
     setPhase('done');
     later(() => setBurstKey((k) => k + 1), 380);
-  }, [later]);
+  }, [later, award]);
 
   const toSvg = (e: ReactPointerEvent) => {
     const svg = svgRef.current;
@@ -477,6 +485,181 @@ export function CandleScene({
           Continue
         </button>
       </div>
+      <TapToContinue active={phase === 'done'} onContinue={onComplete} />
     </section>
   );
+}
+
+const CANDLE_COUNT = 3;
+
+function CandleScene3D({
+  recipientName,
+  templateType = 'birthday',
+  onComplete,
+  onFail,
+}: Props & { onFail: () => void }) {
+  const name = recipientName.trim() || 'you';
+  const theme = momentThemeFor(templateType);
+  const copy = storyCopyFor(templateType);
+  const { award } = useJoy();
+  const stage = useRef<CakeStageHandle>(null);
+  const [lit, setLit] = useState<boolean[]>(() => Array.from({ length: CANDLE_COUNT }, () => true));
+  const litRef = useRef(lit);
+  litRef.current = lit;
+  const [phase, setPhase] = useState<Phase>('candles');
+  const [blowing, setBlowing] = useState(false);
+  const timers = useRef<number[]>([]);
+  const later = useCallback((fn: () => void, ms: number) => {
+    timers.current.push(window.setTimeout(fn, ms));
+  }, []);
+  useEffect(
+    () => () => {
+      timers.current.forEach((t) => window.clearTimeout(t));
+    },
+    [],
+  );
+
+  const litCount = lit.filter(Boolean).length;
+  useEffect(() => {
+    if (litCount !== 0 || phase !== 'candles') return;
+    const t = window.setTimeout(() => {
+      setPhase('cut');
+      stage.current?.celebrate('out');
+    }, 650);
+    return () => window.clearTimeout(t);
+  }, [litCount, phase]);
+
+  const puff = useCallback(() => {
+    playCandleBlow();
+    setBlowing(true);
+    later(() => setBlowing(false), 900);
+  }, [later]);
+
+  const blowIndex = useCallback(
+    (i: number) => {
+      stage.current?.blow(i);
+      setLit((cur) => cur.map((v, j) => (j === i ? false : v)));
+      award(`candle:${i}`);
+    },
+    [award],
+  );
+
+  const blowNext = useCallback(() => {
+    const i = litRef.current.indexOf(true);
+    if (i < 0) return;
+    puff();
+    blowIndex(i);
+  }, [blowIndex, puff]);
+
+  const blowAll = useCallback(() => {
+    const remaining = litRef.current.map((v, i) => (v ? i : -1)).filter((i) => i >= 0);
+    if (remaining.length === 0) return;
+    puff();
+    remaining.forEach((i, n) => later(() => blowIndex(i), n * 140));
+  }, [blowIndex, later, puff]);
+
+  const mic = useMicBlow(blowAll);
+
+  const cutCake = useCallback(() => {
+    playCakeSlice();
+    award('cake:cut');
+    stage.current?.cut();
+    setPhase('done');
+  }, [award]);
+
+  const tap = useCallback(() => {
+    if (phase === 'candles') blowNext();
+    else if (phase === 'cut') cutCake();
+  }, [blowNext, cutCake, phase]);
+
+  const sub =
+    phase === 'candles'
+      ? copy.candleSubLit
+      : phase === 'cut'
+        ? copy.candleSubOut
+        : 'A slice, just for you';
+
+  return (
+    <section
+      className={`story-candle story-candle--3d${blowing ? ' is-blowing' : ''}${phase !== 'candles' ? ' is-out' : ''}`}
+      aria-label="Blow the candles"
+    >
+      <h2 className="story-scene-title">{copy.candleTitle(name)}</h2>
+      <p className="story-scene-sub">{sub}</p>
+
+      {blowing ? (
+        <div className="story-air" aria-hidden>
+          {AIR_STREAKS.map((i) => (
+            <span
+              key={i}
+              className="story-air__streak"
+              style={{
+                top: `${12 + (i % 7) * 11}%`,
+                animationDelay: `${i * 0.03}s`,
+                opacity: 0.25 + (i % 4) * 0.1,
+              }}
+            />
+          ))}
+          <div className="story-air__haze" />
+        </div>
+      ) : null}
+
+      <CakeStage
+        ref={stage}
+        theme={theme}
+        candles={CANDLE_COUNT}
+        disabled={phase === 'done'}
+        ariaLabel={
+          phase === 'candles'
+            ? `Blow out a candle, ${litCount} left`
+            : phase === 'cut'
+              ? 'Cut the cake'
+              : 'Cake cut'
+        }
+        onTap={tap}
+        onFail={onFail}
+      />
+
+      <div className="story-hint-row" aria-live="polite">
+        {phase === 'candles' ? (
+          <>
+            <span className="story-hint-chip">
+              {litCount} {litCount === 1 ? 'candle' : 'candles'} left · tap the cake
+            </span>
+            {!mic.blocked ? (
+              <button
+                type="button"
+                className="story-hint-chip story-hint-chip--action"
+                onClick={mic.start}
+                disabled={mic.listening}
+              >
+                {mic.listening ? 'Listening… blow now' : 'Or blow into your mic'}
+              </button>
+            ) : null}
+          </>
+        ) : null}
+        {phase === 'cut' ? <span className="story-hint-chip">Tap the cake to cut a slice</span> : null}
+      </div>
+
+      <div className="story-cta">
+        <button
+          type="button"
+          className="landing-btn-primary"
+          disabled={phase === 'candles'}
+          onClick={onComplete}
+        >
+          Continue
+        </button>
+      </div>
+      <TapToContinue active={phase === 'done'} onContinue={onComplete} />
+    </section>
+  );
+}
+
+/** Real 3D cake where WebGL works; the flat SVG cake everywhere else. */
+export function CandleScene(props: Props) {
+  const [flat, setFlat] = useState(false);
+  const fail = useCallback(() => setFlat(true), []);
+  if (flat) return <CandleSceneSvg {...props} />;
+  return <CandleScene3D {...props} onFail={fail} />;
 }

@@ -3,6 +3,7 @@ import type { RecipientCard } from '@/lib/recipientCard';
 
 export type CardFetchResult =
   | { status: 'found'; card: RecipientCard }
+  | { status: 'locked'; hint: string | null }
   | { status: 'expired' }
   | { status: 'not_found' };
 

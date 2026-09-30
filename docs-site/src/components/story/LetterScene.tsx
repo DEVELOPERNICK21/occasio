@@ -1,15 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { CardReaction } from '@/components/CardReaction';
-import { OccasionStickerShower } from '@/components/OccasionStickerShower';
 import { WishCard } from '@/components/WishCard';
 import type { RecipientCard } from '@/lib/recipientCard';
 
-type Props = { card: RecipientCard; slug: string };
+type Props = { card: RecipientCard; slug: string; onContinue?: () => void };
 
-export function LetterScene({ card, slug }: Props) {
+export function LetterScene({ card, slug, onContinue }: Props) {
   const [replayKey, setReplayKey] = useState(0);
   const handleReplay = useCallback(() => {
     setReplayKey((k) => k + 1);
@@ -19,10 +17,6 @@ export function LetterScene({ card, slug }: Props) {
     <section className="story-letter">
       <h2 className="story-scene-title">A message for you</h2>
       <p className="story-scene-sub">Written just for this moment</p>
-      <OccasionStickerShower
-        templateType={card.templateType}
-        replayKey={replayKey}
-      />
       <WishCard card={card} replayKey={replayKey} onReplay={handleReplay} />
       {card.isDemo ? (
         <p className="mt-4 text-center text-xs text-[var(--muted)]">
@@ -31,11 +25,13 @@ export function LetterScene({ card, slug }: Props) {
       ) : (
         <CardReaction slug={slug} initialCount={card.reactionCount ?? 0} />
       )}
-      <div className="mt-8 text-center">
-        <Link href="/" className="landing-btn-primary">
-          Make one for someone
-        </Link>
-      </div>
+      {onContinue ? (
+        <div className="mt-8 text-center">
+          <button type="button" className="landing-btn-primary" onClick={onContinue}>
+            Continue
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
@@ -16,6 +16,7 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { getCreateStep } from '../createSteps';
+import { MAX_REASONS, REASON_MAX_CHARS } from '../../domain/creationRules';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Details'>;
 
@@ -29,6 +30,9 @@ export function DetailsScreen({ navigation }: Props) {
     setFromName,
     setMessage,
     setBalloonLine,
+    setReasons,
+    setPasscode,
+    setPasscodeHint,
     setExperienceMode,
   } = useCreateDraftContext();
 
@@ -44,6 +48,9 @@ export function DetailsScreen({ navigation }: Props) {
   const interactiveOn =
     resolveDraftExperienceMode(draft.templateType, draft.experienceMode) ===
     'story';
+  const reasonRows =
+    draft.reasons.length > 0 ? draft.reasons : ['', '', ''];
+  const [lockOn, setLockOn] = useState(draft.passcode.length > 0);
   const balloonWords = draft.balloonLine
     .trim()
     .split(/\s+/)
@@ -142,6 +149,94 @@ export function DetailsScreen({ navigation }: Props) {
             />
           </Field>
         ) : null}
+
+        {interactiveDefault && interactiveOn ? (
+          <Field
+            label="Reasons they open one by one"
+            hint="Optional · up to 5 short lines, like “You laugh at my worst jokes”"
+          >
+            <View style={styles.reasons}>
+              {reasonRows.map((value, index) => (
+                <TextInput
+                  key={index}
+                  placeholder={`Reason ${index + 1}`}
+                  placeholderTextColor={colors.muted}
+                  value={value}
+                  onChangeText={(text) => {
+                    const next = [...reasonRows];
+                    next[index] = text.slice(0, REASON_MAX_CHARS);
+                    setReasons(next);
+                  }}
+                  style={styles.input}
+                  maxLength={REASON_MAX_CHARS}
+                />
+              ))}
+              {reasonRows.length < MAX_REASONS ? (
+                <Text
+                  style={styles.addReason}
+                  onPress={() => setReasons([...reasonRows, ''])}
+                  accessibilityRole="button"
+                >
+                  Add another reason
+                </Text>
+              ) : null}
+            </View>
+          </Field>
+        ) : null}
+
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleCopy}>
+            <Text style={styles.toggleTitle}>Lock with a passcode</Text>
+            <Text style={styles.toggleHint}>
+              {draft.hasPasscode && !lockOn
+                ? 'This card is already locked. Turn on to set a new code.'
+                : 'They enter 4 digits to open it — try your anniversary date'}
+            </Text>
+          </View>
+          <AccountToggle
+            value={lockOn}
+            onValueChange={(on) => {
+              setLockOn(on);
+              if (!on) {
+                setPasscode('');
+                setPasscodeHint('');
+              }
+            }}
+          />
+        </View>
+
+        {lockOn ? (
+          <>
+            <Field
+              label="Passcode"
+              hint={
+                draft.passcode.length > 0 && draft.passcode.length < 4
+                  ? '4 digits needed'
+                  : 'Tell them the code separately, or hint at it'
+              }
+            >
+              <TextInput
+                placeholder="0000"
+                placeholderTextColor={colors.muted}
+                value={draft.passcode}
+                onChangeText={setPasscode}
+                style={styles.input}
+                keyboardType="number-pad"
+                maxLength={4}
+              />
+            </Field>
+            <Field label="Hint" hint="Optional · shown on the lock screen">
+              <TextInput
+                placeholder="The day we met"
+                placeholderTextColor={colors.muted}
+                value={draft.passcodeHint}
+                onChangeText={setPasscodeHint}
+                style={styles.input}
+                maxLength={60}
+              />
+            </Field>
+          </>
+        ) : null}
       </View>
     </Screen>
   );
@@ -180,6 +275,14 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeMd,
     fontWeight: '600',
     color: colors.ink,
+  },
+  reasons: {
+    gap: spacing.sm,
+  },
+  addReason: {
+    fontSize: typography.sizeSm,
+    color: colors.accent,
+    paddingVertical: spacing.xs,
   },
   toggleHint: {
     fontSize: typography.sizeSm,

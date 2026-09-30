@@ -56,3 +56,26 @@ export function computeShareLinkExpiresAt(
   const days = shareLinkTtlDays(tier, isGuest, options);
   return new Date(createdAt.getTime() + days * 24 * 60 * 60 * 1000);
 }
+
+const STORY_CAPTIONS: Record<string, string> = {
+  birthday: 'I made a birthday surprise for {name}. Watch their face when they open it.',
+  anniversary: 'I locked our anniversary surprise for {name}. Guess the code.',
+  thank_you: 'A thank-you {name} did not see coming.',
+  congratulations: 'A little celebration for {name}, because you deserve it.',
+  just_because: '{name} signed the terms. No refunds.',
+};
+
+/**
+ * Ready-to-post caption for the sender's own story or reel. The card is the
+ * content; the sender's reaction video is what travels, so the caption invites
+ * that.
+ */
+export function storyCaption(
+  templateType: string | null,
+  recipientName: string,
+  shareUrl: string,
+): string {
+  const name = recipientName.trim() || 'them';
+  const line = (templateType && STORY_CAPTIONS[templateType]) || 'I made {name} something. Watch their reaction.';
+  return `${line.replace('{name}', name)}\n${shareUrl}`;
+}

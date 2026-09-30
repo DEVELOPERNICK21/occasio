@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 import { wishGreeting, type RecipientCard } from '@/lib/recipientCard';
 
@@ -25,6 +27,11 @@ export function LetterWriteScene({ card, onComplete }: Props) {
 
   const [count, setCount] = useState(0);
   const done = count >= script.length;
+  const { award } = useJoy();
+
+  useEffect(() => {
+    if (done) award('letter_write');
+  }, [done, award]);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -66,6 +73,7 @@ export function LetterWriteScene({ card, onComplete }: Props) {
           Continue
         </button>
       </div>
+      <TapToContinue active={done} onContinue={continueNext} />
     </section>
   );
 }

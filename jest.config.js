@@ -1,7 +1,7 @@
 module.exports = {
   preset: '@react-native/jest-preset',
-  // docs-site tests use node:test and run with its own runner.
-  testPathIgnorePatterns: ['/node_modules/', '/docs-site/', '/functions/lib/'],
+  // docs-site lib tests (plain TS, no DOM) run here too; skip its build output.
+  testPathIgnorePatterns: ['/node_modules/', '/docs-site/.next/', '/functions/lib/'],
   moduleNameMapper: {
     '\\.(mp3|wav)$': '<rootDir>/jest.assetStub.js',
     // The ESM build is .mjs, which jest does not transform.

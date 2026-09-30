@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useJoy } from '@/components/story/fx/JoyProvider';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
@@ -16,13 +17,15 @@ export function EnvelopeScene({
 }: Props) {
   const name = recipientName.trim() || 'you';
   const copy = storyCopyFor(templateType);
+  const { award } = useJoy();
   const [opened, setOpened] = useState(false);
 
   const open = useCallback(() => {
     if (opened) return;
     setOpened(true);
+    award('envelope');
     window.setTimeout(() => onComplete(), 720);
-  }, [opened, onComplete]);
+  }, [opened, onComplete, award]);
 
   return (
     <section

@@ -1,14 +1,15 @@
 export type ExperienceMode = 'story' | 'classic';
 
 export type SceneId =
+  | 'gate'
   | 'lamp'
   | 'balloons'
   | 'candle'
   | 'gift'
-  | 'photo_deck'
-  | 'envelope'
-  | 'letter_write'
-  | 'letter';
+  | 'contract'
+  /** Photos, reasons and the letter, opened in any order. */
+  | 'hub'
+  | 'finale';
 
 export type ExperienceCardInput = {
   templateType: string;
@@ -18,6 +19,8 @@ export type ExperienceCardInput = {
   experienceMode?: ExperienceMode | null;
   /** Optional ≤8-word balloon pop line. Empty → default "You are so special". */
   balloonLine?: string | null;
+  /** Short lines revealed one tap at a time. */
+  reasons?: string[];
 };
 
 export type ResolvedExperience = {

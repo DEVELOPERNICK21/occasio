@@ -33,6 +33,9 @@ export type OwnedCreationResponse = CreateCreationResponse & {
   mediaUrls: string[];
   experienceMode: 'story' | 'classic' | null;
   balloonLine: string | null;
+  reasons?: string[];
+  hasPasscode?: boolean;
+  passcodeHint?: string | null;
 };
 
 export type ApiErrorCode =
