@@ -49,8 +49,8 @@ export function AccountScreen() {
   const handleManagePlan = () => {
     if (!isConfigured) {
       Alert.alert(
-        'Billing unavailable',
-        'Configure RevenueCat products (monthly, yearly, one wish) and rebuild.',
+        'Plans unavailable',
+        'We could not load the Occasio Pro plans right now. Check your connection and try again.',
       );
       return;
     }
@@ -91,6 +91,8 @@ export function AccountScreen() {
     />
   );
 }
+
+
 
 
 

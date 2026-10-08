@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirrors design-tokens.json. Night variants live in values-night. -->
+<resources>
+    <color name="occasio_card">#FDF6F2</color>
+    <color name="occasio_card_border">#EDD5CA</color>
+    <color name="occasio_ink">#2A2220</color>
+    <color name="occasio_ink_soft">#4D4340</color>
+    <color name="occasio_muted">#857371</color>
+    <color name="occasio_accent">#E8615D</color>
+    <color name="occasio_accent_text">#C94E4A</color>
+    <color name="occasio_today_bg">#E8615D</color>
+    <color name="occasio_on_today">#FFFFFF</color>
+    <color name="occasio_on_today_soft">#FDF6F2</color>
+    <color name="occasio_rose_soft">#FCE3E8</color>
+    <color name="occasio_rose_deep">#993556</color>
+    <color name="occasio_amber_soft">#FDEBD0</color>
+    <color name="occasio_amber_deep">#854F0B</color>
+</resources>

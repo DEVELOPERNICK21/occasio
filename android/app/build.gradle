@@ -86,10 +86,10 @@ android {
 
     namespace "com.occasio"
     defaultConfig {
-        applicationId "com.occasio"
+        applicationId "com.occasio.greetings"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
+        versionCode 13
         versionName "1.0.1"
     }
     signingConfigs {

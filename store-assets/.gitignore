@@ -1,0 +1,5 @@
+tools/.gen/
+.DS_Store
+# regenerable intermediates (./capture.sh recreates them)
+src/captures/
+src/props/*.png

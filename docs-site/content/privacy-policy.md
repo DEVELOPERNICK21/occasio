@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Occasio collects, uses, and protects your information.
-updated: 2026-09-01
+updated: 2026-10-08
 ---
 
 This Privacy Policy explains how **Occasio** (“we”, “us”, “our”) handles information when you use our mobile app, recipient web pages at shared links, and related services (collectively, the **Service**).
@@ -26,13 +26,14 @@ We collect only what is needed to provide the Service.
 
 | Data | When | Purpose |
 | --- | --- | --- |
-| **Phone number** | When you sign in with SMS | Authentication and account security |
+| **Email address** | When you create an account or sign in with email | Authentication and account security (your password is handled by Firebase Authentication; we never see it) |
 | **Google account info** | When you choose Google sign-in | Authentication (name, email as provided by Google) |
+| **Apple account info** | When you choose Sign in with Apple | Authentication (the name and email, or Apple’s private relay address, that you choose to share) |
 | **Card content** | When you create a card | Photos, recipient name, message, template choice |
 | **Vault entries** | When you save a person | Name, relationship, dates (e.g. birthday), optional WhatsApp or phone |
 | **Support messages** | When you contact us | Respond to your request |
 
-You can create and share cards **without signing in**. In that case we do not collect your phone number or Google account, but we still process the card content needed to generate and host the share link.
+You can create and share cards **without signing in**. In that case we do not collect your email address or sign-in account, but we still process the card content needed to generate and host the share link.
 
 ### 3.2 Information collected automatically
 
@@ -40,6 +41,8 @@ You can create and share cards **without signing in**. In that case we do not co
 | --- | --- |
 | **Device and app info** | OS version, app version, crash logs — to fix bugs and keep the app stable |
 | **Usage events** | Feature usage (e.g. card created, shared) — to improve the product |
+| **Push notification token** | If you allow notifications — so we can tell you when a card is ready to review |
+| **Purchase status** | Whether you have an active subscription or bought a single card, from the App Store or Google Play via RevenueCat — to unlock what you paid for |
 | **IP address and browser info** | When a recipient opens a share link — security, abuse prevention, and delivery |
 
 We do **not** scrape your phone contacts. Vault data is limited to what you manually enter.
@@ -54,7 +57,7 @@ We use collected information to:
 
 - Create, host, and deliver shared greeting cards
 - Authenticate your account and sync your Vault and history across devices
-- Send service-related messages (e.g. sign-in codes)
+- Send service-related messages (e.g. password-reset emails) and the notifications you allow, such as a reminder to review a card
 - Process subscriptions and purchases when you buy a paid plan (via Google Play or Apple App Store)
 - Monitor reliability, prevent abuse, and improve the Service
 - Comply with legal obligations
@@ -67,7 +70,7 @@ We do **not** sell your personal information.
 | --- | --- |
 | **Shared card links (guest)** | Links expire after **30 days**; card media and related server data are deleted after expiry (within a short grace period) |
 | **Shared card links (signed-in free)** | **30 days** by default |
-| **Shared card links (paid)** | Up to **365 days** where a longer retention tier applies |
+| **Shared card links (paid)** | Cards you create in the app expire **30 days** after creation. Cards prepared by the on-their-day feature (Occasio Pro) can last up to **365 days** |
 | **Vault and account data** | Until you delete the person or your account, or ask us to delete it |
 | **Creation history (metadata)** | Until you delete entries or your account |
 | **Logs and analytics** | Typically up to **90 days**, unless needed longer for security or legal reasons |
@@ -82,6 +85,7 @@ We use trusted service providers to run Occasio. They process data only on our i
 | --- | --- |
 | **Google Firebase** | Authentication, database, hosting, crash reporting |
 | **Google / Apple** | Sign-in and in-app purchases (when you use those features) |
+| **RevenueCat** | Subscription and purchase status (it receives your account ID and purchase receipts) |
 | **Vercel** | API and public web hosting for share links |
 | **Google Play / Apple App Store** | Subscription and payment processing (we do not receive your full payment card number) |
 
@@ -99,7 +103,7 @@ Depending on where you live (including under India’s **Digital Personal Data P
 - **Withdraw consent** where processing is based on consent
 - **Complain** to a supervisory authority
 
-**Delete account or specific data:** see **[Delete your account and data](/delete-account)** for step-by-step instructions.
+**Delete your account:** in the app, open the **Account** tab and tap **Delete account and data**. Deletion starts immediately and needs no email or phone call. For other deletion requests, see **[Delete your account and data](/delete-account)**.
 
 **By email:** send requests to **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)**. We will respond within a reasonable time (typically within 30 days).
 

@@ -1,0 +1,98 @@
+{
+ "_note": "Source of truth for every length-limited store field (option lists; * = recommended is index 0). Check with: python3 tools/check-limits.py",
+ "en-US": {
+  "ios": {
+   "name": [
+    "Occasio: Birthday Cards",
+    "Occasio: Birthday Wish Cards",
+    "Occasio: Cards & Reminders"
+   ],
+   "subtitle": [
+    "Remember dates. Send wishes.",
+    "Never forget. Send a surprise.",
+    "Cards they’ll love to open",
+    "Reminders & Surprise Wishes",
+    "Save dates. Send a surprise."
+   ],
+   "keywords": [
+    "reminder,anniversary,greeting,ecard,personalized,surprise,interactive,photo,thank,congrats,widget",
+    "reminder,anniversary,countdown,widget,upcoming,family,mom,dad,partner,friend,love,memory,greeting"
+   ],
+   "promo": [
+    "Make a birthday card they’ll want to open: pop balloons, blow out candles, unwrap a 3D gift. Free to start, and they need no app or account to open it.",
+    "Save the birthdays that matter, then make a card just for them. Your photos, your words, a private link. Free to start, no account needed.",
+    "Make a Mother’s Day card with her photo and your words. She opens a private link, no app needed. Free to start, no account required."
+   ],
+   "description_file": "metadata/en-US/ios-description.txt",
+   "whats_new_1_0": "Welcome to Occasio. Make a birthday or anniversary card from your photos and words, share a private link they can open on any phone, and save the dates of the people who matter."
+  },
+  "play": {
+   "title": [
+    "Occasio: Birthday Wish Cards",
+    "Occasio: Birthday Cards",
+    "Occasio: Cards & Reminders"
+   ],
+   "short": [
+    "Make birthday cards they’ll want to open. Save dates so you never miss one.",
+    "Interactive birthday cards they play, plus a vault to remember every date.",
+    "Pop balloons, blow candles, unwrap a gift. Cards made from your photos.",
+    "Save birthdays once. Send a card they’ll love to open. Free to start.",
+    "Birthday & anniversary cards that feel like a gift. No account to start."
+   ],
+   "description_file": "metadata/en-US/play-full-description.txt",
+   "whats_new_1_0": "Welcome to Occasio. Make a birthday or anniversary card from your photos and words, share a private link, and save the dates of the people who matter."
+  },
+  "iap": {
+   "apple_group": "Occasio Pro",
+   "monthly_name": "Occasio Pro Monthly",
+   "yearly_name": "Occasio Pro Yearly",
+   "single_name": "One Extra Wish",
+   "sub_desc": "Unlimited cards. Save up to 5 people.",
+   "single_desc": "One more card beyond your free monthly card.",
+   "play_sub_name_monthly": "Occasio Pro Monthly",
+   "play_sub_name_yearly": "Occasio Pro Yearly"
+  },
+  "screenshot_headlines": [
+   "Cards they’ll want to open",
+   "Pop. Blow. Unwrap.",
+   "Never miss their day",
+   "Made in a few taps",
+   "Five moments. Five looks.",
+   "A letter that opens in 3D",
+   "Even “No” gets a reaction",
+   "Start free. Upgrade anytime."
+  ]
+ },
+ "hi-IN_OPTIONAL_DRAFT": {
+  "_note": "Draft only. Needs a native-speaker review. The app UI is English-only; ship only if you accept that mismatch or localise the app first.",
+  "ios": {
+   "name": [
+    "Occasio: जन्मदिन कार्ड"
+   ],
+   "subtitle": [
+    "तारीख़ें याद रखें, बधाई भेजें"
+   ],
+   "keywords": [
+    "रिमाइंडर,सालगिरह,बधाई,फोटो,ई-कार्ड"
+   ]
+  },
+  "play": {
+   "title": [
+    "Occasio: जन्मदिन कार्ड"
+   ],
+   "short": [
+    "ऐसे जन्मदिन कार्ड बनाएं जिन्हें खोलने का मन करे। तारीख़ें सेव करें, कभी न भूलें।"
+   ]
+  },
+  "screenshot_headlines": [
+   "खोलने लायक कार्ड",
+   "फोड़ें। बुझाएं। खोलें।",
+   "कोई तारीख़ न छूटे",
+   "बस कुछ टैप में तैयार",
+   "पांच मौके, पांच अंदाज़",
+   "3D में खुलती चिट्ठी",
+   "“नहीं” पर भी रिएक्शन",
+   "मुफ़्त शुरू करें"
+  ]
+ }
+}

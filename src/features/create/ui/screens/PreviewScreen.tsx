@@ -65,8 +65,8 @@ export function PreviewScreen({ navigation }: Props) {
 
     if (!isConfigured) {
       Alert.alert(
-        'Upgrade needed',
-        'Billing is not ready yet. Add your RevenueCat offering (monthly / yearly / one wish) and rebuild.',
+        'Plans unavailable',
+        'We could not load the Occasio Pro plans right now. Check your connection and try again.',
       );
       reset();
       return;
@@ -122,8 +122,8 @@ export function PreviewScreen({ navigation }: Props) {
     if (paywallRequired && !isEditing) {
       if (!isConfigured) {
         Alert.alert(
-          'Upgrade needed',
-          'Billing is not ready yet. Configure RevenueCat products and try again.',
+          'Plans unavailable',
+          'We could not load the Occasio Pro plans right now. Check your connection and try again.',
         );
         return;
       }

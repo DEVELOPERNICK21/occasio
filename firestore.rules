@@ -35,7 +35,12 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.userId
         && exists(/databases/$(database)/documents/creations/$(entryId));
-      allow read, delete: if request.auth != null
+      // Saving to History reads the entry first to decide create vs update. A
+      // missing document has no `resource`, and checking a field on it makes
+      // the rule error and the read is denied, so History never saved anything.
+      allow get: if request.auth != null
+        && (resource == null || request.auth.uid == resource.data.userId);
+      allow list, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
       allow update: if request.auth != null
         && request.auth.uid == resource.data.userId

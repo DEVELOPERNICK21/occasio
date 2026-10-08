@@ -187,7 +187,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
           await refresh();
           trackEvent(AnalyticsEvents.subscribeSuccess, { source: 'paywall', result });
         } else if (result === 'error') {
-          setError('Could not open the paywall. Check your RevenueCat offering.');
+          setError('Could not open the plans right now. Please try again.');
           trackEvent(AnalyticsEvents.subscribeFailed, { source: 'paywall' });
         }
 

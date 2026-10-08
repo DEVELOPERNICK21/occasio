@@ -1,0 +1,30 @@
+Occasio is a greeting-card app. You can review the core flow without an account: Create tab > choose who it is for > choose the moment > add a photo > write a message > Preview > "Create the link" > share. The link opens in any browser; the recipient does not need the app or an account.
+
+SIGN-IN (only needed for the Vault, history and subscriptions)
+Account tab > Continue with Apple, Google or email. Demo account for review:
+  Email: [DEMO EMAIL]
+  Password: [DEMO PASSWORD]
+It already has two fictional people saved so the Vault is not empty.
+
+SUBSCRIPTION AND PURCHASES
+Occasio Pro (monthly, yearly; auto-renewing) and one consumable, "One Extra Wish". Free plan: 1 card per calendar month and 1 saved person. To see the paywall, create a second card in the same month, or Account > See Occasio Pro. Restore Purchases is on the Account tab. Terms: https://occasio-greetings.vercel.app/terms  Privacy: https://occasio-greetings.vercel.app/privacy
+
+WHAT THE RECIPIENT SEES
+Cards are web pages at https://occasio-greetings.vercel.app/c/<code>, for example https://occasio-greetings.vercel.app/c/demo-birthday-maya-1408 (a passcode-locked example uses code 1408). Links are unlisted and one-to-one. The app has no public feed, search, comments or messaging.
+
+USER-GENERATED CONTENT (1.2)
+A card is only visible to people the sender shares its link with. Every card page has a "Report this card" link (bottom right) that emails [SUPPORT EMAIL] with the card reference; reported cards are removed [WITHIN 24 HOURS: OWNER CONFIRM]. The Terms prohibit abusive content. Contact: [SUPPORT EMAIL].
+
+ACCOUNT DELETION (5.1.1(v))
+Account tab > scroll to the bottom > "Delete account and data" > Delete everything. This immediately deletes the account, Vault, history, cards and photos. For Sign in with Apple accounts the app asks you to confirm with Apple once and revokes the Apple token. If you have a subscription, the dialog explains that billing continues until it is cancelled and offers a Manage subscription button.
+
+AUTO-SEND (Occasio Pro)
+In the Vault, a Pro user can arm "auto-send" for a saved person's birthday or anniversary. On that date the app sends a push notification asking the user to review a prepared card; they have a two-hour window to approve or cancel, then the system share sheet opens so they can send the link. [OWNER: confirm this matches production before submitting]
+
+PERMISSIONS
+Camera and Photos: only when adding a photo to a card. Notifications: requested after sign-in, used only to tell the user a prepared card is ready to review. No location, contacts, microphone or tracking.
+
+WIDGETS
+"Next up", "Coming up" and "Make a card" widgets show the saved dates; they need a person saved in the Vault.
+
+Contact: [SUPPORT EMAIL]

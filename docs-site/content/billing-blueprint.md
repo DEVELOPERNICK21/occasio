@@ -26,7 +26,7 @@ Create products in **Google Play Console** and **App Store Connect** first, then
 ## RevenueCat dashboard setup
 
 - [ ] Create RevenueCat project; note **Project ID** (required for Devpost)
-- [ ] Connect **Google Play** app (`com.occasio`) — service account JSON in RevenueCat
+- [ ] Connect **Google Play** app (`com.occasio.greetings`) — service account JSON in RevenueCat
 - [ ] Connect **App Store** app — App Store Connect API key in RevenueCat
 - [ ] Define entitlements: `personal`, `family` (and `single_card` if one-off ships)
 - [ ] Map offerings / packages (monthly + annual per tier)

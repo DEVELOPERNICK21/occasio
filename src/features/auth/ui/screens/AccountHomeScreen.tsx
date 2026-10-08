@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { useRef } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useScrollToTop } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FLOATING_TAB_BAR_HEIGHT } from '../../../../shared/navigation/tabBarConstants';
@@ -50,9 +50,8 @@ export function AccountHomeScreen({
   useScrollToTop(scrollRef);
 
   const insets = useSafeAreaInsets();
-  const [momentAlerts, setMomentAlerts] = useState(true);
-  const [planUpdates, setPlanUpdates] = useState(true);
-  const [marketInsights, setMarketInsights] = useState(false);
+  const storeName = Platform.OS === 'ios' ? 'the App Store' : 'Google Play';
+  const hasSubscription = hasPro || tier !== 'free';
 
   const handleManagePlan = () => {
     if (onManagePlan) {
@@ -63,7 +62,7 @@ export function AccountHomeScreen({
     Alert.alert(
       hasPro || tier !== 'free' ? 'Your plan' : 'Upgrade',
       hasPro || tier !== 'free'
-        ? 'Manage or cancel your subscription in the store.'
+        ? `Manage or cancel your subscription in ${storeName}.`
         : 'Open Create and generate a link to see Occasio Pro plans.',
     );
   };
@@ -72,11 +71,19 @@ export function AccountHomeScreen({
     if (!onDeleteAccount) {
       return;
     }
+    // Deleting the account does not stop store billing, so say so before the
+    // user continues (App Review asks for this) and offer the way out.
+    const billingNote = hasSubscription
+      ? ` Your subscription is billed by ${storeName} and keeps renewing until you cancel it there, so cancel it first.`
+      : '';
     Alert.alert(
       'Delete your account?',
-      'This permanently removes your Vault, history, shared card links and photos. It cannot be undone. If you subscribed, cancel your plan in the App Store or Google Play as well — deleting your account does not cancel it.',
+      `This permanently removes your Vault, history, shared card links and photos. It cannot be undone.${billingNote}`,
       [
         { text: 'Keep my account', style: 'cancel' },
+        ...(hasSubscription
+          ? [{ text: 'Manage subscription', onPress: handleManagePlan }]
+          : []),
         {
           text: 'Delete everything',
           style: 'destructive',
@@ -122,14 +129,7 @@ export function AccountHomeScreen({
           isRestoring={isRestoring}
         />
 
-        <AccountNotificationsCard
-          momentAlerts={momentAlerts}
-          planUpdates={planUpdates}
-          marketInsights={marketInsights}
-          onMomentAlertsChange={setMomentAlerts}
-          onPlanUpdatesChange={setPlanUpdates}
-          onMarketInsightsChange={setMarketInsights}
-        />
+        <AccountNotificationsCard />
 
         <AccountPrivacyCard />
         <AccountHelpCard />

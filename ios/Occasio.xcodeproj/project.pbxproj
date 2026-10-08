@@ -9,26 +9,74 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2A99B7FF1DA6C9C906BC0FDC /* Pods_Occasio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A81B7EE775A97CCB073898E /* Pods_Occasio.framework */; };
+		33F5D614B5AABE5AAA52061C /* WidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF99973AB5C15A45F25A5DB /* WidgetProvider.swift */; };
+		383E520C6A0218E1C38BC54F /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52C06BCB246272E17EA546C5 /* WidgetViews.swift */; };
+		41E6FCF2F3F1935846CC3D9C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 373B8815A5E8CFB2555B29AC /* SwiftUI.framework */; };
+		5A361B3B96A62B780AA9DE24 /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3D869C447942FADB587161 /* WidgetTheme.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		82F1E822C8C1691D5BFC4E5E /* WidgetModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10215D60E4E29B41ACE7C01 /* WidgetModels.swift */; };
 		A8FD38F243D5BD53EF69BF08 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		B2F1A0012CA45674006654EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2F1A0002CA45674006654EE /* GoogleService-Info.plist */; };
+		CAA18DA44BD080FBCC921F7E /* OccasioWidgetsBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4969C449C442B2762EAD4ED1 /* OccasioWidgetsBridge.swift */; };
+		DAA28137A094AEB75ED99103 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8EA8135F4889B441894EAB2 /* Foundation.framework */; };
+		EE6FF9482F0D0E7E87197E85 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87B0E4FBD04A35374D8C5C41 /* WidgetKit.framework */; };
+		EEF989D36ADF95075F5C18A3 /* OccasioWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 535A709FFAC21299E32DACE1 /* OccasioWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
 		F1X3D0C572CA45674006654EE /* FixedContentSizeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1X3D0C562CA45674006654EE /* FixedContentSizeWindow.swift */; };
+		F6C1BFFCE1C38C3AC34D59CC /* OccasioWidgetsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = EA86EBBF224E7BA8E8E78A88 /* OccasioWidgetsBridge.m */; };
+		F866DC452C74595AE2ABCF38 /* OccasioWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC69648E6B86F2E5CDDDD7A /* OccasioWidgets.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		70B3D4AAC9F021398D402F0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A6B5869429A996D4C68DD0F;
+			remoteInfo = OccasioWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A61D9F9CD36577E91E648233 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EEF989D36ADF95075F5C18A3 /* OccasioWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* Occasio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Occasio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Occasio/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Occasio/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Occasio/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2AC69648E6B86F2E5CDDDD7A /* OccasioWidgets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OccasioWidgets.swift; sourceTree = "<group>"; };
+		373B8815A5E8CFB2555B29AC /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		3B4392A12AC88292D35C810B /* Pods-Occasio.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Occasio.debug.xcconfig"; path = "Target Support Files/Pods-Occasio/Pods-Occasio.debug.xcconfig"; sourceTree = "<group>"; };
+		4969C449C442B2762EAD4ED1 /* OccasioWidgetsBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Occasio/OccasioWidgetsBridge.swift; sourceTree = "<group>"; };
+		52C06BCB246272E17EA546C5 /* WidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
+		535A709FFAC21299E32DACE1 /* OccasioWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OccasioWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5709B34CF0A7D63546082F79 /* Pods-Occasio.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Occasio.release.xcconfig"; path = "Target Support Files/Pods-Occasio/Pods-Occasio.release.xcconfig"; sourceTree = "<group>"; };
+		576B13F5CFA20279D716540B /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5AF99973AB5C15A45F25A5DB /* WidgetProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetProvider.swift; sourceTree = "<group>"; };
 		6A81B7EE775A97CCB073898E /* Pods_Occasio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Occasio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Occasio/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Occasio/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		87B0E4FBD04A35374D8C5C41 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
+		932442F52CF84EC999C11542 /* OccasioWidgets.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = OccasioWidgets.entitlements; sourceTree = "<group>"; };
+		A10215D60E4E29B41ACE7C01 /* WidgetModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetModels.swift; sourceTree = "<group>"; };
 		B2F1A0002CA45674006654EE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Occasio/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		DB3D869C447942FADB587161 /* WidgetTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTheme.swift; sourceTree = "<group>"; };
+		EA86EBBF224E7BA8E8E78A88 /* OccasioWidgetsBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = Occasio/OccasioWidgetsBridge.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F1X3D0C562CA45674006654EE /* FixedContentSizeWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FixedContentSizeWindow.swift; path = Occasio/FixedContentSizeWindow.swift; sourceTree = "<group>"; };
+		F8EA8135F4889B441894EAB2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +85,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A99B7FF1DA6C9C906BC0FDC /* Pods_Occasio.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9AEE0FC43193C58D086A54A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DAA28137A094AEB75ED99103 /* Foundation.framework in Frameworks */,
+				EE6FF9482F0D0E7E87197E85 /* WidgetKit.framework in Frameworks */,
+				41E6FCF2F3F1935846CC3D9C /* SwiftUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +111,8 @@
 				B2F1A0002CA45674006654EE /* GoogleService-Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				4969C449C442B2762EAD4ED1 /* OccasioWidgetsBridge.swift */,
+				EA86EBBF224E7BA8E8E78A88 /* OccasioWidgetsBridge.m */,
 			);
 			name = Occasio;
 			sourceTree = "<group>";
@@ -62,6 +122,7 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				6A81B7EE775A97CCB073898E /* Pods_Occasio.framework */,
+				C460E28359E656A391964388 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -81,6 +142,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				F7B29FADA8D810A784CA01C7 /* OccasioWidgets */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -91,6 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* Occasio.app */,
+				535A709FFAC21299E32DACE1 /* OccasioWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,6 +167,31 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		C460E28359E656A391964388 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				F8EA8135F4889B441894EAB2 /* Foundation.framework */,
+				87B0E4FBD04A35374D8C5C41 /* WidgetKit.framework */,
+				373B8815A5E8CFB2555B29AC /* SwiftUI.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		F7B29FADA8D810A784CA01C7 /* OccasioWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				2AC69648E6B86F2E5CDDDD7A /* OccasioWidgets.swift */,
+				A10215D60E4E29B41ACE7C01 /* WidgetModels.swift */,
+				5AF99973AB5C15A45F25A5DB /* WidgetProvider.swift */,
+				DB3D869C447942FADB587161 /* WidgetTheme.swift */,
+				52C06BCB246272E17EA546C5 /* WidgetViews.swift */,
+				576B13F5CFA20279D716540B /* Info.plist */,
+				932442F52CF84EC999C11542 /* OccasioWidgets.entitlements */,
+			);
+			name = OccasioWidgets;
+			path = OccasioWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -115,6 +203,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				A61D9F9CD36577E91E648233 /* Embed Foundation Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
@@ -123,11 +212,29 @@
 			buildRules = (
 			);
 			dependencies = (
+				198B633A02BE5FE34B82504F /* PBXTargetDependency */,
 			);
 			name = Occasio;
 			productName = Occasio;
 			productReference = 13B07F961A680F5B00A75B9A /* Occasio.app */;
 			productType = "com.apple.product-type.application";
+		};
+		5A6B5869429A996D4C68DD0F /* OccasioWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC9729A0FEAD344D57DEC33C /* Build configuration list for PBXNativeTarget "OccasioWidgets" */;
+			buildPhases = (
+				C1716B58F0D1D912D3FB5E2E /* Sources */,
+				B9AEE0FC43193C58D086A54A /* Frameworks */,
+				A6B0AEE3767BA4CFBB95855E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OccasioWidgets;
+			productName = OccasioWidgets;
+			productReference = 535A709FFAC21299E32DACE1 /* OccasioWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -156,6 +263,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* Occasio */,
+				5A6B5869429A996D4C68DD0F /* OccasioWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -169,6 +277,13 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				A8FD38F243D5BD53EF69BF08 /* PrivacyInfo.xcprivacy in Resources */,
 				B2F1A0012CA45674006654EE /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A6B0AEE3767BA4CFBB95855E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,10 +384,33 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				F1X3D0C572CA45674006654EE /* FixedContentSizeWindow.swift in Sources */,
+				CAA18DA44BD080FBCC921F7E /* OccasioWidgetsBridge.swift in Sources */,
+				F6C1BFFCE1C38C3AC34D59CC /* OccasioWidgetsBridge.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1716B58F0D1D912D3FB5E2E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F866DC452C74595AE2ABCF38 /* OccasioWidgets.swift in Sources */,
+				82F1E822C8C1691D5BFC4E5E /* WidgetModels.swift in Sources */,
+				33F5D614B5AABE5AAA52061C /* WidgetProvider.swift in Sources */,
+				5A361B3B96A62B780AA9DE24 /* WidgetTheme.swift in Sources */,
+				383E520C6A0218E1C38BC54F /* WidgetViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		198B633A02BE5FE34B82504F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OccasioWidgets;
+			target = 5A6B5869429A996D4C68DD0F /* OccasioWidgets */;
+			targetProxy = 70B3D4AAC9F021398D402F0F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -336,6 +474,65 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
+		};
+		52F5F9424291AE55064D0342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = OccasioWidgets/OccasioWidgets.entitlements;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = JY9B33N72P;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OccasioWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.occasio.ios.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		816124BEEE298D2C2F9BB66E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = OccasioWidgets/OccasioWidgets.entitlements;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = JY9B33N72P;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OccasioWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.occasio.ios.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -542,6 +739,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC9729A0FEAD344D57DEC33C /* Build configuration list for PBXNativeTarget "OccasioWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				52F5F9424291AE55064D0342 /* Release */,
+				816124BEEE298D2C2F9BB66E /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

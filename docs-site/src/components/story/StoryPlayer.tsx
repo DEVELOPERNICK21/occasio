@@ -14,6 +14,7 @@ import { GiftScene } from '@/components/story/GiftScene';
 import { HubScene } from '@/components/story/HubScene';
 import { LampScene } from '@/components/story/LampScene';
 import { JoyHud, JoyProvider, useJoy } from '@/components/story/fx/JoyProvider';
+import { ReportCardLink } from '@/components/ReportCardLink';
 import { MomentBackdrop } from '@/components/story/fx/MomentBackdrop';
 import { trackCardEvent } from '@/lib/cardEvents';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
@@ -52,6 +53,7 @@ function ClassicFallback({ card, slug }: Props) {
           </Link>
         </div>
       </div>
+      <ReportCardLink slug={slug} />
     </div>
   );
 }
@@ -224,6 +226,7 @@ function StoryStage({ card, slug }: Props) {
           </button>
         ) : null}
       </div>
+      <ReportCardLink slug={slug} />
     </div>
   );
 }

@@ -117,7 +117,9 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
 
   try {
     const ref = firestore().collection('user_creations').doc(input.creationId);
-    const existing = await ref.get();
+    // Only used to decide create vs update. If the read is refused (older
+    // deployed rules), treat the entry as new instead of losing it.
+    const existing = await ref.get().catch(() => null);
     const payload: Record<string, unknown> = {
       userId: uid,
       creationId: input.creationId,
@@ -128,13 +130,16 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
       message: input.message,
       expiresAt: firestore.Timestamp.fromDate(new Date(input.expiresAt)),
     };
-    if (!existing.exists) {
+    if (!existing?.exists) {
       payload.createdAt = firestore.FieldValue.serverTimestamp();
     } else {
       payload.updatedAt = firestore.FieldValue.serverTimestamp();
     }
     await ref.set(payload, { merge: true });
-  } catch {
+  } catch (error) {
+    if (__DEV__) {
+      console.warn('[history] could not save entry', error);
+    }
     throw new HistoryError('NETWORK', 'Could not save to history.');
   }
 }

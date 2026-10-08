@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
+import { DateField } from '../../../../shared/ui/DateField';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultStackParamList } from '../../../../shared/navigation/types';
@@ -20,10 +21,7 @@ import { useSavePerson } from '../../application/useSavePerson';
 import { parseBirthdayInput } from '../../domain/personRules';
 import { EMPTY_PERSON_DRAFT, type PersonDraft } from '../../domain/types';
 import { AddPersonAutoSendCard } from '../components/AddPersonAutoSendCard';
-import {
-  AddPersonNameField,
-  BirthdayDateField,
-} from '../components/AddPersonFormFields';
+import { AddPersonNameField } from '../components/AddPersonFormFields';
 import { AddPersonHero } from '../components/AddPersonHero';
 import { AddPersonDivider, AddPersonSection } from '../components/AddPersonSection';
 import { RelationshipChipGrid } from '../components/RelationshipChipGrid';
@@ -175,16 +173,20 @@ export function AddPersonScreen({ navigation, route }: Props) {
           <AddPersonDivider />
 
           <AddPersonSection label="Birthday">
-            <BirthdayDateField
+            <DateField
               value={birthdayInput}
               onChangeText={handleBirthdayChange}
+              placeholder="Pick birthday"
+              maximumDate={new Date()}
             />
           </AddPersonSection>
 
           <AddPersonSection label="Anniversary">
-            <BirthdayDateField
+            <DateField
               value={anniversaryInput}
               onChangeText={handleAnniversaryChange}
+              placeholder="Pick anniversary"
+              maximumDate={new Date()}
             />
           </AddPersonSection>
 

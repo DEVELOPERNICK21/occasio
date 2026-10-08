@@ -67,7 +67,7 @@ Google **re-signs** your AAB with the **App signing key**. That certificate has 
 
 1. **Play Console** → Occasio → **Test and release** → **App integrity**
 2. Under **App signing key certificate**, copy **SHA-1**
-3. **Firebase Console** → Project settings → Android app (`com.occasio`) → **Add fingerprint** (paste SHA-1)
+3. **Firebase Console** → Project settings → Android app (`com.occasio.greetings`) → **Add fingerprint** (paste SHA-1)
 4. Re-download **`google-services.json`** → replace `android/app/google-services.json`
 5. **Bump `versionCode`** in `android/app/build.gradle`, rebuild AAB, upload new release to Play
 6. Install the **new** build from Play (old installs keep the old config)

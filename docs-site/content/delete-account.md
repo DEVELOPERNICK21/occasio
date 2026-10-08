@@ -1,7 +1,7 @@
 ---
 title: Delete your account and data
 description: How to request deletion of your Occasio account or specific data.
-updated: 2026-09-01
+updated: 2026-10-08
 ---
 
 This page explains how to delete your **Occasio** account and associated data, or request deletion of specific information without closing your account.
@@ -10,18 +10,22 @@ For how we collect and use data, see our [Privacy Policy](/privacy).
 
 ## 1. Delete your full Occasio account
 
-If you signed in with **Google** or **email and password**, you can request permanent deletion of your account and the data linked to it.
+### In the app (immediate)
 
-### Steps
+1. Open **Occasio** and go to the **Account** tab.
+2. Scroll to the bottom and tap **Delete account and data**.
+3. Read the confirmation and tap **Delete everything**.
+4. If you signed in with **Apple**, you will be asked to confirm with Apple once, so we can disconnect Occasio from your Apple ID.
 
-1. Open the **Occasio** app on your device (optional but helps us match your request).
-2. Note the **email address** tied to your account (the one you used to sign in).
-3. Email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from that same email address.
-4. Use the subject line: **Delete my Occasio account**.
-5. In the message, confirm you want your account and associated data permanently deleted.
-6. We will verify the request and complete deletion within **30 days**. We may reply once to confirm ownership before deleting.
+Deletion starts straight away. You do not need to email us, call anyone or wait for approval.
 
-If you signed in with Google, you can also revoke Occasio’s access in your [Google Account permissions](https://myaccount.google.com/permissions) after we confirm deletion.
+**Subscriptions:** deleting your account does **not** cancel a subscription. Cancel it first in your App Store or Google Play subscription settings (the app can open them for you); otherwise billing continues.
+
+### If you cannot open the app
+
+If you cannot sign in, email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from the email address tied to your account with the subject **Delete my Occasio account**. We may reply once to confirm ownership and will complete deletion within **30 days**.
+
+If you signed in with Google, you can also revoke Occasio’s access in your [Google Account permissions](https://myaccount.google.com/permissions). If you signed in with Apple, you can stop using Apple ID with Occasio in **Settings → [your name] → Sign-In & Security → Sign in with Apple**.
 
 ### What we delete
 
@@ -29,18 +33,20 @@ When your account is deleted, we remove:
 
 | Data | Deleted |
 | --- | --- |
-| Your Firebase authentication account | Yes |
+| Your sign-in account (Firebase Authentication) | Yes |
 | **Vault** entries (names, dates, contacts you saved) | Yes |
-| **Creation history** (metadata of cards you created while signed in) | Yes |
-| Account profile linked to your user ID | Yes |
+| **Scheduled sends** and **creation history** | Yes |
+| **Cards you created while signed in**, including their photos. Their share links stop working immediately | Yes |
+| Account profile and notification tokens linked to your user ID | Yes |
+| Your Sign in with Apple authorization (revoked with Apple) | Yes |
 
 ### What we may keep or what expires separately
 
 | Data | What happens |
 | --- | --- |
-| **Shared card links** you already sent | Remain available until their **expiry date** (typically **30 days** for guest and free-tier links), then card media and related server data are deleted |
+| **Cards created as a guest** (not tied to an account) | Remain available until their **expiry date** (30 days after creation), then card media and related server data are deleted |
 | **Logs and analytics** | May be retained in anonymized or aggregated form for up to **90 days** for security and reliability |
-| **Legal or billing records** | Retained only where required by law (for example, tax or fraud prevention) |
+| **Purchase and billing records** | Held by Apple or Google, and by us only where required by law (for example, tax or fraud prevention) |
 
 After account deletion, you will not be able to sign in again with the same account or recover Vault or history data.
 

@@ -22,7 +22,7 @@ export function memberSinceLabel(createdAt: string | null): string {
 }
 
 export function profileBio(_user: AuthUser): string {
-  return "Curating life's most exquisite moments with precision and elegance. Your legacy, beautifully managed.";
+  return 'Your cards, dates and the people you care about, in one place.';
 }
 
 export function profileInitials(user: AuthUser): string {
@@ -36,7 +36,7 @@ export function profileInitials(user: AuthUser): string {
 export function subscriptionStatusCopy(tier: SubscriptionTier): string {
   switch (tier) {
     case 'personal':
-      return 'You have Occasio Pro — unlimited cards, Vault for up to 5 people, and year-long links.';
+      return 'You have Occasio Pro — unlimited cards and a Vault for up to 5 people.';
     case 'family':
       return 'You have Family — Vault for up to 15 people.';
     default:

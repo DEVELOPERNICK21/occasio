@@ -330,6 +330,59 @@ export async function signOut(): Promise<void> {
   }
 }
 
+function currentUserUsesApple(): boolean {
+  return (
+    auth().currentUser?.providerData.some((p) => p.providerId === 'apple.com') ?? false
+  );
+}
+
+/**
+ * Apple requires apps that offer Sign in with Apple to revoke the user's Apple
+ * token when the account is deleted (App Review 5.1.1(v)). Apple only issues a
+ * revocable authorization code on a fresh Apple sign-in, so this asks the user
+ * to confirm with Apple, then hands the code to Firebase to revoke. It has to
+ * run before the server deletes the Firebase user.
+ */
+async function revokeAppleSignIn(): Promise<void> {
+  if (!currentUserUsesApple()) {
+    return;
+  }
+
+  let authorizationCode: string | null = null;
+  try {
+    const response = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [],
+    });
+    authorizationCode = response.authorizationCode;
+  } catch (error) {
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : '';
+    if (code === appleAuth.Error.CANCELED) {
+      throw new AuthError(
+        'CANCELLED',
+        'Confirm with Apple to finish deleting your account.',
+      );
+    }
+    throw new AuthError('UNKNOWN', 'Could not confirm with Apple. Try again.');
+  }
+
+  if (!authorizationCode) {
+    throw new AuthError('UNKNOWN', 'Could not confirm with Apple. Try again.');
+  }
+
+  try {
+    await auth().revokeToken(authorizationCode);
+  } catch {
+    throw new AuthError(
+      'UNKNOWN',
+      'Could not disconnect your Apple ID right now. Check your connection and try again.',
+    );
+  }
+}
+
 /**
  * Permanently delete the account and everything tied to it (Vault, history,
  * shared links, photos). The server does the deletion; we only sign out locally.
@@ -340,6 +393,8 @@ export async function deleteAccount(): Promise<void> {
     notifyMockListeners();
     return;
   }
+
+  await revokeAppleSignIn();
 
   const token = await auth().currentUser?.getIdToken();
   if (!token) {

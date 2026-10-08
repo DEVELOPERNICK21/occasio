@@ -4609,3 +4609,23 @@ body {
 @keyframes mbd-spin {
   to { transform: rotate(360deg); }
 }
+
+
+/* Recipient-side reporting (App Store guideline 1.2): always reachable, never in the way. */
+.report-card-link {
+  position: fixed;
+  right: 10px;
+  bottom: max(6px, env(safe-area-inset-bottom));
+  z-index: 40;
+  padding: 0.45rem 0.7rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  opacity: 0.85;
+}
+.report-card-link:hover,
+.report-card-link:focus-visible {
+  opacity: 1;
+}

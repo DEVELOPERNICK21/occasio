@@ -1,0 +1,127 @@
+{
+ "gate": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "gate-no1": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "gate-no2": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "balloons": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "candle": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "candle-cut": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "gift": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "gift-open": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "hub": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "photos": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "reasons": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbdbca"
+ ],
+ "letter-sealed": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "letter-opening": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "letter-open": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "message": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "finale": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "sticker": [
+  "#fbc7ce",
+  "#fbe2dd",
+  "#fbe3b8"
+ ],
+ "anniversary-gate": [
+  "#fbc9d4",
+  "#fbe5e8",
+  "#fbe6d8"
+ ],
+ "thank_you-gate": [
+  "#fbf2e1",
+  "#fbeed4",
+  "#fbe1a7"
+ ],
+ "congratulations-gate": [
+  "#d7dce9",
+  "#f1ede1",
+  "#fbe8b5"
+ ],
+ "just_because-gate": [
+  "#f6bdd1",
+  "#f1ebf9",
+  "#f1ebf9"
+ ],
+ "anniversary-gift": [
+  "#fbc9d4",
+  "#fbe5e8",
+  "#fbe6d8"
+ ],
+ "thank_you-gift": [
+  "#fbf2e1",
+  "#fbeed4",
+  "#fbe1a7"
+ ],
+ "congratulations-gift": [
+  "#d7dce9",
+  "#f1ede1",
+  "#fbe8b5"
+ ],
+ "just_because-gift": [
+  "#f6bdd1",
+  "#f1ebf9",
+  "#f1ebf9"
+ ]
+}

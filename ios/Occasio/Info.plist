@@ -33,14 +33,24 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>Occasio needs camera access so you can take photos for greeting cards.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Occasio needs access to your photos so you can add them to greeting cards.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.occasio.ios.widgets</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>occasio</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>

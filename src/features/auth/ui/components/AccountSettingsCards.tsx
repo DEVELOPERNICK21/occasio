@@ -1,4 +1,4 @@
-import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { env } from '../../../../shared/config/env';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -8,7 +8,6 @@ import {
   subscriptionPaymentLabel,
   subscriptionStatusCopy,
 } from '../../domain/accountProfile';
-import { AccountToggle } from './AccountToggle';
 
 type SubscriptionProps = {
   tier: SubscriptionTier;
@@ -75,118 +74,98 @@ export function AccountSubscriptionCard({
   );
 }
 
-type ToggleRowProps = {
-  label: string;
-  value: boolean;
-  onValueChange: (next: boolean) => void;
-};
-
-function ToggleRow({ label, value, onValueChange }: ToggleRowProps) {
-  return (
-    <View style={styles.toggleRow}>
-      <Text style={styles.toggleLabel}>{label}</Text>
-      <AccountToggle value={value} onValueChange={onValueChange} />
-    </View>
-  );
-}
-
-type NotificationsProps = {
-  momentAlerts: boolean;
-  planUpdates: boolean;
-  marketInsights: boolean;
-  onMomentAlertsChange: (next: boolean) => void;
-  onPlanUpdatesChange: (next: boolean) => void;
-  onMarketInsightsChange: (next: boolean) => void;
-};
-
-export function AccountNotificationsCard({
-  momentAlerts,
-  planUpdates,
-  marketInsights,
-  onMomentAlertsChange,
-  onPlanUpdatesChange,
-  onMarketInsightsChange,
-}: NotificationsProps) {
+/**
+ * Notification delivery is controlled by the OS permission, not by in-app
+ * switches, so this card says that instead of showing controls that do nothing.
+ */
+export function AccountNotificationsCard() {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardIcon}>🔔</Text>
         <Text style={styles.cardTitle}>Notifications</Text>
       </View>
-      <ToggleRow label="Moment Alerts" value={momentAlerts} onValueChange={onMomentAlertsChange} />
-      <ToggleRow label="Plan Updates" value={planUpdates} onValueChange={onPlanUpdatesChange} />
-      <ToggleRow
-        label="Market Insights"
-        value={marketInsights}
-        onValueChange={onMarketInsightsChange}
-      />
-      <Pressable accessibilityRole="button" onPress={() => Alert.alert('Notification settings', 'Fine-grained controls are coming soon.')}>
-        <Text style={styles.link}>Notification Settings →</Text>
+      <Text style={styles.body}>
+        Occasio can notify you when a card you saved for someone is ready to review. Turn
+        notifications on or off for Occasio in your phone settings.
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          void Linking.openSettings();
+        }}
+      >
+        <Text style={styles.link}>Open phone settings →</Text>
       </Pressable>
     </View>
   );
 }
 
-export function AccountPrivacyCard() {
-  const openPrivacy = () => {
-    void Linking.openURL(`${env.shareBaseUrl}/privacy`);
-  };
+const SUPPORT_EMAIL = 'develoepernick1@gmail.com';
 
+export function AccountPrivacyCard() {
   return (
-    <Pressable accessibilityRole="button" onPress={openPrivacy} style={styles.card}>
-      <View style={styles.cardHeaderRow}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardIcon}>🛡</Text>
-          <Text style={styles.cardTitle}>Privacy</Text>
-        </View>
-        <Text style={styles.chevron}>›</Text>
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardIcon}>🛡</Text>
+        <Text style={styles.cardTitle}>Privacy and terms</Text>
       </View>
       <Text style={styles.body}>
-        Manage how your data is used and how you appear to other members of the
-        Occasio circle.
+        See what Occasio collects, how long it is kept, and how to delete it.
       </Text>
-      <View style={styles.badges}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeLabel}>STATUS</Text>
-          <Text style={styles.badgeValue}>Private</Text>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeLabel}>ENCRYPTION</Text>
-          <Text style={styles.badgeValue}>Enabled</Text>
-        </View>
+      <View style={styles.helpActions}>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            void Linking.openURL(`${env.shareBaseUrl}/privacy`);
+          }}
+          style={styles.helpButton}
+        >
+          <Text style={styles.helpButtonLabel}>Privacy Policy</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            void Linking.openURL(`${env.shareBaseUrl}/terms`);
+          }}
+          style={styles.helpButton}
+        >
+          <Text style={styles.helpButtonLabel}>Terms of Service</Text>
+        </Pressable>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
 export function AccountHelpCard() {
-  const openHelp = () => {
-    void Linking.openURL(`${env.shareBaseUrl}/privacy`);
-  };
-
   return (
     <View style={styles.card}>
-      <Pressable accessibilityRole="button" onPress={openHelp} style={styles.cardHeaderRow}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardIcon}>?</Text>
-          <Text style={styles.cardTitle}>Help & Support</Text>
-        </View>
-        <Text style={styles.chevron}>›</Text>
-      </Pressable>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardIcon}>?</Text>
+        <Text style={styles.cardTitle}>Help and support</Text>
+      </View>
       <Text style={styles.body}>
-        Our dedicated concierge team is available 24/7 to assist with your
-        milestones and account needs.
+        Something not working, or a question about your card or plan? Email us and we will
+        reply.
       </Text>
       <View style={styles.helpActions}>
         <Pressable
           accessibilityRole="button"
-          onPress={() => Linking.openURL('mailto:develoepernick1@gmail.com')}
+          onPress={() => {
+            void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+          }}
           style={styles.helpButton}
         >
-          <Text style={styles.helpButtonLabel}>Chat Now</Text>
+          <Text style={styles.helpButtonLabel}>Email support</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={openHelp} style={styles.helpButton}>
-          <Text style={styles.helpButtonLabel}>Help Center</Text>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            void Linking.openURL(`${env.shareBaseUrl}/delete-account`);
+          }}
+          style={styles.helpButton}
+        >
+          <Text style={styles.helpButtonLabel}>Delete my data</Text>
         </Pressable>
       </View>
     </View>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { CardReaction } from '@/components/CardReaction';
 import { OccasionStickerShower } from '@/components/OccasionStickerShower';
+import { ReportCardLink } from '@/components/ReportCardLink';
 import { WishCard } from '@/components/WishCard';
 import { StoryPlayer } from '@/components/story/StoryPlayer';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
@@ -54,6 +55,7 @@ export function RecipientCardView({ card, slug }: Props) {
           </Link>
         </div>
       </div>
+      <ReportCardLink slug={slug} />
     </div>
   );
 }

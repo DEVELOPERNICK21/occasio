@@ -1,0 +1,17 @@
+{
+  "_note": "Source of truth for every length-limited store field. Run: python3 ../tools/check-listing.py",
+  "en-US": {
+    "title": "Occasio",
+    "play_short": "Never miss a birthday. Send interactive cards they'll love to open.",
+    "ios_subtitle": "Reminders & Surprise Greetings",
+    "ios_promo": "Send a card they'll want to open: pop balloons, blow out the candles, unwrap a 3D gift, read your letter. Save the people you love and never miss a date.",
+    "ios_keywords": "anniversary,thanks,congrats,photo,ecard,interactive,vault,remember,gift,love,family,mom,dad,partner"
+  },
+  "hi-IN": {
+    "title": "Occasio: जन्मदिन कार्ड व बधाई",
+    "play_short": "कोई जन्मदिन न भूलें। ऐसे कार्ड भेजें जिन्हें खोलना हर किसी को अच्छा लगे।",
+    "ios_subtitle": "रिमाइंडर और सरप्राइज़ कार्ड",
+    "ios_promo": "ऐसा कार्ड भेजें जिसे वे खोलना चाहें: गुब्बारे फोड़ें, मोमबत्तियां बुझाएं, 3D तोहफ़ा खोलें और आपकी चिट्ठी पढ़ें। अपनों को सेव करें, कोई तारीख़ न भूलें।",
+    "ios_keywords": "सालगिरह,धन्यवाद,बधाई,फोटो,ई-कार्ड,शुभकामना,जन्मदिन,रिमाइंडर,मम्मी,पापा,दोस्त,परिवार,तोहफ़ा"
+  }
+}

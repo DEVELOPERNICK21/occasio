@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="occasio_card">#2A2220</color>
+    <color name="occasio_card_border">#4D4340</color>
+    <color name="occasio_ink">#FDF6F2</color>
+    <color name="occasio_ink_soft">#EDD5CA</color>
+    <color name="occasio_muted">#B8A9A5</color>
+    <color name="occasio_accent">#F08A86</color>
+    <color name="occasio_accent_text">#F2918D</color>
+    <color name="occasio_today_bg">#D9534F</color>
+    <color name="occasio_rose_soft">#5A3340</color>
+    <color name="occasio_rose_deep">#F4C0D1</color>
+    <color name="occasio_amber_soft">#4A3A20</color>
+    <color name="occasio_amber_deep">#FAC775</color>
+</resources>
