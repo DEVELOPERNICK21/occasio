@@ -39,7 +39,8 @@ export function formatPackSummary(
 }
 
 export type PersonNextOccasion = {
-  icon: string;
+  /** Which occasion is next; the UI picks the icon. 'none' when no date is saved. */
+  kind: 'birthday' | 'anniversary' | 'none';
   headline: string;
   hasDate: boolean;
 };
@@ -52,14 +53,12 @@ function formatCountdown(daysUntil: number): string {
 
 type OccasionCandidate = {
   kind: 'birthday' | 'anniversary';
-  icon: string;
   label: string;
   daysUntil: number;
 };
 
 function nextOccasionCandidate(
   kind: 'birthday' | 'anniversary',
-  icon: string,
   label: string,
   date: VaultPerson['birthday'],
   now: Date,
@@ -67,7 +66,6 @@ function nextOccasionCandidate(
   if (!date) return null;
   return {
     kind,
-    icon,
     label,
     daysUntil: daysUntilPersonDate(date, now),
   };
@@ -78,10 +76,9 @@ export function getPersonNextOccasion(
   now = new Date(),
 ): PersonNextOccasion {
   const candidates = [
-    nextOccasionCandidate('birthday', '🎂', 'Birthday', person.birthday, now),
+    nextOccasionCandidate('birthday', 'Birthday', person.birthday, now),
     nextOccasionCandidate(
       'anniversary',
-      '💍',
       'Anniversary',
       person.anniversary,
       now,
@@ -90,7 +87,7 @@ export function getPersonNextOccasion(
 
   if (candidates.length === 0) {
     return {
-      icon: '📅',
+      kind: 'none',
       headline: 'Add a birthday to track',
       hasDate: false,
     };
@@ -101,7 +98,7 @@ export function getPersonNextOccasion(
   );
 
   return {
-    icon: nearest.icon,
+    kind: nearest.kind,
     headline: `${nearest.label} ${formatCountdown(nearest.daysUntil)}`,
     hasDate: true,
   };

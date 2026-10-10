@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { subscribeVaultPeople } from '../data/relationshipRepository';
 import type { VaultPerson } from '../domain/types';
 
@@ -16,6 +16,9 @@ const initialState: State = {
 
 export function useVaultPeople(enabled: boolean) {
   const [state, setState] = useState<State>(initialState);
+  const [attempt, setAttempt] = useState(0);
+
+  const reload = useCallback(() => setAttempt((current) => current + 1), []);
 
   useEffect(() => {
     if (!enabled) {
@@ -47,7 +50,7 @@ export function useVaultPeople(enabled: boolean) {
       });
       return undefined;
     }
-  }, [enabled]);
+  }, [enabled, attempt]);
 
-  return state;
+  return { ...state, reload };
 }

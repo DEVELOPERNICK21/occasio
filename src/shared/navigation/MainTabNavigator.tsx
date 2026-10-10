@@ -2,6 +2,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CreateDraftProvider } from '../../features/create/application/CreateDraftContext';
 import { AccountScreen } from '../../features/auth/ui/screens/AccountScreen';
+import { OnboardingHandoff } from '../../features/onboarding/ui/components/OnboardingHandoff';
 import { WidgetHost } from '../../features/widgets/ui/WidgetHost';
 import { CreateNavigator } from './CreateNavigator';
 import { HistoryNavigator } from './HistoryNavigator';
@@ -20,6 +21,7 @@ export function MainTabNavigator() {
   return (
     <CreateDraftProvider>
       <WidgetHost />
+      <OnboardingHandoff />
       <Tab.Navigator
         tabBar={renderFloatingTabBar}
         screenOptions={{

@@ -1,8 +1,10 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useScrollToTop } from '@react-navigation/native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { CloudOff, HeartPlus, UserPlus } from 'lucide-react-native';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
+import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { Text } from '../../../../shared/ui/Text';
@@ -10,7 +12,7 @@ import {
   SessionBootSkeleton,
   VaultListSkeleton,
 } from '../../../../shared/ui/SkeletonLayouts';
-import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultStackParamList } from '../../../../shared/navigation/types';
 import { useSubscription } from '../../../billing/application/useSubscription';
 import { useAuth, useRequireAuth } from '../../../auth/application/useAuth';
@@ -28,7 +30,6 @@ import { getVaultCardTheme } from '../../domain/vaultCardTheme';
 import { filterVaultPeople, getPersonNextOccasion } from '../../domain/vaultOccasion';
 import type { OccasionType, VaultPerson } from '../../domain/types';
 import { ScheduledSendInboxCard } from '../components/ScheduledSendInboxCard';
-import { VaultExpandPrompt } from '../components/VaultExpandPrompt';
 import { VaultPersonCard } from '../components/VaultPersonCard';
 import { VaultSearchField } from '../components/VaultSearchField';
 
@@ -38,7 +39,7 @@ function VaultListContent({ navigation, route }: ListProps) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
 
-  const { people, isLoading, error } = useVaultPeople(true);
+  const { people, isLoading, error, reload } = useVaultPeople(true);
   const { sends, reviewCount, error: sendsError } = useScheduledSends(true);
   const { tier } = useSubscription();
   const { remove } = useDeletePerson();
@@ -196,6 +197,16 @@ function VaultListContent({ navigation, route }: ListProps) {
     });
   };
 
+  const autoSendNoteFor = (person: VaultPerson): string | undefined => {
+    if (!autoSendAllowed) return 'Auto-send is part of Occasio Pro.';
+    if (!person.birthday && !person.anniversary) {
+      return 'Add a birthday or anniversary to turn on auto-send.';
+    }
+    return undefined;
+  };
+
+  const showAddAction = !isLoading && !error && people.length > 0;
+
   const subtitle =
     reviewCount > 0
       ? reviewCount === 1
@@ -209,10 +220,10 @@ function VaultListContent({ navigation, route }: ListProps) {
       subtitle={subtitle}
       scrollRef={scrollRef}
       headerAction={
-        <ScreenHeaderAction label="Add" onPress={openAddPerson} />
+        showAddAction ? <ScreenHeaderAction label="Add" onPress={openAddPerson} /> : undefined
       }
     >
-      <VaultSearchField value={query} onChangeText={setQuery} />
+      {showAddAction ? <VaultSearchField value={query} onChangeText={setQuery} /> : null}
 
       {sends.length > 0 ? (
         <View style={styles.inbox}>
@@ -235,17 +246,32 @@ function VaultListContent({ navigation, route }: ListProps) {
       ) : null}
 
       {linkCreation ? (
-        <Text style={styles.linkHint}>
-          Choose someone to save this card for auto-send.
-        </Text>
+        <View style={styles.linkHint}>
+          <Text style={styles.linkHintText}>
+            Choose someone to save this card for auto-send.
+          </Text>
+        </View>
       ) : null}
 
       {isLoading ? (
         <VaultListSkeleton />
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <EmptyState
+          icon={CloudOff}
+          title="Could not load your Vault"
+          body="Check your connection, then try again."
+          actionLabel="Try again"
+          actionVariant="secondary"
+          onAction={reload}
+        />
       ) : people.length === 0 ? (
-        <VaultExpandPrompt onPress={openAddPerson} />
+        <EmptyState
+          icon={UserPlus}
+          title="Add the people you celebrate"
+          body="Save their birthdays and anniversaries once, and see what is coming up next."
+          actionLabel="Add your first person"
+          onAction={openAddPerson}
+        />
       ) : filtered.length === 0 ? (
         <Text style={styles.muted}>No one matches that search.</Text>
       ) : (
@@ -264,6 +290,7 @@ function VaultListContent({ navigation, route }: ListProps) {
                 occasion={occasion}
                 autoSendBirthday={autoSendBirthday}
                 autoSendAnniversary={autoSendAnniversary}
+                autoSendNote={autoSendNoteFor(person)}
                 birthdayDisabled={
                   !autoSendAllowed ||
                   !person.birthday ||
@@ -280,8 +307,7 @@ function VaultListContent({ navigation, route }: ListProps) {
                 onAnniversaryToggle={() =>
                   handleAutoSendToggle(person.id, 'anniversary', autoSendAnniversary)
                 }
-                onOpenVault={() => handlePersonPress(person.id, person.personName)}
-                onNote={() => handlePersonPress(person.id, person.personName)}
+                onOpen={() => handlePersonPress(person.id, person.personName)}
                 onMenu={() => openMenu(person.id, person.personName)}
               />
             );
@@ -289,7 +315,17 @@ function VaultListContent({ navigation, route }: ListProps) {
         </View>
       )}
 
-      {people.length > 0 ? <VaultExpandPrompt onPress={openAddPerson} /> : null}
+      {showAddAction ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Add another person"
+          onPress={openAddPerson}
+          style={({ pressed }) => [styles.addRow, pressed && styles.addRowPressed]}
+        >
+          <UserPlus size={18} color={colors.accentHover} strokeWidth={2} absoluteStrokeWidth />
+          <Text style={styles.addRowLabel}>Add another person</Text>
+        </Pressable>
+      ) : null}
 
       {toggleError ? <Text style={styles.error}>{toggleError}</Text> : null}
       {linkError ? <Text style={styles.error}>{linkError}</Text> : null}
@@ -310,8 +346,13 @@ export function VaultListScreen(props: ListProps) {
     return (
       <GuestGateScreen
         title="Vault"
-        message="Save people and birthdays so you never miss a moment."
-        isSignedIn={false}
+        icon={HeartPlus}
+        headline="Never miss a moment for the people you love."
+        benefits={[
+          'Save birthdays and anniversaries in one place',
+          'See who is coming up next at a glance',
+          'Auto-send cards you have reviewed first',
+        ]}
         onSignIn={() => requireAuth('vault_view', () => undefined)}
       />
     );
@@ -330,16 +371,43 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   muted: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     fontSize: typography.sizeSm,
     color: colors.muted,
     textAlign: 'center',
   },
   linkHint: {
     marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.sidebar,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  linkHintText: {
     fontSize: typography.sizeSm,
     color: colors.inkSoft,
     lineHeight: typography.sizeSm * 1.4,
+  },
+  addRow: {
+    marginTop: spacing.md,
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.accentSoft,
+  },
+  addRowPressed: {
+    backgroundColor: colors.sidebar,
+  },
+  addRowLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.accentHover,
   },
   error: {
     marginTop: spacing.md,

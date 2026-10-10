@@ -14,13 +14,13 @@ function toCreationError(error: unknown): CreationApiError {
     if (error.status === 404) {
       return new CreationApiError(
         'INTERNAL',
-        'Share API not found. Deploy docs-site to Vercel with the latest code.',
+        'Sharing is unavailable right now. Please try again in a little while.',
       );
     }
     if (error.status === 503) {
       return new CreationApiError(
         'INTERNAL',
-        'Server not configured. Add FIREBASE_SERVICE_ACCOUNT_JSON on Vercel and redeploy.',
+        'Sharing is unavailable right now. Please try again in a little while.',
       );
     }
     if (error.status === 410) {
@@ -32,7 +32,9 @@ function toCreationError(error: unknown): CreationApiError {
     const code =
       error.code === 'NOT_FOUND' ||
       error.code === 'EXPIRED' ||
-      error.code === 'NOT_IMPLEMENTED'
+      error.code === 'NOT_IMPLEMENTED' ||
+      error.code === 'UNDER_AGE' ||
+      error.code === 'ATTESTATION_INVALID'
         ? 'INTERNAL'
         : error.code;
     return new CreationApiError(code, error.message);

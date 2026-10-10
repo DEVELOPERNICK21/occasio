@@ -1,12 +1,15 @@
+import { useIsFocused } from '@react-navigation/native';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   View,
 } from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
@@ -14,7 +17,7 @@ import { Button } from '../../../../shared/ui/Button';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, onPhoto, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { isAuthError, useAuthContext } from '../../application/AuthProvider';
 import { usePasswordReset } from '../../application/usePasswordReset';
 import {
@@ -23,13 +26,10 @@ import {
   MIN_PASSWORD_LENGTH,
   normalizeEmail,
 } from '../../domain/email';
-import { AppleLogoIcon } from '../components/AppleLogoIcon';
 import { AuthLegalFooter } from '../components/AuthLegalFooter';
-import { GoogleGIcon } from '../components/GoogleGIcon';
 import { LoginAuthButton } from '../components/LoginAuthButton';
 import { LoginBrandMark } from '../components/LoginBrandMark';
 import { LoginHeroBackground } from '../components/LoginHeroBackground';
-import { EmailOutlineIcon } from '../components/EmailOutlineIcon';
 import { ForgotPasswordForm } from '../components/ForgotPasswordForm';
 
 type Step = 'welcome' | 'email' | 'forgot';
@@ -38,6 +38,12 @@ type Props = {
   /** Return to guest browsing — shown as top-left back on welcome step. */
   onDismiss?: () => void;
 };
+
+/** Light status icons over the photo, only while this tab is showing (tabs stay mounted). */
+function LoginStatusBar() {
+  const focused = useIsFocused();
+  return focused ? <StatusBar barStyle="light-content" /> : null;
+}
 
 function LoginBackButton({
   label,
@@ -57,7 +63,8 @@ function LoginBackButton({
         hitSlop={8}
         style={styles.backButton}
       >
-        <Text style={styles.back}>← {label}</Text>
+        <ArrowLeft size={20} color={colors.white} strokeWidth={2.2} absoluteStrokeWidth />
+        <Text style={styles.back}>{label}</Text>
       </Pressable>
     </View>
   );
@@ -154,7 +161,8 @@ export function LoginScreen({ onDismiss }: Props) {
   if (step === 'forgot') {
     return (
       <View style={styles.root}>
-        <LoginHeroBackground />
+        <LoginStatusBar />
+        <LoginHeroBackground framing="sky" />
         <View style={[styles.backOverlay, { paddingTop: insets.top + spacing.sm }]}>
           <LoginBackButton
             label="Back"
@@ -217,7 +225,8 @@ export function LoginScreen({ onDismiss }: Props) {
   if (step === 'email') {
     return (
       <View style={styles.root}>
-        <LoginHeroBackground />
+        <LoginStatusBar />
+        <LoginHeroBackground framing="sky" />
         <View style={[styles.backOverlay, { paddingTop: insets.top + spacing.sm }]}>
           <LoginBackButton
             label="Back"
@@ -301,15 +310,20 @@ export function LoginScreen({ onDismiss }: Props) {
                 loading={isLoading}
                 disabled={isLoading}
               />
-              <Button
-                label={isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
-                variant="ghost"
+              <Pressable
+                accessibilityRole="button"
+                disabled={isLoading}
                 onPress={() => {
                   setIsSignUp((value) => !value);
                   setError(null);
                 }}
-                disabled={isLoading}
-              />
+                hitSlop={8}
+                style={styles.switchModeWrap}
+              >
+                <Text style={styles.switchMode}>
+                  {isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
+                </Text>
+              </Pressable>
               </View>
             </View>
 
@@ -322,6 +336,7 @@ export function LoginScreen({ onDismiss }: Props) {
 
   return (
     <View style={styles.root}>
+      <LoginStatusBar />
       <LoginHeroBackground />
 
       <View
@@ -346,7 +361,7 @@ export function LoginScreen({ onDismiss }: Props) {
             <LoginBrandMark />
             <Text style={styles.brandName}>Occasio</Text>
             <Text style={styles.tagline}>
-              Celebrate every moment.{'\n'}Connect with the people who matter most.
+              Celebrate every moment.{'\n'}With the people who matter most.
             </Text>
           </View>
 
@@ -354,26 +369,26 @@ export function LoginScreen({ onDismiss }: Props) {
             {error ? <Text style={styles.errorCentered}>{error}</Text> : null}
             {canSignInWithApple ? (
               <LoginAuthButton
+                provider="apple"
+                surface="dark"
                 label="Continue with Apple"
-                icon={<AppleLogoIcon />}
-                variant="apple"
                 onPress={handleAppleSignIn}
                 loading={pendingProvider === 'apple'}
                 disabled={isLoading}
               />
             ) : null}
             <LoginAuthButton
+              provider="google"
+              surface="dark"
               label="Continue with Google"
-              icon={<GoogleGIcon />}
-              variant="google"
               onPress={handleGoogleSignIn}
               loading={pendingProvider === 'google'}
               disabled={isLoading}
             />
             <LoginAuthButton
+              provider="email"
+              surface="dark"
               label="Continue with email"
-              icon={<EmailOutlineIcon />}
-              variant="primary"
               onPress={() => {
                 setIsSignUp(false);
                 setStep('email');
@@ -438,9 +453,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     fontSize: typography.sizeMd,
     lineHeight: typography.sizeMd * 1.5,
-    color: 'rgba(255, 255, 255, 0.88)',
+    color: onPhoto.text,
     textAlign: 'center',
-    maxWidth: 300,
+    maxWidth: 320,
   },
   actions: {
     gap: spacing.md,
@@ -455,15 +470,26 @@ const styles = StyleSheet.create({
   createAccount: {
     fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
-    color: 'rgba(255, 255, 255, 0.92)',
+    color: onPhoto.text,
     textDecorationLine: 'underline',
   },
   footer: {
     paddingTop: spacing.md,
   },
+  switchModeWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  switchMode: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: onPhoto.text,
+    textDecorationLine: 'underline',
+  },
   errorCentered: {
     fontSize: typography.sizeSm,
-    color: '#FCA5A5',
+    color: onPhoto.error,
     textAlign: 'center',
   },
   emailContent: {
@@ -486,7 +512,9 @@ const styles = StyleSheet.create({
   backButton: {
     alignSelf: 'flex-start',
     minHeight: 44,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   back: {
     fontSize: typography.sizeMd,
@@ -502,15 +530,15 @@ const styles = StyleSheet.create({
   emailBody: {
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.45,
-    color: 'rgba(255, 255, 255, 0.82)',
+    color: onPhoto.text,
   },
   formPanel: {
     marginTop: spacing.sm,
     padding: spacing.lg,
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(26, 20, 18, 0.62)',
+    backgroundColor: onPhoto.panel,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: onPhoto.hairline,
   },
   form: {
     gap: spacing.md,
@@ -527,7 +555,7 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: typography.sizeSm,
-    color: '#FCA5A5',
+    color: onPhoto.error,
   },
   forgotLinkWrap: {
     alignSelf: 'flex-end',

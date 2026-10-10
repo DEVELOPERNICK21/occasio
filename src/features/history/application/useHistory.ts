@@ -13,6 +13,9 @@ export function useHistory(enabled: boolean) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  const reload = useCallback(() => setAttempt((current) => current + 1), []);
 
   useEffect(() => {
     if (!enabled) {
@@ -45,9 +48,9 @@ export function useHistory(enabled: boolean) {
       setError('Sign in to view your history.');
       return undefined;
     }
-  }, [enabled]);
+  }, [enabled, attempt]);
 
-  return { entries, isLoading, error };
+  return { entries, isLoading, error, reload };
 }
 
 /** Permanently delete a history entry (UI confirms in screens). */

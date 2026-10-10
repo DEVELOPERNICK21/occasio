@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { colors, spacing, typography } from '../theme/tokens';
+import { colors, onPhoto, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
 
 type Props = {
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
     lineHeight: typography.sizeXs * 1.4,
   },
   labelOnDark: {
-    color: 'rgba(255, 255, 255, 0.92)',
+    color: onPhoto.text,
   },
   hintOnDark: {
-    color: 'rgba(255, 255, 255, 0.62)',
+    color: onPhoto.textFaint,
   },
 });

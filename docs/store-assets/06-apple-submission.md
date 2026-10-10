@@ -62,7 +62,7 @@ Written on **8 Oct 2026** after reading your App Store Connect screens, Apple's 
 | **2.3.7** Metadata | No trademarks, prices, irrelevant terms; name ≤30 | ✅ | `check-limits.py` enforces |
 | **2.3.10** Other platforms | Don't reference other platforms in metadata or the app | ⚠️ | Fixed in-app strings. The Support/Marketing URL (landing page) shows **"Google Play internal test"** buttons: hide them for review |
 | **1.2** User-generated content | Filtering, reporting, blocking, contact info | 🔧 ⚠️ | Added report link, published contact, Terms ban abusive content. **Not present:** pre-upload content filtering and blocking. Mitigation: private one-to-one links, no feed or search, takedown by email. Say so in review notes (already in the draft) and be ready to remove reported cards fast |
-| **1.5** Developer information | Support URL with easy contact | ⚠️ | Landing page shows `develoepernick1@gmail.com` (looks mistyped). Fix before submitting |
+| **1.5** Developer information | Support URL with easy contact | ⚠️ | Email corrected to `developernick1@gmail.com` in the website, policy pages and app (redeploy the website). The landing page also shows Play beta buttons (2.3.10) |
 | **5.1.1(i)** Privacy policy | Link in ASC and in app; says what is collected, retention, deletion | 🔧 | In-app: Login footer and Account → Privacy. Policy rewritten. Add the URL in ASC → App Information |
 | **5.1.1(ii)-(iii)** Permissions | Purpose strings, minimal access | 🔧 ✅ | Camera and Photos strings are specific; removed empty location string; no contacts, mic, tracking |
 | **5.1.2** Data use | ATT only if tracking | ✅ | No ad or tracking SDK (`NSPrivacyTracking = false`) |
@@ -184,3 +184,34 @@ In the RevenueCat dashboard paywall for the current offering, make sure the temp
 | "Can I delete my account?" | Yes, in the app; Apple tokens revoked |
 | "How do I test the subscription?" | Free plan allows 1 card per month; create a second card or open Account → See Occasio Pro |
 | "What does *auto-send* do?" | Notes describe it in specific terms (2.3.1). Keep the description identical to production behaviour |
+
+---
+
+## 8. What was entered in App Store Connect (8 Oct 2026, app "Occasio: Gift & Wish Reminder", Apple ID 6817678311)
+
+Entered through the built-in browser after you signed in. **Nothing is submitted, and App Privacy is not published.**
+
+| Area | State |
+|---|---|
+| Version 1.0 text | Promo, keywords (97 bytes), URLs, **description with real prices** ($2.99 / $19.99, no placeholders), **Copyright `2026 Nikhil Kubde`**, **App Review Notes** (2,698 of 4,000 bytes), sign-in required with demo credentials, contact info. Release type left on **Automatic** (your choice) |
+| Screenshots · header | 8 iPhone screenshots and 1 header asset were already uploaded by you |
+| App Information | Subtitle `Never forget. Send a surprise.`, primary **Lifestyle**, secondary changed **Social Networking → Entertainment** |
+| Age Rating | Set up: user-generated content **yes**, everything else no/none → calculated **4+**, no override |
+| App Privacy | 8 data types set up (name, email, phone, photos, other user content, user ID, device ID, purchase history): all *App Functionality*, *linked to user*, *no tracking*. **Not yet published** |
+| Pricing and Availability | App price **Free ($0.00)**, **175 countries or regions**. Mac App Store and Vision Pro boxes left ticked (your choice) |
+| Subscription group | **Occasio Pro**, display name set (uses the app name) |
+| `occasio_pro_monthly` | 1 month, **$2.99**, all countries, "Occasio Pro Monthly / Unlimited cards. Save up to 5 people." |
+| `occasio_pro_yearly` | 1 year, **$19.99**, all countries, "Occasio Pro Yearly / Unlimited cards. Save up to 5 people." |
+| `occasio_wish_single` | Consumable, **$0.99**, all countries, "One Extra Wish / One more card beyond your free monthly card." |
+
+Apple converts the US prices into local prices automatically (for example, $2.99 shows as $3.99 in Canada and Albania, so check India and your other markets under *Subscription Pricing → All Prices and Currencies* before launch).
+
+### Still open in App Store Connect
+
+1. **Content Rights:** deliberately not answered. The app ships 5 sound effects and 5 Lottie animations with no licence record. If any came from a library, answer *"Yes, it contains third-party content, and I have the necessary rights"*; if you made them all, *"No"*.
+2. **Review screenshot for each of the 3 products** (a paywall screenshot; Apple will not mark a product ready without it) and, optionally, review notes per product.
+3. **App Privacy → Publish.**
+4. **Upload a new build** (the attached build 1 predates the compliance fixes) and select it on the version page.
+5. **Age rating vs. Terms:** the Terms say users must be 13+, while the rating is 4+. Either override the rating to 13+ (Age Rating → Age Categories and Override) or change the Terms.
+6. **EU trader status** (Business), since the app is available in the EU.
+7. **Add for Review → Submit to App Review**, only after the outside-the-browser items in §1 and §4 are done.

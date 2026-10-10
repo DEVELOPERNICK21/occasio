@@ -8,60 +8,54 @@ type Props = {
 };
 
 export function HistorySummaryCard({ summary }: Props) {
-  const headline =
-    summary.thisMonth > 0
-      ? `You've shared ${summary.thisMonth} wish${summary.thisMonth === 1 ? '' : 'es'} this month`
-      : 'Your shared wishes live here';
+  const stats = [
+    { label: 'This month', value: summary.thisMonth },
+    { label: 'Active links', value: summary.active },
+    { label: 'All time', value: summary.total },
+  ];
 
   return (
-    <View style={styles.card}>
-      <View pointerEvents="none" style={styles.orb} />
-      <Text style={styles.eyebrow}>YOUR LEGACY</Text>
-      <Text style={styles.headline}>{headline}</Text>
-      <Text style={styles.body}>
-        {summary.active} active link{summary.active === 1 ? '' : 's'} · {summary.total} total
-      </Text>
+    <View
+      accessible
+      accessibilityLabel={`${summary.thisMonth} shared this month, ${summary.active} active links, ${summary.total} in total`}
+      style={styles.card}
+    >
+      {stats.map((stat, index) => (
+        <View key={stat.label} style={[styles.stat, index > 0 && styles.statDivider]}>
+          <Text style={styles.value}>{stat.value}</Text>
+          <Text style={styles.label}>{stat.label}</Text>
+        </View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.md,
-    borderRadius: radius.lg,
+    flexDirection: 'row',
+    paddingVertical: spacing.md,
+    borderRadius: radius.xl,
     backgroundColor: colors.sidebar,
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: 'hidden',
+  },
+  stat: {
+    flex: 1,
+    alignItems: 'center',
     gap: spacing.xs,
   },
-  orb: {
-    position: 'absolute',
-    width: 72,
-    height: 72,
-    borderRadius: radius.full,
-    backgroundColor: colors.tertiary,
-    opacity: 0.35,
-    top: -24,
-    right: -16,
+  statDivider: {
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
   },
-  eyebrow: {
-    fontSize: typography.sizeXs,
-    fontWeight: typography.weightSemibold,
-    color: colors.secondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  headline: {
-    fontSize: typography.sizeMd,
-    lineHeight: typography.sizeMd * 1.35,
+  value: {
+    fontSize: typography.sizeLg,
+    lineHeight: typography.sizeLg * 1.2,
     fontWeight: typography.weightSemibold,
     color: colors.ink,
-    letterSpacing: -0.2,
   },
-  body: {
-    fontSize: typography.sizeSm,
-    lineHeight: typography.sizeSm * 1.45,
+  label: {
+    fontSize: typography.sizeXs,
     color: colors.inkSoft,
   },
 });

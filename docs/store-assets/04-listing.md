@@ -116,7 +116,7 @@ Arm a saved person and Occasio prepares their card on the day and sends you a no
 | Secondary | **Entertainment** (alt: Photo & Video) | Play-with-a-card is entertainment; Photo & Video would pit you against editors. Avoid Social Networking: it invites extra user-generated-content scrutiny |
 | Age rating | Answer honestly. Cards are user-generated and shared by private link, so expect **4+, or 12+** if the questionnaire reads that as unrestricted UGC | Do not pick "Made for Kids" |
 | Privacy labels | Contact info (email), User content (photos, messages), Identifiers (push token), Purchases; people-in-Vault data is third-party personal data you collect from the user, so declare it | Linked to user; none used for tracking unless you add an ads/attribution SDK |
-| Support URL / Marketing URL | `https://occasio-greetings.vercel.app` | Must show real contact info (1.5). The email on it looks mistyped; fix it, and hide the *Google Play internal test* buttons on the landing page before review (2.3.10) |
+| Support URL / Marketing URL | `https://occasio-greetings.vercel.app` | Must show real contact info (1.5). The email is now `developernick1@gmail.com` (redeploy the website); hide the *Google Play internal test* buttons on the landing page before review (2.3.10) |
 | Privacy policy / Terms / Delete account | `/privacy` · `/terms` · `/delete-account` on the same host | Confirm all three load in production |
 | Export compliance | Standard HTTPS only (exempt). **ASSUMPTION** | Confirm in App Store Connect |
 | iPad | Not offered (the build is iPhone-only), so no iPad screenshots are needed | |
@@ -215,7 +215,7 @@ Support: [SUPPORT EMAIL]
 | Data safety | Email (Auth), photos and messages (card content), names/dates/contact of *other people* (Vault), push token, purchase history; encrypted in transit; deletion available in-app and at `/delete-account` | Be explicit that Vault holds third-party personal data |
 | Account deletion URL | `https://occasio-greetings.vercel.app/delete-account` | Required for apps with account creation |
 | App access | Guest creation works; reviewer notes as in A6 | |
-| Contact email | `[SUPPORT EMAIL]` (the repo currently shows an address that looks mistyped; change it to one you will keep) | Public on the listing |
+| Contact email | `developernick1@gmail.com` | Public on the listing |
 
 ## B6. What's new (500 per locale)
 

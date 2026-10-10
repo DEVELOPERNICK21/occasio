@@ -1,12 +1,14 @@
 import { useLayoutEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { FLOATING_TAB_BAR_HEIGHT } from '../../../../shared/navigation/tabBarConstants';
 import type { MainTabParamList } from '../../../../shared/navigation/types';
+import { appPlatform } from '../../../../shared/platform/runtime';
 import { SessionBootSkeleton } from '../../../../shared/ui/SkeletonLayouts';
 import { useAuth } from '../../application/useAuth';
 import { useSubscription } from '../../../billing/application/useSubscription';
+import { subscriptionsUrl } from '../../../billing/domain/renewalTerms';
 import { AccountHomeScreen } from './AccountHomeScreen';
 import { LoginScreen } from './LoginScreen';
 
@@ -56,9 +58,11 @@ export function AccountScreen() {
     }
 
     if (hasPro) {
-      void openCustomerCenter().then(() => {
-        if (billingError) {
-          Alert.alert('Could not open', billingError);
+      void openCustomerCenter().then((opened) => {
+        if (!opened) {
+          // The in-app screen could not open: send them straight to the store's
+          // own cancel page so cancelling is never blocked.
+          void Linking.openURL(subscriptionsUrl(appPlatform()));
         }
       });
       return;

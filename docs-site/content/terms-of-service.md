@@ -1,7 +1,7 @@
 ---
 title: Terms of Service
 description: Terms and conditions for using the Occasio app and related services.
-updated: 2026-09-01
+updated: 2026-10-09
 ---
 
 These Terms of Service (“**Terms**”) govern your use of **Occasio** — our mobile application, recipient web pages, and related services (the “**Service**”), operated by **Nick Kubde** (“**we**”, “**us**”, “**our**”) from **India**.
@@ -10,7 +10,7 @@ By accessing or using the Service, you agree to these Terms. If you do not agree
 
 ## 1. Eligibility
 
-You must be at least **13 years old** (or the minimum age required in your country) to use Occasio. If you are under 18, you should use the Service with a parent or guardian’s permission.
+You must be at least **13 years old** (or the minimum age required in your country) to use Occasio. We ask for your date of birth when you first open the app and again when an account is created; we do not store it. If you are under 13 you may not use the Service or create an account, and we delete any account we learn belongs to someone under 13. If you are under 18, you should use the Service with a parent or guardian’s permission.
 
 ## 2. The Service
 
@@ -30,7 +30,7 @@ If you create an account, you are responsible for:
 - Keeping your sign-in credentials secure
 - All activity under your account
 
-Notify us at **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** if you suspect unauthorized access.
+Notify us at **[developernick1@gmail.com](mailto:developernick1@gmail.com)** if you suspect unauthorized access.
 
 You may sign out or request account deletion at any time. See [Delete your account and data](/delete-account) and our [Privacy Policy](/privacy).
 
@@ -48,6 +48,8 @@ You represent that:
 
 We may remove content that violates these Terms or applicable law, or that we reasonably believe is harmful, abusive, or fraudulent.
 
+**Copyright.** Only upload photos, text and other material you own or have permission to use. If you believe a card infringes your copyright, follow the procedure in our [Copyright and DMCA policy](/dmca). We respond to valid notices by disabling the card, we accept counter-notices, and we terminate the accounts of repeat infringers. Anyone who receives a card can report it with the **Report this card** link at the bottom of the card.
+
 ## 5. Acceptable use
 
 You agree **not** to:
@@ -64,11 +66,11 @@ We may suspend or terminate access for violations.
 
 Paid plans (when offered) are billed through **Google Play** or the **Apple App Store**. Prices, billing cycles, and features are shown in the app at purchase.
 
-- Subscriptions **renew automatically** unless you cancel before the renewal date through your store account settings.
+- Subscriptions **renew automatically** at the same price and interval until you cancel. Cancel before the renewal date, either in the app (**Account → Cancel or manage subscription**, no email needed) or in your store account settings. We email a confirmation when you subscribe that repeats these terms.
 - Refunds are handled according to **Google Play** or **Apple** policies; we do not control store refund decisions.
 - Free tiers and promotional offers may have limits (e.g. number of saved people, watermarks, link expiry).
 
-Cancel anytime via your device’s subscription settings. Deleting the app does not cancel a subscription.
+Cancel any time, in the app or in your device’s subscription settings. Deleting the app does not cancel a subscription. After you cancel you keep access until the end of the period you paid for.
 
 ## 7. Share links and delivery
 
@@ -114,7 +116,7 @@ These Terms are governed by the laws of **India**, without regard to conflict-of
 
 ## 15. Contact
 
-**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
+**Email:** [developernick1@gmail.com](mailto:developernick1@gmail.com)  
 **Website:** [occasio-greetings.vercel.app](https://occasio-greetings.vercel.app)
 
 For privacy-specific requests, see our [Privacy Policy](/privacy).

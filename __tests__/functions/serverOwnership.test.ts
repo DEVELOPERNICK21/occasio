@@ -82,31 +82,42 @@ describe('auto-send media', () => {
 describe('Resend email provider', () => {
   const { createResendEmailProvider, deliveryProviders } = require('../../functions/src/autosend/providers');
   const input = { to: 'mom@example.com', shareUrl: 'https://x/c/abc', personName: '<b>Mom</b>', occasionType: 'birthday' };
-
-  afterEach(() => {
-    delete (global as { fetch?: unknown }).fetch;
-  });
+  const config = {
+    apiKey: 'key',
+    from: 'Occasio <hi@occasio.app>',
+    postalAddress: 'Occasio, 12 Example St, Pune, India',
+    unsubscribeSecret: 'a-secret-that-is-at-least-32-characters-long',
+    siteBase: 'https://occasio-greetings.vercel.app',
+  };
+  const notSuppressed = async () => false;
 
   it('posts to Resend with bearer auth and escapes the name', async () => {
     const fetchMock = jest.fn(async () => ({ ok: true, status: 200 }));
-    (global as { fetch?: unknown }).fetch = fetchMock;
-    const result = await createResendEmailProvider('key', 'Occasio <hi@occasio.app>').send(input);
+    const result = await createResendEmailProvider(config, notSuppressed, fetchMock).send(input);
     expect(result).toEqual({ ok: true });
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { headers: Record<string, string>; body: string }];
     expect(url).toBe('https://api.resend.com/emails');
     expect(init.headers.Authorization).toBe('Bearer key');
-    expect(init.body).toContain('&lt;b&gt;Mom');
-    expect(init.body).not.toContain('<b>Mom');
+    const sent = JSON.parse(init.body) as { html: string; text: string };
+    expect(sent.html).toContain('&lt;b&gt;Mom');
+    expect(sent.html).not.toContain('<b>Mom');
+    // The plain-text part is not HTML, so the name is left as typed there.
+    expect(sent.text).toContain('Mom');
   });
 
   it('reports upstream failure instead of pretending it sent', async () => {
-    (global as { fetch?: unknown }).fetch = jest.fn(async () => ({ ok: false, status: 403 }));
-    expect(await createResendEmailProvider('k', 'f').send(input)).toEqual({ ok: false, error: 'resend_403' });
+    const failing = jest.fn(async () => ({ ok: false, status: 403 }));
+    expect(await createResendEmailProvider(config, notSuppressed, failing).send(input)).toEqual({
+      ok: false,
+      error: 'resend_403',
+    });
   });
 
   it('has no providers in production until keys are set', () => {
     delete process.env.RESEND_API_KEY;
     delete process.env.OCCASIO_EMAIL_FROM;
+    delete process.env.OCCASIO_POSTAL_ADDRESS;
+    delete process.env.EMAIL_UNSUBSCRIBE_SECRET;
     delete process.env.FUNCTIONS_EMULATOR;
     delete process.env.OCCASIO_MOCK_DELIVERY;
     expect(deliveryProviders()).toEqual([]);

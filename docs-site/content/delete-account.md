@@ -23,7 +23,7 @@ Deletion starts straight away. You do not need to email us, call anyone or wait 
 
 ### If you cannot open the app
 
-If you cannot sign in, email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from the email address tied to your account with the subject **Delete my Occasio account**. We may reply once to confirm ownership and will complete deletion within **30 days**.
+If you cannot sign in, email **[developernick1@gmail.com](mailto:developernick1@gmail.com)** from the email address tied to your account with the subject **Delete my Occasio account**. We may reply once to confirm ownership and will complete deletion within **30 days**.
 
 If you signed in with Google, you can also revoke Occasio’s access in your [Google Account permissions](https://myaccount.google.com/permissions). If you signed in with Apple, you can stop using Apple ID with Occasio in **Settings → [your name] → Sign-In & Security → Sign in with Apple**.
 
@@ -54,7 +54,7 @@ After account deletion, you will not be able to sign in again with the same acco
 
 You can ask us to remove **specific** data while keeping your account.
 
-Email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** from your account email and tell us what to delete, for example:
+Email **[developernick1@gmail.com](mailto:developernick1@gmail.com)** from your account email and tell us what to delete, for example:
 
 - A person in your **Vault**
 - An entry in your **creation history**
@@ -68,7 +68,7 @@ If you used Occasio **without signing in**, there is no account to delete.
 
 Card content you created is stored only as long as needed to host the **share link**. Guest links expire after **30 days**; after expiry, recipients can no longer open the card and related media is deleted within a short grace period.
 
-To remove a guest card before it expires, email **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)** with the share link URL and ask us to delete it early.
+To remove a guest card before it expires, email **[developernick1@gmail.com](mailto:developernick1@gmail.com)** with the share link URL and ask us to delete it early.
 
 ## 4. Data about other people
 
@@ -76,6 +76,6 @@ If you added someone to your Vault or addressed a card to them, that information
 
 ## 5. Contact
 
-**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
+**Email:** [developernick1@gmail.com](mailto:developernick1@gmail.com)  
 **Operator:** Nick Kubde, India  
 **Privacy Policy:** [occasio-greetings.vercel.app/privacy](https://occasio-greetings.vercel.app/privacy)

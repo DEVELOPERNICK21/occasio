@@ -1,36 +1,33 @@
+import { colors } from '../../../shared/theme/tokens';
 import type { RelationshipType } from './types';
 
 export type VaultCardTheme = {
   tagLabel: string;
+  /** Hue for non-text accents (avatar ring, status dot). Text stays on ink. */
   accent: string;
   softBackground: string;
-  occasionIcon: string;
 };
 
 const THEMES: Record<string, VaultCardTheme> = {
   partner: {
-    tagLabel: 'PARTNER',
-    accent: '#C94E4A',
-    softBackground: '#FAE8E8',
-    occasionIcon: '❤️',
+    tagLabel: 'Partner',
+    accent: colors.accentHover,
+    softBackground: colors.roseSoft,
   },
   friend: {
-    tagLabel: 'FRIEND',
-    accent: '#E8615D',
-    softBackground: '#FCEEE8',
-    occasionIcon: '🎂',
+    tagLabel: 'Friend',
+    accent: colors.accent,
+    softBackground: colors.sidebar,
   },
   family: {
-    tagLabel: 'FAMILY',
-    accent: '#E07A8A',
-    softBackground: '#FCEEF2',
-    occasionIcon: '🌸',
+    tagLabel: 'Family',
+    accent: colors.rose,
+    softBackground: colors.amberSoft,
   },
   default: {
-    tagLabel: 'INNER CIRCLE',
-    accent: '#857371',
-    softBackground: '#F5EDEA',
-    occasionIcon: '📅',
+    tagLabel: 'Inner circle',
+    accent: colors.muted,
+    softBackground: colors.sidebar,
   },
 };
 

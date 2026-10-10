@@ -98,6 +98,7 @@ jest.mock('@react-native-firebase/messaging', () => {
 jest.mock('@react-navigation/native', () => {
   const React = require('react');
   return {
+    DefaultTheme: { dark: false, colors: {} },
     NavigationContainer: React.forwardRef(
       (
         {

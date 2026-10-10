@@ -15,6 +15,7 @@ import {
   PACKAGE_SINGLE_WISH,
   PACKAGE_YEARLY,
 } from '../domain/entitlements';
+import { renewalPeriodLabel } from '../domain/renewalTerms';
 import { countPurchasedWishCredits } from '../domain/wishCredits';
 import {
   activeEntitlementIdsFromRecord,
@@ -95,12 +96,12 @@ function packagePeriodLabel(pkg: PurchasesPackage): string {
     return 'One-time, for your next wish';
   }
   if (id.includes(PACKAGE_YEARLY) || pkg.packageType === Purchases.PACKAGE_TYPE.ANNUAL) {
-    return 'Billed yearly';
+    return renewalPeriodLabel('yearly');
   }
   if (id.includes(PACKAGE_MONTHLY) || pkg.packageType === Purchases.PACKAGE_TYPE.MONTHLY) {
-    return 'Billed monthly';
+    return renewalPeriodLabel('monthly');
   }
-  return 'Subscription';
+  return 'Subscription, renews until you cancel';
 }
 
 function mapPackage(pkg: PurchasesPackage): BillingPlan {
@@ -109,6 +110,8 @@ function mapPackage(pkg: PurchasesPackage): BillingPlan {
     title: packageTitle(pkg),
     priceLabel: pkg.product.priceString,
     periodLabel: packagePeriodLabel(pkg),
+    priceAmount: pkg.product.price,
+    perMonthLabel: pkg.product.pricePerMonthString ?? undefined,
   };
 }
 
@@ -193,6 +196,11 @@ export async function syncRevenueCatUser(appUserId: string | null): Promise<void
     return;
   }
 
+  // Guests are already anonymous; logging out an anonymous user throws, which used
+  // to abort the whole billing refresh and left guests with no plans to show.
+  if (await Purchases.isAnonymous()) {
+    return;
+  }
   await Purchases.logOut();
 }
 

@@ -1,9 +1,10 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { useMemo, useState } from 'react';
-import { Alert, Share, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
 import { Text } from '../../../../shared/ui/Text';
 import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
@@ -36,6 +37,8 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   const { remove, isDeleting } = useDeleteHistory();
   const { loadForEdit } = useCreateDraftContext();
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isSignedIn } = useAuth();
   const { requireAuth } = useRequireAuth();
   const { people } = useVaultPeople(isSignedIn);
@@ -43,6 +46,13 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   const entry = useMemo(
     () => entries.find((item) => item.id === route.params.entryId),
     [entries, route.params.entryId],
+  );
+
+  useEffect(
+    () => () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    },
+    [],
   );
 
   if (isLoading) {
@@ -55,11 +65,8 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
 
   if (!entry) {
     return (
-      <Screen title="Card">
-        <Text style={styles.muted}>This entry could not be found.</Text>
-        <ScreenActions align="start">
-          <Button label="Back" variant="ghost" onPress={() => navigation.goBack()} />
-        </ScreenActions>
+      <Screen title="Card" onBack={() => navigation.goBack()}>
+        <Text style={styles.muted}>This card could not be found. It may have been deleted.</Text>
       </Screen>
     );
   }
@@ -84,6 +91,10 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   const handleCopy = () => {
     try {
       Clipboard.setString(entry.shareUrl);
+      triggerSuccessHaptic();
+      setCopied(true);
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+      copiedTimer.current = setTimeout(() => setCopied(false), 1800);
     } catch {
       Alert.alert('Could not copy', 'Long-press the link to copy manually.');
     }
@@ -180,53 +191,71 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
     });
   };
 
+  const goCreate = () => {
+    navigation.navigate('CreateTab', { screen: 'CreateHome' });
+  };
+
   return (
     <Screen
       title={entry.recipientName}
       subtitle={`${templateLabel(entry.templateType)} · ${formatHistoryDate(entry.createdAt)}`}
+      onBack={() => navigation.goBack()}
     >
       {expired ? (
-        <Text style={styles.expired}>This link has expired. Create a new card to send again.</Text>
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>
+            This link has expired. Make a new card to send it again.
+          </Text>
+        </View>
       ) : null}
 
       {entry.message ? (
-        <View style={styles.messageBox}>
-          <Text style={styles.messageLabel}>Message</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Message</Text>
           <Text style={styles.message}>{entry.message}</Text>
         </View>
       ) : null}
 
-      <View style={styles.linkBox}>
-        <Text style={styles.linkLabel}>Share link</Text>
+      <View style={styles.card}>
+        <View style={styles.statusRow}>
+          <View style={[styles.dot, expired ? styles.dotExpired : styles.dotActive]} />
+          <Text style={styles.cardLabel}>
+            {expired ? 'Expired' : `Active until ${formatHistoryDate(entry.expiresAt)}`}
+          </Text>
+        </View>
         <Text style={styles.link} selectable>
           {entry.shareUrl}
-        </Text>
-        <Text style={styles.expiry}>
-          {expired ? 'Expired' : `Active until ${formatHistoryDate(entry.expiresAt)}`}
         </Text>
       </View>
 
       <ScreenActions>
-        <Button
-          label="Share again"
-          onPress={() => void handleShare()}
-          disabled={expired || busy}
-        />
-        <Button
-          label="Copy link"
-          variant="secondary"
-          onPress={handleCopy}
-          disabled={expired || busy}
-        />
-        {entry.creationId && !expired ? (
-          <Button
-            label="Edit card"
-            variant="secondary"
-            loading={isLoadingEdit}
-            disabled={busy}
-            onPress={handleEdit}
-          />
-        ) : null}
+        {expired ? (
+          <Button label="Make a new card" onPress={goCreate} disabled={busy} />
+        ) : (
+          <>
+            <Button label="Share again" onPress={() => void handleShare()} disabled={busy} />
+            <View style={styles.pair}>
+              <Button
+                label={copied ? 'Copied' : 'Copy link'}
+                variant="secondary"
+                onPress={handleCopy}
+                disabled={busy}
+                style={styles.pairItem}
+                accessibilityLiveRegion="polite"
+              />
+              {entry.creationId ? (
+                <Button
+                  label="Edit card"
+                  variant="secondary"
+                  loading={isLoadingEdit}
+                  disabled={busy}
+                  onPress={handleEdit}
+                  style={styles.pairItem}
+                />
+              ) : null}
+            </View>
+          </>
+        )}
         {entry.creationId ? (
           <Button
             label="Save for auto-send"
@@ -236,21 +265,17 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
             onPress={handleSaveForAutoSend}
           />
         ) : null}
-        {linkError ? <Text style={styles.expired}>{linkError}</Text> : null}
-        <Button
-          label="Delete from History"
-          variant="ghost"
-          loading={isDeleting}
+        {linkError ? <Text style={styles.errorText}>{linkError}</Text> : null}
+        <Pressable
+          accessibilityRole="button"
+          disabled={busy}
           onPress={handleDelete}
-          disabled={busy}
-          style={styles.deleteBtn}
-        />
-        <Button
-          label="Back"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-          disabled={busy}
-        />
+          style={({ pressed }) => [styles.delete, (pressed || busy) && styles.deletePressed]}
+        >
+          <Text style={styles.deleteLabel}>
+            {isDeleting ? 'Deleting…' : 'Delete from History'}
+          </Text>
+        </Pressable>
       </ScreenActions>
     </Screen>
   );
@@ -261,57 +286,80 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     color: colors.muted,
   },
-  expired: {
-    fontSize: typography.sizeSm,
-    color: colors.error,
+  notice: {
     marginBottom: spacing.md,
-  },
-  messageBox: {
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
+    padding: spacing.md,
     borderRadius: radius.lg,
+    backgroundColor: colors.amberSoft,
+  },
+  noticeText: {
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.45,
+    color: colors.ink,
+  },
+  card: {
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.border,
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
-  messageLabel: {
-    fontSize: typography.sizeXs,
+  cardLabel: {
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    color: colors.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    color: colors.inkSoft,
   },
   message: {
     fontSize: typography.sizeMd,
     lineHeight: typography.sizeMd * 1.45,
-    color: colors.inkSoft,
+    color: colors.ink,
   },
-  linkBox: {
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  linkLabel: {
-    fontSize: typography.sizeXs,
-    fontWeight: typography.weightSemibold,
-    color: colors.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: radius.full,
+  },
+  dotActive: {
+    backgroundColor: colors.sage,
+  },
+  dotExpired: {
+    backgroundColor: colors.muted,
   },
   link: {
     fontSize: typography.sizeSm,
-    color: colors.accent,
+    color: colors.accentHover,
     lineHeight: typography.sizeSm * 1.5,
   },
-  expiry: {
-    fontSize: typography.sizeXs,
-    color: colors.muted,
+  pair: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
-  deleteBtn: {
+  pairItem: {
+    flex: 1,
+  },
+  errorText: {
+    fontSize: typography.sizeSm,
+    color: colors.error,
+  },
+  delete: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: spacing.sm,
+  },
+  deletePressed: {
+    opacity: 0.6,
+  },
+  deleteLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.error,
   },
 });

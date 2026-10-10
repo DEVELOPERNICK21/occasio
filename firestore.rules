@@ -47,6 +47,11 @@ service cloud.firestore {
         && request.resource.data.userId == resource.data.userId;
     }
 
+    // Server-only: unsubscribe list (hashes), webhook de-duplication, takedown log.
+    match /email_suppressions/{id} { allow read, write: if false; }
+    match /email_receipts/{id} { allow read, write: if false; }
+    match /takedowns/{id} { allow read, write: if false; }
+
     match /scheduled_sends/{sendId} {
       allow read: if request.auth != null
         && request.auth.uid == resource.data.userId;

@@ -1,6 +1,9 @@
-import { ActivityIndicator, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Modal, Pressable, StyleSheet, View } from 'react-native';
 import type { BillingPlan } from '../../../billing/domain/types';
+import { env } from '../../../../shared/config/env';
+import { appPlatform } from '../../../../shared/platform/runtime';
 import { Text } from '../../../../shared/ui/Text';
+import { renewalTerms } from '../../../billing/domain/renewalTerms';
 import { Button } from '../../../../shared/ui/Button';
 import { ModalCloseButton } from '../../../../shared/ui/ModalCloseButton';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -97,6 +100,10 @@ export function PaywallModal({
             </Text>
           )}
 
+          {plans.length > 0 ? (
+            <Text style={styles.terms}>{renewalTerms(appPlatform())}</Text>
+          ) : null}
+
           {isPurchasing ? (
             <ActivityIndicator style={styles.loader} color={colors.accent} />
           ) : null}
@@ -110,6 +117,14 @@ export function PaywallModal({
               onPress={onRestore}
             />
             <Button label="Maybe later" variant="ghost" onPress={onClose} />
+          </View>
+          <View style={styles.legalRow}>
+            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`${env.shareBaseUrl}/terms`)} hitSlop={8}>
+              <Text style={styles.legalLink}>Terms</Text>
+            </Pressable>
+            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`${env.shareBaseUrl}/privacy`)} hitSlop={8}>
+              <Text style={styles.legalLink}>Privacy</Text>
+            </Pressable>
           </View>
         </Pressable>
       </Pressable>
@@ -219,6 +234,24 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.45,
     color: colors.muted,
+  },
+  terms: {
+    marginTop: spacing.sm,
+    fontSize: typography.sizeXs,
+    lineHeight: typography.sizeXs * 1.5,
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  legalRow: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.lg,
+  },
+  legalLink: {
+    fontSize: typography.sizeSm,
+    color: colors.accentHover,
+    textDecorationLine: 'underline',
   },
   loader: {
     marginTop: spacing.md,

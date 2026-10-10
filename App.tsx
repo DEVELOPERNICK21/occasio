@@ -4,10 +4,11 @@
  */
 
 import { useEffect } from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar } from 'react-native';
 import '@react-native-firebase/app';
 import { lockToPortrait } from 'react-native-orientation-turbo';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { loadAnalyticsConsent } from './src/shared/analytics/consent';
 import { AuthProvider } from './src/features/auth/application/AuthProvider';
 import { BillingProvider } from './src/features/billing/application/BillingProvider';
 import { SoftAuthModal } from './src/features/auth/ui/components/SoftAuthModal';
@@ -18,10 +19,9 @@ import {
 } from './src/shared/firebase/app';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   useEffect(() => {
     lockToPortrait();
+    void loadAnalyticsConsent();
     if (__DEV__) {
       const projectId = getFirebaseProjectId();
       console.log(
@@ -32,7 +32,8 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {/* The UI is always light (cream); light icons in system dark mode vanish into it. */}
+      <StatusBar barStyle="dark-content" />
       <AuthProvider>
         <BillingProvider>
           <AppNavigator />

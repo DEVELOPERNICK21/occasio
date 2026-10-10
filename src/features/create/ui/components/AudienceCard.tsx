@@ -24,7 +24,7 @@ import type { Audience } from '../../domain/templateSchema';
 
 const PRESS_SPRING = { damping: 20, stiffness: 520, mass: 0.6 };
 
-type AudienceTone = {
+export type AudienceTone = {
   /** Solid icon tile. */
   tile: string;
   iconColor: string;
@@ -34,7 +34,7 @@ type AudienceTone = {
 };
 
 /** One warm colour per relationship — helps the grid scan at a glance. */
-const AUDIENCE_TONES: Record<Audience, AudienceTone> = {
+export const AUDIENCE_TONES: Record<Audience, AudienceTone> = {
   someone_special: {
     tile: colors.accent,
     iconColor: colors.white,
@@ -73,7 +73,7 @@ const AUDIENCE_TONES: Record<Audience, AudienceTone> = {
   },
 };
 
-const AUDIENCE_ICONS: Record<Audience, LucideIcon> = {
+export const AUDIENCE_ICONS: Record<Audience, LucideIcon> = {
   someone_special: Sparkles,
   mom: Heart,
   dad: Shield,

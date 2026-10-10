@@ -1,30 +1,37 @@
-Occasio is a greeting-card app. You can review the core flow without an account: Create tab > choose who it is for > choose the moment > add a photo > write a message > Preview > "Create the link" > share. The link opens in any browser; the recipient does not need the app or an account.
+PURPOSE AND AUDIENCE
+Occasio helps people remember birthdays and anniversaries and send a personal greeting card (photo + message) as a web link. It is for anyone 13+ who does not want to miss a date or send a generic text. A card takes about two minutes, and the recipient needs no app or account.
 
-SIGN-IN (only needed for the Vault, history and subscriptions)
-Account tab > Continue with Apple, Google or email. Demo account for review:
-  Email: [DEMO EMAIL]
-  Password: [DEMO PASSWORD]
-It already has two fictional people saved so the Vault is not empty.
+FIRST LAUNCH
+1) A one-time age check (13+): enter any date of birth that makes you 13 or older, for example 14/08/1990. It is checked on our server and not saved. 2) A short intro (Skip is available). 3) The app opens on the Create tab.
 
-SUBSCRIPTION AND PURCHASES
-Occasio Pro (monthly, yearly; auto-renewing) and one consumable, "One Extra Wish". Free plan: 1 card per calendar month and 1 saved person. To see the paywall, create a second card in the same month, or Account > See Occasio Pro. Restore Purchases is on the Account tab. Terms: https://occasio-greetings.vercel.app/terms  Privacy: https://occasio-greetings.vercel.app/privacy
+MAIN FLOW (no account needed)
+Create tab > who it is for > the moment > add a photo > write a message > Preview > "Create the link" > share. The link opens in any browser, for example https://occasio-greetings.vercel.app/c/demo-birthday-maya-1408 (a passcode-locked example uses code 1408).
 
-WHAT THE RECIPIENT SEES
-Cards are web pages at https://occasio-greetings.vercel.app/c/<code>, for example https://occasio-greetings.vercel.app/c/demo-birthday-maya-1408 (a passcode-locked example uses code 1408). Links are unlisted and one-to-one. The app has no public feed, search, comments or messaging.
+SIGN-IN (only for Vault, History and subscriptions)
+Account tab > Continue with email, using the demo account in the Sign-In Information fields. Sign in with Apple and Google are also offered.
 
-USER-GENERATED CONTENT (1.2)
-A card is only visible to people the sender shares its link with. Every card page has a "Report this card" link (bottom right) that emails [SUPPORT EMAIL] with the card reference; reported cards are removed [WITHIN 24 HOURS: OWNER CONFIRM]. The Terms prohibit abusive content. Contact: [SUPPORT EMAIL].
+PURCHASES
+Occasio Pro, auto-renewing: Monthly $2.99, Yearly $19.99. One consumable: One Extra Wish $0.99 (one more card in a month). Free plan: 1 card per calendar month and 1 saved person. To see the paywall: create a second card in the same month, or tap the subscription button on the Account tab, or reach the last step of the intro. Restore Purchases is on the Account tab. Terms: https://occasio-greetings.vercel.app/terms  Privacy: https://occasio-greetings.vercel.app/privacy
+
+USER CONTENT (1.2)
+Cards are private one-to-one links. There is no public feed, search, comments or messaging; a recipient can only add a heart count. Every card page has a "Report this card" link (bottom right) that emails developernick1@gmail.com. Reported cards are reviewed and removed if they break the Terms, which prohibit abusive content.
 
 ACCOUNT DELETION (5.1.1(v))
-Account tab > scroll to the bottom > "Delete account and data" > Delete everything. This immediately deletes the account, Vault, history, cards and photos. For Sign in with Apple accounts the app asks you to confirm with Apple once and revokes the Apple token. If you have a subscription, the dialog explains that billing continues until it is cancelled and offers a Manage subscription button.
+Account tab > bottom > "Delete account and data" > Delete everything. This deletes the account, Vault, history, cards and photos at once. For Sign in with Apple accounts the app revokes the Apple token. The dialog explains billing and links to Manage subscription.
 
 AUTO-SEND (Occasio Pro)
-In the Vault, a Pro user can arm "auto-send" for a saved person's birthday or anniversary. On that date the app sends a push notification asking the user to review a prepared card; they have a two-hour window to approve or cancel, then the system share sheet opens so they can send the link. [OWNER: confirm this matches production before submitting]
+In the Vault a Pro user can arm auto-send for a saved birthday or anniversary. On the day the app sends a push asking them to review a prepared card; they have 2 hours to approve or cancel, then the share sheet opens so they send the link.
+
+EXTERNAL SERVICES
+Firebase (Google): Authentication, Firestore, Cloud Functions, Cloud Messaging push. RevenueCat with Apple In-App Purchase: subscriptions. Sign in with Apple and Google Sign-In. Resend: subscription confirmation emails. Vercel: hosts the card web pages and our API. No AI services, no ads, no tracking.
+
+REGIONS
+Identical features and content in every region. Only prices (set by the App Store) and the device language of system dialogs differ. The app is in English.
+
+REGULATED INDUSTRY / THIRD-PARTY MATERIAL
+Not a regulated industry; no licences needed. [CONFIRM: The app bundles five short sound effects and five animations; we hold the rights to use them.]
 
 PERMISSIONS
-Camera and Photos: only when adding a photo to a card. Notifications: requested after sign-in, used only to tell the user a prepared card is ready to review. No location, contacts, microphone or tracking.
+Camera and Photos only when adding a photo. Notifications after sign-in, only to say a card is ready to review. No location, contacts, microphone or tracking.
 
-WIDGETS
-"Next up", "Coming up" and "Make a card" widgets show the saved dates; they need a person saved in the Vault.
-
-Contact: [SUPPORT EMAIL]
+Contact: developernick1@gmail.com

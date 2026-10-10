@@ -55,7 +55,7 @@ export function AccountSubscriptionCard({
         style={({ pressed }) => [styles.manageButton, pressed && styles.pressed]}
       >
         <Text style={styles.manageLabel}>
-          {tier === 'free' ? 'See Occasio Pro' : 'Manage subscription'}
+          {tier === 'free' ? 'See Occasio Pro' : 'Cancel or manage subscription'}
         </Text>
       </Pressable>
       {onRestorePurchases ? (
@@ -101,7 +101,7 @@ export function AccountNotificationsCard() {
   );
 }
 
-const SUPPORT_EMAIL = 'develoepernick1@gmail.com';
+const SUPPORT_EMAIL = 'developernick1@gmail.com';
 
 export function AccountPrivacyCard() {
   return (
@@ -131,6 +131,15 @@ export function AccountPrivacyCard() {
           style={styles.helpButton}
         >
           <Text style={styles.helpButtonLabel}>Terms of Service</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => {
+            void Linking.openURL(`${env.shareBaseUrl}/dmca`);
+          }}
+          style={styles.helpButton}
+        >
+          <Text style={styles.helpButtonLabel}>Copyright</Text>
         </Pressable>
       </View>
     </View>

@@ -111,7 +111,7 @@ export async function dispatchScheduledSend(
   db: FirebaseFirestore.Firestore,
   messaging: admin.messaging.Messaging,
   sendId: string,
-  providers: DeliveryProvider[] = deliveryProviders(),
+  providers: DeliveryProvider[] = deliveryProviders(db),
 ): Promise<DispatchResult> {
   const sendRef = db.collection(SCHEDULED_SENDS).doc(sendId);
   const snap = await sendRef.get();

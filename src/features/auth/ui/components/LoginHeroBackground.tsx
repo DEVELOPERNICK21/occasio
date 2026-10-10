@@ -1,26 +1,37 @@
-import { ImageBackground, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { colors } from '../../../../shared/theme/tokens';
+import { colors, onPhoto } from '../../../../shared/theme/tokens';
+import { heroFrame, type HeroFraming } from './loginHeroFrame';
 
 const HERO = require('../../../../../assets/auth/login-hero.jpg');
 
-/** Full-bleed hero with dark scrim so login copy stays readable. */
-export function LoginHeroBackground() {
+type Props = {
+  /** `couple` for the welcome step; `sky` behind forms so text stays legible. */
+  framing?: HeroFraming;
+};
+
+/** Full-bleed hero with a dark scrim so login copy stays readable. */
+export function LoginHeroBackground({ framing = 'couple' }: Props) {
+  const { width, height } = useWindowDimensions();
+  const frame = heroFrame(width, height, framing);
+  // Forms sit on the photo, so they get a heavier veil than the welcome step.
+  const veil = framing === 'sky' ? 0.2 : 0;
+
   return (
     <View style={styles.root} pointerEvents="none">
-      <ImageBackground
+      <Image
         source={HERO}
-        style={styles.image}
-        imageStyle={styles.imageFocus}
+        style={[styles.image, frame]}
         resizeMode="cover"
+        accessible={false}
       />
-      <View style={styles.darkBase} />
       <Svg style={styles.overlay} width="100%" height="100%" preserveAspectRatio="none">
         <Defs>
           <LinearGradient id="loginDarkScrim" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#1A1412" stopOpacity="0.42" />
-            <Stop offset="0.45" stopColor="#1A1412" stopOpacity="0.52" />
-            <Stop offset="1" stopColor="#1A1412" stopOpacity="0.78" />
+            <Stop offset="0" stopColor={onPhoto.scrim} stopOpacity={0.28 + veil} />
+            <Stop offset="0.38" stopColor={onPhoto.scrim} stopOpacity={0.36 + veil} />
+            <Stop offset="0.62" stopColor={onPhoto.scrim} stopOpacity={0.72 + veil / 2} />
+            <Stop offset="0.82" stopColor={onPhoto.scrim} stopOpacity={1} />
           </LinearGradient>
         </Defs>
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#loginDarkScrim)" />
@@ -33,16 +44,10 @@ const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFill,
     backgroundColor: colors.ink,
+    overflow: 'hidden',
   },
   image: {
-    ...StyleSheet.absoluteFill,
-  },
-  imageFocus: {
-    transform: [{ scale: 1.14 }, { translateY: -56 }],
-  },
-  darkBase: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    position: 'absolute',
   },
   overlay: {
     ...StyleSheet.absoluteFill,

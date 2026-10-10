@@ -25,11 +25,8 @@ const DEMO_TYPES = new Set([
   "just_because",
 ]);
 
-const DEMO_PHOTOS = [
-  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=800&fit=crop",
-  "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=800&fit=crop",
-  "https://images.unsplash.com/photo-1522673607200-164a1a38d7f3?w=600&h=800&fit=crop",
-];
+/** Self-hosted (see public/demo/README.md): demo cards must not contact third parties. */
+const DEMO_PHOTOS = ["/demo/photo-1.jpg", "/demo/photo-2.jpg"];
 
 const DEMO_REASONS = [
   "You laugh at my worst jokes",

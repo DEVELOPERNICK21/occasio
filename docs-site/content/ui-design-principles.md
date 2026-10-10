@@ -99,7 +99,8 @@ Build in `src/shared/ui/`. Feature screens **compose** shared components.
 | `Button` | ✅ | primary / secondary / ghost actions |
 | `Input` | 🔜 | Text fields (replace raw TextInput) |
 | `Card` | 🔜 | Selectable template tiles, nudge panels |
-| `EmptyState` | 🔜 | Vault / History zero data |
+| `EmptyState` | ✅ | Zero data and recoverable errors: icon, one line of why, one action (Vault, History) |
+| `GuestGateScreen` | ✅ | A tab that needs sign-in: what it unlocks, one sign-in button, guests still welcome |
 | `ErrorBanner` | 🔜 | Inline recoverable errors |
 | `PaywallModal` | 🔜 | Quota exceeded |
 

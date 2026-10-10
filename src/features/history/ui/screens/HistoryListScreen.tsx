@@ -6,7 +6,9 @@ import { useScrollToTop } from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useMemo, useRef, useState } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, View } from 'react-native';
-import { triggerCardHaptic } from '../../../../shared/platform/haptics';
+import { CloudOff, History, Send } from 'lucide-react-native';
+import { triggerCardHaptic, triggerSuccessHaptic } from '../../../../shared/platform/haptics';
+import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';
 import { SearchPill } from '../../../../shared/ui/SearchPill';
 import { Text } from '../../../../shared/ui/Text';
@@ -29,7 +31,6 @@ import {
 } from '../../domain/historyList';
 import { isHistoryEntryExpired } from '../../domain/historyRules';
 import type { HistoryEntry } from '../../domain/types';
-import { HistoryExpandPrompt } from '../components/HistoryExpandPrompt';
 import { HistorySummaryCard } from '../components/HistorySummaryCard';
 import { HistoryWishCard } from '../components/HistoryWishCard';
 
@@ -46,7 +47,7 @@ function HistoryListContent({ navigation }: ListProps) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
 
-  const { entries, isLoading, error } = useHistory(true);
+  const { entries, isLoading, error, reload } = useHistory(true);
   const { remove, isDeleting } = useDeleteHistory();
   const [query, setQuery] = useState('');
 
@@ -75,15 +76,19 @@ function HistoryListContent({ navigation }: ListProps) {
     }
   };
 
-  const copyEntry = (entry: HistoryEntry) => {
+  /** Returns true when the link reached the clipboard. */
+  const copyEntry = (entry: HistoryEntry): boolean => {
     if (isHistoryEntryExpired(entry)) {
       Alert.alert('Link expired', 'Create a new card to send a fresh link.');
-      return;
+      return false;
     }
     try {
       Clipboard.setString(entry.shareUrl);
+      triggerSuccessHaptic();
+      return true;
     } catch {
       Alert.alert('Could not copy', 'Try again from the card detail screen.');
+      return false;
     }
   };
 
@@ -122,7 +127,9 @@ function HistoryListContent({ navigation }: ListProps) {
       },
       {
         text: 'Copy link',
-        onPress: () => copyEntry(entry),
+        onPress: () => {
+          copyEntry(entry);
+        },
       },
       {
         text: 'Delete',
@@ -146,20 +153,32 @@ function HistoryListContent({ navigation }: ListProps) {
       subtitle="Cards you shared — resend links anytime."
       scrollRef={scrollRef}
     >
-      <SearchPill
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search by name or occasion..."
-      />
-
       {isLoading ? (
         <HistoryListSkeleton />
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <EmptyState
+          icon={CloudOff}
+          title="Could not load your History"
+          body="Check your connection, then try again."
+          actionLabel="Try again"
+          actionVariant="secondary"
+          onAction={reload}
+        />
       ) : entries.length === 0 ? (
-        <HistoryExpandPrompt onPress={goCreate} />
+        <EmptyState
+          icon={Send}
+          title="No cards shared yet"
+          body="Cards you share while signed in show up here, so you can send the link again anytime."
+          actionLabel="Create a card"
+          onAction={goCreate}
+        />
       ) : (
-        <>
+        <View style={styles.stack}>
+          <SearchPill
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search by name or occasion"
+          />
           <HistorySummaryCard summary={summary} />
 
           {filtered.length === 0 ? (
@@ -182,19 +201,15 @@ function HistoryListContent({ navigation }: ListProps) {
                       triggerCardHaptic();
                       void shareEntry(entry);
                     }}
-                    onCopy={() => {
-                      triggerCardHaptic();
-                      copyEntry(entry);
-                    }}
+                    onCopy={() => copyEntry(entry)}
+                    onCreateNew={goCreate}
                     onMenu={() => openMenu(entry)}
                   />
                 );
               })}
             </View>
           )}
-
-          <HistoryExpandPrompt onPress={goCreate} />
-        </>
+        </View>
       )}
     </Screen>
   );
@@ -212,8 +227,13 @@ export function HistoryListScreen(props: ListProps) {
     return (
       <GuestGateScreen
         title="History"
-        message="Past cards and share links, synced when you sign in."
-        isSignedIn={false}
+        icon={History}
+        headline="Every card you share, saved."
+        benefits={[
+          'Send a link again or copy it in one tap',
+          'See which links are still active',
+          'Pick up on any device when you sign in',
+        ]}
         onSignIn={() => requireAuth('history_sync', () => undefined)}
       />
     );
@@ -223,23 +243,19 @@ export function HistoryListScreen(props: ListProps) {
 }
 
 const styles = StyleSheet.create({
+  stack: {
+    gap: spacing.md,
+  },
   list: {
-    marginTop: spacing.md,
     gap: spacing.md,
   },
   listBusy: {
     opacity: 0.7,
   },
   muted: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     fontSize: typography.sizeSm,
     color: colors.muted,
-    textAlign: 'center',
-  },
-  error: {
-    marginTop: spacing.md,
-    fontSize: typography.sizeSm,
-    color: colors.error,
     textAlign: 'center',
   },
 });

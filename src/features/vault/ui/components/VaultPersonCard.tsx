@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { CalendarPlus, Cake, ChevronRight, Ellipsis, Heart } from 'lucide-react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultCardTheme } from '../../domain/vaultCardTheme';
@@ -18,12 +19,22 @@ type Props = {
   autoSendAnniversary: boolean;
   birthdayDisabled: boolean;
   anniversaryDisabled: boolean;
+  /** Why the switches are off when they are, so nothing looks broken. */
+  autoSendNote?: string;
   onBirthdayToggle: () => void;
   onAnniversaryToggle: () => void;
-  onOpenVault: () => void;
-  onNote: () => void;
+  onOpen: () => void;
   onMenu: () => void;
 };
+
+const OCCASION_ICON_SIZE = 18;
+const MENU_SIZE = 44;
+
+const OCCASION_ICON = {
+  birthday: Cake,
+  anniversary: Heart,
+  none: CalendarPlus,
+} as const;
 
 export function VaultPersonCard({
   person,
@@ -33,92 +44,83 @@ export function VaultPersonCard({
   autoSendAnniversary,
   birthdayDisabled,
   anniversaryDisabled,
+  autoSendNote,
   onBirthdayToggle,
   onAnniversaryToggle,
-  onOpenVault,
-  onNote,
+  onOpen,
   onMenu,
 }: Props) {
-  const armedLabel = formatArmedOccasions({
-    autoSendBirthday,
-    autoSendAnniversary,
-  });
+  const armedLabel = formatArmedOccasions({ autoSendBirthday, autoSendAnniversary });
+  const anyArmed = autoSendBirthday || autoSendAnniversary;
+  const OccasionIcon = OCCASION_ICON[occasion.kind];
+  const note = autoSendNote ?? (anyArmed ? AUTO_SEND_DELIVERY_COPY : undefined);
 
   return (
     <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: theme.softBackground }]}>
-          <Text style={[styles.avatarText, { color: theme.accent }]}>
-            {personInitials(person.personName)}
-          </Text>
-        </View>
-        <View style={styles.headerCopy}>
-          <Text style={styles.name} numberOfLines={1}>
-            {person.personName}
-          </Text>
-          <View style={[styles.tag, { backgroundColor: theme.softBackground }]}>
-            <Text style={[styles.tagLabel, { color: theme.accent }]}>
-              {theme.tagLabel}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${person.personName}, ${theme.tagLabel}. ${occasion.headline}`}
+        accessibilityHint="Opens this person"
+        onPress={onOpen}
+        style={({ pressed }) => [styles.open, pressed && styles.pressed]}
+      >
+        <View style={styles.header}>
+          <View style={[styles.avatar, { backgroundColor: theme.softBackground }]}>
+            <Text style={styles.avatarText}>{personInitials(person.personName)}</Text>
+          </View>
+          <View style={styles.headerCopy}>
+            <Text style={styles.name} numberOfLines={1}>
+              {person.personName}
             </Text>
+            <View style={styles.tagRow}>
+              <View style={[styles.dot, { backgroundColor: theme.accent }]} />
+              <Text style={styles.tagLabel}>{theme.tagLabel}</Text>
+            </View>
           </View>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Options for ${person.personName}`}
-          onPress={onMenu}
-          hitSlop={10}
-          style={styles.menuButton}
-        >
-          <Text style={styles.menu}>⋮</Text>
-        </Pressable>
-      </View>
 
-      <View style={[styles.occasionBanner, { backgroundColor: theme.softBackground }]}>
-        <Text style={styles.occasionEyebrow}>
-          {occasion.icon} NEXT OCCASION
-        </Text>
-        <Text style={[styles.occasionHeadline, { color: theme.accent }]}>
-          {occasion.headline}
-        </Text>
-      </View>
+        <View style={[styles.occasion, { backgroundColor: theme.softBackground }]}>
+          <OccasionIcon
+            size={OCCASION_ICON_SIZE}
+            color={colors.ink}
+            strokeWidth={2}
+            absoluteStrokeWidth
+          />
+          <Text style={styles.occasionHeadline} numberOfLines={1}>
+            {occasion.headline}
+          </Text>
+          <ChevronRight size={16} color={colors.muted} strokeWidth={2} absoluteStrokeWidth />
+        </View>
+      </Pressable>
 
-      <View style={styles.autoSendBlock}>
-        <View style={styles.autoSendCopy}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Options for ${person.personName}`}
+        onPress={onMenu}
+        hitSlop={spacing.xs}
+        style={({ pressed }) => [styles.menu, pressed && styles.pressed]}
+      >
+        <Ellipsis size={20} color={colors.muted} strokeWidth={2} absoluteStrokeWidth />
+      </Pressable>
+
+      <View style={styles.autoSend}>
+        <View style={styles.autoSendHeader}>
           <Text style={styles.autoSendTitle}>Auto-send</Text>
           <Text style={styles.autoSendArmed}>{armedLabel}</Text>
-          <Text style={styles.autoSendHint}>{AUTO_SEND_DELIVERY_COPY}</Text>
         </View>
-        <View style={styles.armRows}>
-          <ArmToggle
-            label="Birthday"
-            enabled={autoSendBirthday}
-            disabled={birthdayDisabled}
-            onToggle={onBirthdayToggle}
-          />
-          <ArmToggle
-            label="Anniversary"
-            enabled={autoSendAnniversary}
-            disabled={anniversaryDisabled}
-            onToggle={onAnniversaryToggle}
-          />
-        </View>
-      </View>
-
-      <View style={styles.actions}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenVault}
-          style={styles.primaryAction}
-        >
-          <Text style={styles.primaryLabel}>Open Vault</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onNote}
-          style={styles.secondaryAction}
-        >
-          <Text style={styles.secondaryLabel}>Note</Text>
-        </Pressable>
+        <ArmToggle
+          label="Birthday"
+          enabled={autoSendBirthday}
+          disabled={birthdayDisabled}
+          onToggle={onBirthdayToggle}
+        />
+        <ArmToggle
+          label="Anniversary"
+          enabled={autoSendAnniversary}
+          disabled={anniversaryDisabled}
+          onToggle={onAnniversaryToggle}
+        />
+        {note ? <Text style={styles.note}>{note}</Text> : null}
       </View>
     </View>
   );
@@ -136,26 +138,19 @@ function ArmToggle({
   onToggle: () => void;
 }) {
   return (
-    <View style={styles.armRow}>
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={`Auto-send ${label.toLowerCase()} card`}
+      accessibilityState={{ checked: enabled, disabled }}
+      disabled={disabled}
+      onPress={onToggle}
+      style={[styles.armRow, disabled && styles.armRowDisabled]}
+    >
       <Text style={styles.armLabel}>{label}</Text>
-      <Pressable
-        accessibilityRole="switch"
-        accessibilityLabel={`Arm ${label.toLowerCase()} auto-send`}
-        accessibilityState={{
-          checked: enabled,
-          disabled,
-        }}
-        disabled={disabled}
-        onPress={onToggle}
-        style={[
-          styles.toggle,
-          enabled && styles.toggleOn,
-          disabled && styles.toggleDisabled,
-        ]}
-      >
+      <View style={[styles.toggle, enabled && styles.toggleOn]}>
         <View style={[styles.toggleKnob, enabled && styles.toggleKnobOn]} />
-      </Pressable>
-    </View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -168,10 +163,18 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
   },
+  open: {
+    gap: spacing.md,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
+    // Keeps long names clear of the options button.
+    paddingRight: MENU_SIZE - spacing.sm,
   },
   avatar: {
     width: 48,
@@ -181,8 +184,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: typography.sizeSm,
+    fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
+    color: colors.ink,
   },
   headerCopy: {
     flex: 1,
@@ -195,49 +199,54 @@ const styles = StyleSheet.create({
     color: colors.ink,
     letterSpacing: -0.2,
   },
-  tag: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dot: {
+    width: 8,
+    height: 8,
     borderRadius: radius.full,
   },
   tagLabel: {
-    fontSize: 10,
-    fontWeight: typography.weightSemibold,
-    letterSpacing: 0.6,
-  },
-  menuButton: {
-    padding: spacing.xs,
+    fontSize: typography.sizeSm,
+    color: colors.inkSoft,
   },
   menu: {
-    fontSize: typography.sizeLg,
-    lineHeight: typography.sizeLg,
-    color: colors.muted,
-  },
-  occasionBanner: {
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+    width: MENU_SIZE,
+    height: MENU_SIZE,
     alignItems: 'center',
-    gap: spacing.xs,
+    justifyContent: 'center',
   },
-  occasionEyebrow: {
-    fontSize: 10,
-    fontWeight: typography.weightSemibold,
-    letterSpacing: 0.8,
-    color: colors.muted,
-    textTransform: 'uppercase',
+  occasion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
   },
   occasionHeadline: {
-    fontSize: typography.sizeMd,
+    flex: 1,
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    textAlign: 'center',
+    color: colors.ink,
   },
-  autoSendBlock: {
+  autoSend: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.sm,
+  },
+  autoSendHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.sm,
-  },
-  autoSendCopy: {
-    gap: 2,
+    minHeight: 32,
   },
   autoSendTitle: {
     fontSize: typography.sizeSm,
@@ -245,25 +254,28 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   autoSendArmed: {
+    flexShrink: 1,
     fontSize: typography.sizeSm,
     color: colors.inkSoft,
-  },
-  autoSendHint: {
-    fontSize: typography.sizeXs,
-    color: colors.muted,
-  },
-  armRows: {
-    gap: spacing.sm,
   },
   armRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 48,
+    minHeight: 44,
+  },
+  armRowDisabled: {
+    opacity: 0.55,
   },
   armLabel: {
     fontSize: typography.sizeSm,
     color: colors.ink,
+  },
+  note: {
+    marginTop: spacing.xs,
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.4,
+    color: colors.muted,
   },
   toggle: {
     width: 48,
@@ -276,9 +288,6 @@ const styles = StyleSheet.create({
   toggleOn: {
     backgroundColor: colors.accent,
   },
-  toggleDisabled: {
-    opacity: 0.5,
-  },
   toggleKnob: {
     width: 24,
     height: 24,
@@ -287,37 +296,5 @@ const styles = StyleSheet.create({
   },
   toggleKnobOn: {
     alignSelf: 'flex-end',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  primaryAction: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.accentHover,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryLabel: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: colors.white,
-  },
-  secondaryAction: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryLabel: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: colors.ink,
   },
 });

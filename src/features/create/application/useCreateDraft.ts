@@ -255,5 +255,6 @@ export function useCreateDraft() {
     loadForEdit,
     canPreview,
     isEditing,
+    isHydrated,
   };
 }

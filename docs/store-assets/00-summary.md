@@ -14,6 +14,8 @@ Everything is in this folder (`/docs/store-assets/`). **Pass 1 changed no app co
 | `04-listing.md` | Every field for both stores (3 names, 5 subtitles/shorts, keywords, promo, descriptions), the 8-frame storyboard, video script, icon concepts, IAP names, localization |
 | `05-growth-plan.md` | Test order with hypotheses, 3 custom product pages, rating-prompt spots, review replies, weekly metrics |
 | **`06-apple-submission.md`** | **Read before you submit to Apple:** your App Store Connect form field by field, the guideline-by-guideline audit, the code fixes made, Sign in with Apple and deletion setup, a smoke-test script |
+| **`07-onboarding-funnel.md`** | The new first-run funnel with Pip (dream → fear → relief → offer): audit, before/after screens, copy, honesty rules, how to measure it |
+| **`08-app-review-response.md`** | **Apple's "Information Needed" reply (9 Oct):** order of steps, the production blocker (age endpoint not deployed), the screen-recording shot list, and the paste-ready Notes and reply (`metadata/…/10-…`, `11-…`) |
 | `images/` | **Built and size-verified:** App Store icon, iPhone 6.3″ (this is the slot your console shows) and 6.9″ screenshots (8 each), **header and search-results assets**, Play icon, feature graphic, Play screenshots (8), icon concepts |
 | `metadata/` | `metadata.json` (all limited fields), the two full descriptions, and **`en-US/app-store-connect/`: one paste-ready file per App Store Connect field** (name, subtitle, promo, keywords, description, URLs, copyright, review notes) |
 | `tools/` | The build scripts and source screens, so any headline or frame can be changed: `node tools/build.mjs && python3 tools/finalize.py`; limit checks: `python3 tools/check-limits.py`, `python3 tools/verify-doc-counts.py` |
@@ -58,6 +60,9 @@ You asked me to check Apple's guidelines against the app and make it approvable.
 | Privacy policy and delete-account page rewritten to match the app | Replace the support email; hide the Play "internal test" buttons on the landing page; confirm the production backend is live |
 | Removed an empty location purpose string; added the export-compliance key | Confirm Sign in with Apple, Push and App Groups on both App IDs |
 
+
+**App Store Connect progress (8 Oct):** entered Copyright, Review Notes and prices in the description; set the secondary category, Age Rating (4+), App Privacy answers (not yet published), Free price in 175 countries, and created the Occasio Pro group with `occasio_pro_monthly` ($2.99), `occasio_pro_yearly` ($19.99) and `occasio_wish_single` ($0.99). Still open: Content Rights (needs your answer on the sounds and animations), product review screenshots, publishing App Privacy, a new build, and the final submit. Full list: `06-apple-submission.md` §8.
+
 ## Assumptions I made
 
 1. **Both stores ship**, Play first (the repo's stated first target is Play production, US). iOS is iPhone-only as built.
@@ -74,7 +79,7 @@ You asked me to check Apple's guidelines against the app and make it approvable.
 ## Only you can confirm (blockers first)
 
 1. **Link lifetime.** Manual cards expire after **30 days** for everyone; the paywall says "365 days" and the privacy policy says "up to 365". Which is true at launch? Fix the server or the words. I kept 365 out of all store copy.
-2. **Support email.** `develoepernick1@gmail.com` appears on the policy and will be public on both listings. It looks like a typo of "developer". Decide the address you will keep.
+2. ~~Support email~~ **Done:** the website, policy pages and app now use `developernick1@gmail.com` (it was misspelled in the code). Redeploy the website to publish it.
 3. **Analytics and a rating prompt.** Production analytics is a stub and there is no review prompt. Without analytics no growth test can be read; see `05-growth-plan.md` §0.
 4. **Is auto-send live and verified in production?** (cron deployed, push working, a real approve-and-send done). Is `OCCASIO_AUTOSEND_DISPATCH` on? Which channels are real? Until you can say yes, the listing sells reminders plus a prepared-card review flow, not delivery.
 5. **Reminder time zone.** The daily job runs at 06:00 India time; for US users "their birthday is today" arrives the evening before. Fine for India-first; decide before a US push.

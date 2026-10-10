@@ -44,7 +44,8 @@ type BillingContextValue = {
   purchase: (planId: string) => Promise<boolean>;
   restore: () => Promise<boolean>;
   presentPaywall: (options?: { force?: boolean }) => Promise<PaywallPresentResult>;
-  openCustomerCenter: () => Promise<void>;
+  /** Resolves `true` once Customer Center was shown, `false` if it could not open. */
+  openCustomerCenter: () => Promise<boolean>;
   refresh: () => Promise<void>;
   clearError: () => void;
   /** Fresh check (not cached state) for a wish beyond the free monthly allowance. */
@@ -205,16 +206,18 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     [refresh],
   );
 
-  const openCustomerCenter = useCallback(async () => {
+  const openCustomerCenter = useCallback(async (): Promise<boolean> => {
     setError(null);
     try {
       await presentCustomerCenter();
       await refresh();
+      return true;
     } catch (e) {
       const message = isBillingError(e)
         ? e.message
         : 'Could not open subscription management.';
       setError(message);
+      return false;
     }
   }, [refresh]);
 

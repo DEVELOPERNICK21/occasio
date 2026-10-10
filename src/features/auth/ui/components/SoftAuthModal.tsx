@@ -16,11 +16,17 @@ import {
   normalizeEmail,
 } from '../../domain/email';
 import { gatedActionLabel } from '../../domain/gatedActions';
-import { AppleLogoIcon } from './AppleLogoIcon';
+import { AuthLegalFooter } from './AuthLegalFooter';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { LoginAuthButton } from './LoginAuthButton';
 
 type Step = 'choose' | 'email' | 'forgot';
+
+function titleFor(step: Step, isSignUp: boolean, actionLabel: string): string {
+  if (step === 'forgot') return 'Reset password';
+  if (step === 'email') return isSignUp ? 'Create your account' : 'Sign in with email';
+  return `Continue to ${actionLabel}`;
+}
 
 export function SoftAuthModal() {
   const {
@@ -45,6 +51,7 @@ export function SoftAuthModal() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'apple' | null>(null);
 
   useEffect(() => {
     if (!visible) {
@@ -54,6 +61,7 @@ export function SoftAuthModal() {
       setIsSignUp(false);
       setError(null);
       setIsLoading(false);
+      setPendingProvider(null);
       clearPasswordReset();
     }
   }, [visible, clearPasswordReset]);
@@ -64,6 +72,7 @@ export function SoftAuthModal() {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
+    setPendingProvider('google');
     setError(null);
     trackEvent(AnalyticsEvents.googleSignInStarted);
     try {
@@ -83,11 +92,13 @@ export function SoftAuthModal() {
       }
     } finally {
       setIsLoading(false);
+      setPendingProvider(null);
     }
   };
 
   const handleAppleSignIn = async () => {
     setIsLoading(true);
+    setPendingProvider('apple');
     setError(null);
     trackEvent(AnalyticsEvents.appleSignInStarted);
     try {
@@ -103,6 +114,7 @@ export function SoftAuthModal() {
       });
     } finally {
       setIsLoading(false);
+      setPendingProvider(null);
     }
   };
 
@@ -142,34 +154,35 @@ export function SoftAuthModal() {
           <View style={styles.sheetTop}>
             <ModalCloseButton onPress={handleClose} accessibilityLabel="Close sign in" />
           </View>
-          <Text style={styles.eyebrow}>{isSignUp ? 'Create account' : 'Sign in'}</Text>
-          <Text style={styles.title}>Continue to {gatedActionLabel(action)}</Text>
-          <Text style={styles.body}>
-            Create and share stay free. {canSignInWithApple ? 'Apple, Google' : 'Google'} or
-            email — no SMS charges.
-          </Text>
+          <Text style={styles.title}>{titleFor(step, isSignUp, gatedActionLabel(action))}</Text>
+          {step === 'choose' ? (
+            <Text style={styles.body}>
+              Creating and sharing cards stays free. Signing in saves your Vault and History.
+            </Text>
+          ) : null}
 
           {step === 'choose' ? (
             <View style={styles.form}>
               {error ? <Text style={styles.error}>{error}</Text> : null}
               {canSignInWithApple ? (
                 <LoginAuthButton
+                  provider="apple"
                   label="Continue with Apple"
-                  icon={<AppleLogoIcon />}
-                  variant="apple"
                   onPress={handleAppleSignIn}
+                  loading={pendingProvider === 'apple'}
                   disabled={isLoading}
                 />
               ) : null}
-              <Button
+              <LoginAuthButton
+                provider="google"
                 label="Continue with Google"
                 onPress={handleGoogleSignIn}
-                loading={isLoading}
+                loading={pendingProvider === 'google'}
                 disabled={isLoading}
               />
-              <Button
+              <LoginAuthButton
+                provider="email"
                 label="Continue with email"
-                variant="secondary"
                 onPress={() => {
                   setIsSignUp(false);
                   setStep('email');
@@ -178,7 +191,7 @@ export function SoftAuthModal() {
                 disabled={isLoading}
               />
               <Button
-                label="Create account"
+                label="New here? Create account"
                 variant="ghost"
                 onPress={() => {
                   setIsSignUp(true);
@@ -290,7 +303,8 @@ export function SoftAuthModal() {
             </View>
           )}
 
-          <Button label="Not now" variant="ghost" onPress={handleClose} />
+          {/* Terms and Privacy must be one tap away wherever an account can be created. */}
+          <AuthLegalFooter />
         </Pressable>
       </Pressable>
     </Modal>
@@ -319,17 +333,12 @@ const styles = StyleSheet.create({
     marginBottom: -spacing.xs,
     marginHorizontal: -spacing.xs,
   },
-  eyebrow: {
-    fontSize: typography.sizeXs,
-    fontWeight: typography.weightSemibold,
-    color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-  },
   title: {
     fontSize: typography.sizeXl,
+    lineHeight: typography.sizeXl * 1.15,
     fontWeight: typography.weightSemibold,
     color: colors.ink,
+    letterSpacing: -0.4,
   },
   body: {
     fontSize: typography.sizeSm,

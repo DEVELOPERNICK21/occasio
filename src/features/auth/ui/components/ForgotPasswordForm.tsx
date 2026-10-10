@@ -3,7 +3,7 @@ import { Button } from '../../../../shared/ui/Button';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, onPhoto, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Tone = 'default' | 'onDark';
 
@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   successOnDark: {
-    color: '#B8F5D4',
+    color: onPhoto.success,
   },
   error: {
     fontSize: typography.sizeSm,
     color: colors.error,
   },
   errorOnDark: {
-    color: '#FCA5A5',
+    color: onPhoto.error,
   },
   linkWrap: {
     alignSelf: 'center',

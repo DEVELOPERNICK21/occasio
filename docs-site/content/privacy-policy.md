@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Occasio collects, uses, and protects your information.
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 This Privacy Policy explains how **Occasio** (“we”, “us”, “our”) handles information when you use our mobile app, recipient web pages at shared links, and related services (collectively, the **Service**).
@@ -10,7 +10,7 @@ By using the Service, you agree to this policy. If you do not agree, please do n
 
 ## 1. Who we are
 
-Occasio is operated by **Nick Kubde** from **India**. For privacy questions or requests, contact us at **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)**.
+Occasio is operated by **Nick Kubde** from **India**. For privacy questions or requests, contact us at **[developernick1@gmail.com](mailto:developernick1@gmail.com)**.
 
 ## 2. What Occasio does
 
@@ -39,17 +39,23 @@ You can create and share cards **without signing in**. In that case we do not co
 
 | Data | Purpose |
 | --- | --- |
-| **Device and app info** | OS version, app version, crash logs — to fix bugs and keep the app stable |
-| **Usage events** | Feature usage (e.g. card created, shared) — to improve the product |
+| **Age check result** | When you first open the app we ask for your date of birth to confirm you are 13 or older. The date is checked and then discarded: **we do not store your date of birth**. We keep only a signed "passed" token on your phone and, once you have an account, a note on that account that it passed |
 | **Push notification token** | If you allow notifications — so we can tell you when a card is ready to review |
-| **Purchase status** | Whether you have an active subscription or bought a single card, from the App Store or Google Play via RevenueCat — to unlock what you paid for |
-| **IP address and browser info** | When a recipient opens a share link — security, abuse prevention, and delivery |
+| **Purchase status** | Whether you have an active subscription or bought a single card, from the App Store or Google Play via RevenueCat — to provide what you paid for |
+| **IP address and browser info** | When someone opens a share link, and when you use the app's servers — security, abuse prevention, and delivery (kept in our hosting provider's logs) |
+| **Unsubscribe list** | If someone unsubscribes from our emails we keep a one-way hash of their email address, so we never email them again. It cannot be turned back into the address |
+
+**We do not use analytics, advertising, session-replay or screen-recording tools, and we do not track you across other apps or websites.** The app does not collect usage statistics or crash reports today. If we add them, they will stay off until you turn them on, and you will be able to turn them off again at any time.
 
 We do **not** scrape your phone contacts. Vault data is limited to what you manually enter.
 
 ### 3.3 Information about other people
 
 When you add someone to your Vault or address a card to them, you provide **their** name and optionally contact details or dates. You are responsible for having a lawful basis to store and use that information (for example, your personal relationship with them). We use it only to deliver the features you request, such as reminders or auto-send when available.
+
+### 3.4 Cookies and on-device storage
+
+Occasio's website sets **no advertising or analytics cookies**. Card pages store a few preferences in your browser's local storage so they work as you expect (for example whether sound is muted, whether you already sent a reaction, and stickers you collected). They never leave your device and are not used to identify you. The internal documentation area uses one strictly necessary, secure cookie to remember access. The app stores your choices and drafts on your phone.
 
 ## 4. How we use information
 
@@ -68,12 +74,13 @@ We do **not** sell your personal information.
 
 | Data | Retention |
 | --- | --- |
-| **Shared card links (guest)** | Links expire after **30 days**; card media and related server data are deleted after expiry (within a short grace period) |
+| **Shared card links (guest)** | Links expire after **30 days**; the card, its photos and related server data are then deleted automatically within **14 days** |
 | **Shared card links (signed-in free)** | **30 days** by default |
 | **Shared card links (paid)** | Cards you create in the app expire **30 days** after creation. Cards prepared by the on-their-day feature (Occasio Pro) can last up to **365 days** |
 | **Vault and account data** | Until you delete the person or your account, or ask us to delete it |
 | **Creation history (metadata)** | Until you delete entries or your account |
-| **Logs and analytics** | Typically up to **90 days**, unless needed longer for security or legal reasons |
+| **Server logs** | Typically up to **90 days**, unless needed longer for security or legal reasons |
+| **Copyright and abuse reports** | A card taken down after a report is kept for up to **90 days** so a counter-notice can be honoured, then deleted. We keep a short record of each notice for as long as the law requires |
 
 When a link expires, recipients can no longer view the card at that URL.
 
@@ -81,13 +88,16 @@ When a link expires, recipients can no longer view the card at that URL.
 
 We use trusted service providers to run Occasio. They process data only on our instructions:
 
-| Provider | Role |
+| Provider | What it receives and why |
 | --- | --- |
-| **Google Firebase** | Authentication, database, hosting, crash reporting |
-| **Google / Apple** | Sign-in and in-app purchases (when you use those features) |
-| **RevenueCat** | Subscription and purchase status (it receives your account ID and purchase receipts) |
-| **Vercel** | API and public web hosting for share links |
+| **Google Firebase** (Authentication, Cloud Firestore, Cloud Messaging; Cloud Functions and Storage once enabled) | Your account, Vault, history and card content, and your push token, to run the service |
+| **Google Sign-In / Sign in with Apple** | The sign-in you choose (name and email as you allow), to authenticate you |
+| **RevenueCat** | Your account ID and purchase receipts, to manage subscriptions and purchases |
+| **Vercel** | API and public web hosting for share links; it sees requests (including IP addresses) and handles card content in transit |
+| **Resend** | If you turn on auto-send by email: the recipient's email address and name, and the link to the card, to deliver the email. Every such email has an unsubscribe link |
 | **Google Play / Apple App Store** | Subscription and payment processing (we do not receive your full payment card number) |
+
+We do not sell personal information and we do not share it with advertisers or data brokers.
 
 We may disclose information if required by law, to protect our rights, or to prevent fraud or abuse.
 
@@ -105,11 +115,11 @@ Depending on where you live (including under India’s **Digital Personal Data P
 
 **Delete your account:** in the app, open the **Account** tab and tap **Delete account and data**. Deletion starts immediately and needs no email or phone call. For other deletion requests, see **[Delete your account and data](/delete-account)**.
 
-**By email:** send requests to **[develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)**. We will respond within a reasonable time (typically within 30 days).
+**By email:** send requests to **[developernick1@gmail.com](mailto:developernick1@gmail.com)**. We will respond within a reasonable time (typically within 30 days).
 
 ## 8. Children
 
-Occasio is not directed at children under **13**. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will delete it.
+Occasio is not for children under **13**. The first time you open the app we ask for your date of birth. If you are under 13 we do not let you continue, we do not create an account, and **we do not keep anything you entered**. The check is repeated on our server when an account is created. If we learn that an account belongs to a child under 13, we delete it and its data. If you believe a child has used Occasio, contact us at the address below and we will act on it.
 
 ## 9. Security
 
@@ -125,5 +135,5 @@ We may update this Privacy Policy from time to time. We will post the new versio
 
 ## 12. Contact
 
-**Email:** [develoepernick1@gmail.com](mailto:develoepernick1@gmail.com)  
+**Email:** [developernick1@gmail.com](mailto:developernick1@gmail.com)  
 **Website:** [occasio-greetings.vercel.app](https://occasio-greetings.vercel.app)

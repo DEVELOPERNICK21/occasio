@@ -1,35 +1,59 @@
-import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import { AppleLogoIcon } from './AppleLogoIcon';
+import { EmailOutlineIcon } from './EmailOutlineIcon';
+import { GoogleGIcon } from './GoogleGIcon';
 
-type Variant = 'google' | 'apple' | 'primary';
+type Provider = 'apple' | 'google' | 'email';
+/** `dark` = over the login photo; `light` = on a white sheet. */
+type Surface = 'light' | 'dark';
 
 type Props = {
+  provider: Provider;
   label: string;
-  icon: ReactNode;
-  variant: Variant;
   onPress: () => void;
+  surface?: Surface;
   disabled?: boolean;
   loading?: boolean;
 };
 
-const VARIANT_STYLE = {
-  google: { button: 'google', label: 'labelGoogle', spinner: colors.accent },
-  apple: { button: 'apple', label: 'labelPrimary', spinner: colors.white },
-  primary: { button: 'primary', label: 'labelPrimary', spinner: colors.white },
-} as const;
+type Look = {
+  background: string;
+  border: string | null;
+  text: string;
+};
+
+const LOOKS: Record<Surface, Record<Provider, Look>> = {
+  light: {
+    apple: { background: colors.ink, border: null, text: colors.white },
+    google: { background: colors.surface, border: colors.border, text: colors.ink },
+    email: { background: colors.surface, border: colors.border, text: colors.ink },
+  },
+  dark: {
+    // Apple allows the white style on dark backgrounds; the black one vanishes into the photo.
+    apple: { background: colors.white, border: null, text: colors.ink },
+    google: { background: colors.white, border: null, text: colors.ink },
+    email: { background: colors.accentHover, border: null, text: colors.white },
+  },
+};
+
+function ProviderIcon({ provider, color }: { provider: Provider; color: string }) {
+  if (provider === 'apple') return <AppleLogoIcon color={color} />;
+  if (provider === 'google') return <GoogleGIcon />;
+  return <EmailOutlineIcon color={color} />;
+}
 
 export function LoginAuthButton({
+  provider,
   label,
-  icon,
-  variant,
   onPress,
+  surface = 'light',
   disabled = false,
   loading = false,
 }: Props) {
   const isDisabled = disabled || loading;
-  const look = VARIANT_STYLE[variant];
+  const look = LOOKS[surface][provider];
 
   return (
     <Pressable
@@ -39,17 +63,21 @@ export function LoginAuthButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        styles[look.button],
+        { backgroundColor: look.background },
+        look.border ? { borderWidth: 1, borderColor: look.border } : null,
+        surface === 'dark' && styles.lifted,
         pressed && !isDisabled && styles.pressed,
-        isDisabled && styles.disabled,
+        isDisabled && !loading && styles.disabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={look.spinner} />
+        <ActivityIndicator size="small" color={look.text} />
       ) : (
         <>
-          <View style={styles.icon}>{icon}</View>
-          <Text style={[styles.label, styles[look.label]]}>{label}</Text>
+          <View style={styles.icon}>
+            <ProviderIcon provider={provider} color={look.text} />
+          </View>
+          <Text style={[styles.label, { color: look.text }]}>{label}</Text>
         </>
       )}
     </Pressable>
@@ -66,24 +94,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
   },
-  google: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+  lifted: {
     ...shadow.card,
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-  },
-  apple: {
-    backgroundColor: colors.ink,
-  },
-  primary: {
-    backgroundColor: colors.accentHover,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   pressed: {
-    opacity: 0.92,
+    opacity: 0.9,
   },
   disabled: {
     opacity: 0.55,
@@ -95,11 +114,5 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
-  },
-  labelGoogle: {
-    color: colors.ink,
-  },
-  labelPrimary: {
-    color: colors.white,
   },
 });

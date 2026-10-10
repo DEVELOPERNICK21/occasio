@@ -45,15 +45,14 @@ describe('vault auto-send UI copy', () => {
       <VaultPersonCard
         person={person}
         theme={getVaultCardTheme('partner')}
-        occasion={{ icon: '', headline: 'Anniversary in 3 days', hasDate: true }}
+        occasion={{ kind: 'anniversary', headline: 'Anniversary in 3 days', hasDate: true }}
         autoSendBirthday
         autoSendAnniversary
         birthdayDisabled={false}
         anniversaryDisabled={false}
         onBirthdayToggle={() => undefined}
         onAnniversaryToggle={() => undefined}
-        onOpenVault={() => undefined}
-        onNote={() => undefined}
+        onOpen={() => undefined}
         onMenu={() => undefined}
       />,
     );
@@ -61,6 +60,50 @@ describe('vault auto-send UI copy', () => {
     expect(output).toContain('Birthday · Anniversary');
     expect(output).toContain(AUTO_SEND_DELIVERY_COPY);
     expect(output.toLowerCase()).not.toContain('coming soon');
+  });
+
+  it('explains why auto-send is off instead of showing dead switches', () => {
+    const output = renderedText(
+      <VaultPersonCard
+        person={person}
+        theme={getVaultCardTheme('partner')}
+        occasion={{ kind: 'birthday', headline: 'Birthday in 3 days', hasDate: true }}
+        autoSendBirthday={false}
+        autoSendAnniversary={false}
+        birthdayDisabled
+        anniversaryDisabled
+        autoSendNote="Auto-send is part of Occasio Pro."
+        onBirthdayToggle={() => undefined}
+        onAnniversaryToggle={() => undefined}
+        onOpen={() => undefined}
+        onMenu={() => undefined}
+      />,
+    );
+
+    expect(output).toContain('Auto-send is part of Occasio Pro.');
+    expect(output).toContain('Not armed');
+    expect(output).not.toContain(AUTO_SEND_DELIVERY_COPY);
+  });
+
+  it('has one open action per card: no duplicate Open Vault / Note buttons', () => {
+    const output = renderedText(
+      <VaultPersonCard
+        person={person}
+        theme={getVaultCardTheme('partner')}
+        occasion={{ kind: 'birthday', headline: 'Birthday in 3 days', hasDate: true }}
+        autoSendBirthday
+        autoSendAnniversary={false}
+        birthdayDisabled={false}
+        anniversaryDisabled={false}
+        onBirthdayToggle={() => undefined}
+        onAnniversaryToggle={() => undefined}
+        onOpen={() => undefined}
+        onMenu={() => undefined}
+      />,
+    );
+
+    expect(output).not.toContain('Open Vault');
+    expect(output).not.toContain('"Note"');
   });
 
   it('labels a waiting send without coming-soon copy', () => {

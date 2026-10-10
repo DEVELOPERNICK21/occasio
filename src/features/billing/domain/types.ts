@@ -3,6 +3,10 @@ export type BillingPlan = {
   title: string;
   priceLabel: string;
   periodLabel: string;
+  /** Numeric price in the store currency, for savings maths. */
+  priceAmount?: number;
+  /** Store-formatted per-month price (yearly plans), e.g. "₹83.25". */
+  perMonthLabel?: string;
 };
 
 export type BillingCustomerSnapshot = {

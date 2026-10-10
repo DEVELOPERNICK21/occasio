@@ -9,6 +9,7 @@ import {
   handleConsumeCredit,
   handleRevenueCatWebhook,
 } from './billing';
+import { purgeExpiredCards } from './purgeExpired';
 import {
   handleApproveScheduledSend,
   handleCancelScheduledSend,
@@ -79,7 +80,7 @@ app.post(
 app.post(
   '/v1/billing/webhook',
   safe(async (req, res) => {
-    await handleRevenueCatWebhook(req, res, db);
+    await handleRevenueCatWebhook(req, res, db, admin.auth());
   }),
 );
 
@@ -116,5 +117,18 @@ export const autosendSweep = onSchedule(
   },
   async () => {
     await sweepExpiredReviews(db, admin.messaging(), new Date());
+  },
+);
+
+/** Deletes cards whose link expired more than two weeks ago (privacy policy §5). */
+export const purgeExpired = onSchedule(
+  {
+    schedule: '30 3 * * *',
+    timeZone: 'Asia/Kolkata',
+    region: 'asia-south1',
+  },
+  async () => {
+    const removed = await purgeExpiredCards(db);
+    console.info('purgeExpired removed', removed);
   },
 );

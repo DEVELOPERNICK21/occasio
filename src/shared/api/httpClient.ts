@@ -28,6 +28,8 @@ function isHttpErrorCode(value: string): value is HttpErrorCode {
     'EXPIRED',
     'UNAUTHORIZED',
     'NOT_IMPLEMENTED',
+    'UNDER_AGE',
+    'ATTESTATION_INVALID',
     'INTERNAL',
   ].includes(value);
 }

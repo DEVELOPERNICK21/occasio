@@ -1,7 +1,7 @@
 import { Linking, StyleSheet, View } from 'react-native';
 import { env } from '../../../../shared/config/env';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, typography } from '../../../../shared/theme/tokens';
+import { colors, onPhoto, typography } from '../../../../shared/theme/tokens';
 
 const TERMS_URL = `${env.shareBaseUrl}/terms`;
 const PRIVACY_URL = `${env.shareBaseUrl}/privacy`;
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightMedium,
   },
   copyOnDark: {
-    color: 'rgba(255, 255, 255, 0.72)',
+    color: onPhoto.textMuted,
   },
   linkOnDark: {
     color: colors.white,

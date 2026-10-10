@@ -1,3 +1,8 @@
+import { composeEmail } from '../email/compose';
+import { emailConfigFromEnv, type EmailConfig } from '../email/config';
+import { sendViaResend } from '../email/resend';
+import { cardDeliveryEmail } from '../email/templates';
+import { createUnsubscribeToken, isSuppressed } from '../email/unsubscribe';
 import type { DeliveryChannel } from './types';
 
 export type DeliverySendInput = {
@@ -59,48 +64,39 @@ export function mockDeliveryProviders(): DeliveryProvider[] {
   ];
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/** Email via Resend (https://resend.com). Enabled when RESEND_API_KEY + OCCASIO_EMAIL_FROM are set. */
+/**
+ * Card delivery by email (Resend). It is a `delivery` email: it goes to someone
+ * who never signed up, so it carries our postal address, an unsubscribe link and
+ * one-click headers, and it is never sent to an address that unsubscribed.
+ */
 export function createResendEmailProvider(
-  apiKey: string,
-  from: string,
+  config: EmailConfig,
+  isSuppressed: (email: string) => Promise<boolean>,
+  fetchImpl: typeof fetch = fetch,
 ): DeliveryProvider {
   return {
     channel: 'email',
     async send(input) {
-      const occasion = input.occasionType === 'anniversary' ? 'anniversary' : 'birthday';
-      const name = escapeHtml(input.personName || 'there');
-      try {
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from,
-            to: [input.to],
-            subject: `Someone made you a ${occasion} surprise`,
-            html:
-              `<p>Hi ${name},</p>` +
-              `<p>Someone who cares about you made a little ${occasion} surprise. Tap to open it:</p>` +
-              `<p><a href="${escapeHtml(input.shareUrl)}">Open your surprise</a></p>`,
-          }),
-        });
-        if (!res.ok) {
-          return { ok: false, error: `resend_${res.status}` };
-        }
-        return { ok: true };
-      } catch {
-        return { ok: false, error: 'resend_network' };
+      if (await isSuppressed(input.to)) {
+        return { ok: false, error: 'unsubscribed' };
       }
+      const token = createUnsubscribeToken(input.to, config.unsubscribeSecret);
+      const card = cardDeliveryEmail(input);
+      const email = composeEmail({
+        kind: 'delivery',
+        from: config.from,
+        to: input.to,
+        subject: card.subject,
+        html: card.html,
+        text: card.text,
+        optOut: {
+          postalAddress: config.postalAddress,
+          unsubscribePageUrl: `${config.siteBase}/unsubscribe?t=${token}`,
+          unsubscribePostUrl: `${config.siteBase}/api/v1/email/unsubscribe?t=${token}`,
+          reason: card.reason,
+        },
+      });
+      return sendViaResend(config.apiKey, email, fetchImpl);
     },
   };
 }
@@ -110,7 +106,9 @@ export function createResendEmailProvider(
  * emulator or when OCCASIO_MOCK_DELIVERY=true, so production can never mark a
  * send as delivered without actually delivering it.
  */
-export function deliveryProviders(): DeliveryProvider[] {
+export function deliveryProviders(
+  db?: FirebaseFirestore.Firestore,
+): DeliveryProvider[] {
   if (
     process.env.OCCASIO_MOCK_DELIVERY === 'true' ||
     process.env.FUNCTIONS_EMULATOR === 'true'
@@ -118,10 +116,12 @@ export function deliveryProviders(): DeliveryProvider[] {
     return mockDeliveryProviders();
   }
   const providers: DeliveryProvider[] = [];
-  const resendKey = process.env.RESEND_API_KEY;
-  const emailFrom = process.env.OCCASIO_EMAIL_FROM;
-  if (resendKey && emailFrom) {
-    providers.push(createResendEmailProvider(resendKey, emailFrom));
+  const email = emailConfigFromEnv();
+  // No database means no way to honour unsubscribes, so email stays off.
+  if (email && db) {
+    providers.push(
+      createResendEmailProvider(email, (to) => isSuppressed(db, to)),
+    );
   }
   return providers;
 }

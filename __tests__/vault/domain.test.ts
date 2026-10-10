@@ -94,10 +94,11 @@ describe('personRules', () => {
 
 describe('vaultCardTheme', () => {
   it('maps relationship types to card themes', () => {
-    expect(getVaultCardTheme('partner').tagLabel).toBe('PARTNER');
-    expect(getVaultCardTheme('friend').tagLabel).toBe('FRIEND');
-    expect(getVaultCardTheme('parent').tagLabel).toBe('FAMILY');
-    expect(getVaultCardTheme('mom').tagLabel).toBe('FAMILY');
+    expect(getVaultCardTheme('partner').tagLabel).toBe('Partner');
+    expect(getVaultCardTheme('friend').tagLabel).toBe('Friend');
+    expect(getVaultCardTheme('parent').tagLabel).toBe('Family');
+    expect(getVaultCardTheme('mom').tagLabel).toBe('Family');
+    expect(getVaultCardTheme('colleague').tagLabel).toBe('Inner circle');
     expect(personInitials('Eleanor Vance')).toBe('EV');
   });
 });
@@ -125,6 +126,7 @@ describe('vaultOccasion', () => {
     );
 
     expect(occasion.hasDate).toBe(true);
+    expect(occasion.kind).toBe('birthday');
     expect(occasion.headline).toContain('Birthday');
   });
 

@@ -14,8 +14,8 @@ type IconProps = {
   active?: boolean;
 };
 
-/** Warm gray tuned for cream tab bar — reads clearer than flat muted brown. */
-export const TAB_ICON_INACTIVE = '#A08E8A';
+/** Same muted brown as the inactive labels: 4.6:1 on the white bar. */
+export const TAB_ICON_INACTIVE = colors.muted;
 
 const INACTIVE_STROKE = 1.9;
 const ACTIVE_STROKE = 2.2;

@@ -7,8 +7,12 @@
  * @see https://www.revenuecat.com/docs/getting-started/installation/reactnative
  */
 export const revenueCatConfig = {
-  /** Shared Test Store key — used when platform-specific keys are empty. */
-  testApiKey: 'test_rjZzlhclstStOVZQJORtmFKGbdh',
+  /**
+   * Test Store key: sandbox purchases that never reach a real store. It exists
+   * only in debug builds. `__DEV__` is a compile-time constant, so release
+   * bundles drop the string entirely (RevenueCat rejects apps that ship it).
+   */
+  testApiKey: __DEV__ ? 'test_rjZzlhclstStOVZQJORtmFKGbdh' : '',
   /** Google Play app `com.occasio.greetings` — used by release builds. */
   androidApiKey: 'goog_AldUMUxDVYoUQqEFJAksKcgKodk',
   /** App Store app `com.occasio.ios` — used by release builds. */

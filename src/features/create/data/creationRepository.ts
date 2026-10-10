@@ -74,7 +74,9 @@ function toCreationError(error: unknown): CreationApiError {
     const code =
       error.code === 'NOT_FOUND' ||
       error.code === 'EXPIRED' ||
-      error.code === 'NOT_IMPLEMENTED'
+      error.code === 'NOT_IMPLEMENTED' ||
+      error.code === 'UNDER_AGE' ||
+      error.code === 'ATTESTATION_INVALID'
         ? 'INTERNAL'
         : error.code;
     return new CreationApiError(code, error.message);

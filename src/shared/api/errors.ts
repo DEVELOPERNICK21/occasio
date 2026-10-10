@@ -6,6 +6,8 @@ export type HttpErrorCode =
   | 'EXPIRED'
   | 'UNAUTHORIZED'
   | 'NOT_IMPLEMENTED'
+  | 'UNDER_AGE'
+  | 'ATTESTATION_INVALID'
   | 'INTERNAL';
 
 export class HttpError extends Error {

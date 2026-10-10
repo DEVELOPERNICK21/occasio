@@ -1,71 +1,118 @@
+import type { ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Check } from 'lucide-react-native';
+import type { LucideProps } from 'lucide-react-native';
+import { Button } from './Button';
 import { Screen } from './Screen';
-import { ScreenHeaderAction } from './ScreenHeaderAction';
 import { Text } from './Text';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 
 type Props = {
   title: string;
-  message: string;
-  isSignedIn: boolean;
+  /** One sentence on what this tab is for. */
+  headline: string;
+  /** What signing in unlocks — short, concrete, true. */
+  benefits: readonly string[];
+  icon: ComponentType<LucideProps>;
   onSignIn: () => void;
-  signedInMessage?: string;
 };
 
+const BADGE_ICON_SIZE = 30;
+const CHECK_SIZE = 14;
+
 /** Shared gate for tabs that require sign-in — no feature ui imports. */
-export function GuestGateScreen({
-  title,
-  message,
-  isSignedIn,
-  onSignIn,
-  signedInMessage,
-}: Props) {
+export function GuestGateScreen({ title, headline, benefits, icon: Icon, onSignIn }: Props) {
   return (
-    <Screen
-      title={title}
-      subtitle={isSignedIn ? signedInMessage : 'Sign in to unlock'}
-      headerAction={
-        isSignedIn ? undefined : (
-          <ScreenHeaderAction label="Sign in / Create" onPress={onSignIn} />
-        )
-      }
-    >
-      <View style={styles.card}>
-        <Text style={styles.body}>{message}</Text>
-        {isSignedIn ? (
-          <Text style={styles.soon}>Coming in the next build slice.</Text>
-        ) : (
-          <Text style={styles.hint}>
-            You can still create and share cards as a guest — no account needed.
-          </Text>
-        )}
+    <Screen title={title}>
+      <View style={styles.hero}>
+        <View style={styles.badge}>
+          <Icon size={BADGE_ICON_SIZE} color={colors.accent} strokeWidth={1.9} absoluteStrokeWidth />
+        </View>
+        <Text style={styles.headline}>{headline}</Text>
+      </View>
+
+      <View style={styles.benefits}>
+        {benefits.map((benefit) => (
+          <View key={benefit} style={styles.benefitRow}>
+            <View style={styles.check}>
+              <Check size={CHECK_SIZE} color={colors.sage} strokeWidth={2.6} absoluteStrokeWidth />
+            </View>
+            <Text style={styles.benefit}>{benefit}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.actions}>
+        <Button label="Sign in or create account" onPress={onSignIn} />
+        <Text style={styles.guest}>
+          You can still create and share cards without an account.
+        </Text>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+  hero: {
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.lg,
+  },
+  badge: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.full,
+    backgroundColor: colors.sidebar,
     borderWidth: 1,
     borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headline: {
+    maxWidth: 300,
+    fontSize: typography.sizeLg,
+    lineHeight: typography.sizeLg * 1.3,
+    fontWeight: typography.weightSemibold,
+    color: colors.ink,
+    textAlign: 'center',
+    letterSpacing: -0.2,
+  },
+  benefits: {
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  body: {
-    fontSize: typography.sizeMd,
-    color: colors.inkSoft,
-    lineHeight: typography.sizeMd * 1.45,
+  check: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.full,
+    backgroundColor: colors.sageSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  hint: {
+  benefit: {
+    flex: 1,
     fontSize: typography.sizeSm,
-    color: colors.muted,
     lineHeight: typography.sizeSm * 1.4,
+    color: colors.inkSoft,
   },
-  soon: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: colors.accent,
+  actions: {
+    marginTop: spacing.lg,
+    gap: spacing.md,
+  },
+  guest: {
+    fontSize: typography.sizeXs,
+    lineHeight: typography.sizeXs * 1.5,
+    color: colors.muted,
+    textAlign: 'center',
   },
 });

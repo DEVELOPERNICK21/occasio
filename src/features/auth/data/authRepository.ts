@@ -5,6 +5,10 @@ import { httpClient } from '../../../shared/api/httpClient';
 import { env, getApiBaseUrl } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
 import type { AuthUser } from '../domain/types';
+import {
+  AccountAgeError,
+  enforceAgeForNewAccount,
+} from '../../age/data/ageRepository';
 import { AuthError, mapFirebaseAuthError, mapGoogleSignInError } from './authErrors';
 import { configureGoogleSignIn } from './googleSignIn';
 
@@ -27,6 +31,27 @@ function mapUser(firebaseUser: FirebaseAuthTypes.User): AuthUser {
     displayName: firebaseUser.displayName,
     createdAt: firebaseUser.metadata.creationTime ?? null,
   });
+}
+
+/**
+ * COPPA: a brand-new account only stays if the server accepts the age check.
+ * Otherwise the account is deleted again on the spot and nothing is kept.
+ */
+async function requireAgeForNewAccount(user: FirebaseAuthTypes.User): Promise<void> {
+  try {
+    await enforceAgeForNewAccount(user);
+  } catch (error) {
+    if (error instanceof AccountAgeError) {
+      if (error.reason === 'network') {
+        throw new AuthError(
+          'NETWORK',
+          'We could not confirm your age. Check your connection and try again.',
+        );
+      }
+      throw new AuthError('UNKNOWN', 'We could not create an account for you.');
+    }
+    throw error;
+  }
 }
 
 function isFirebaseAuthError(error: unknown): boolean {
@@ -66,7 +91,7 @@ export async function signInWithGoogle(): Promise<AuthUser> {
   if (env.useMockAuth) {
     mockUser = {
       uid: 'mock-google-user',
-      email: 'develoepernick1@gmail.com',
+      email: 'developernick1@gmail.com',
       phoneNumber: null,
       displayName: 'Dev User',
       createdAt: new Date().toISOString(),
@@ -102,6 +127,9 @@ export async function signInWithGoogle(): Promise<AuthUser> {
     const result = await auth().signInWithCredential(credential);
     if (!result.user) {
       throw new AuthError('UNKNOWN', 'Sign-in failed.');
+    }
+    if (result.additionalUserInfo?.isNewUser) {
+      await requireAgeForNewAccount(result.user);
     }
     return mapUser(result.user);
   } catch (error) {
@@ -169,6 +197,9 @@ export async function signInWithApple(): Promise<AuthUser> {
     const result = await auth().signInWithCredential(credential);
     if (!result.user) {
       throw new AuthError('UNKNOWN', 'Sign-in failed.');
+    }
+    if (result.additionalUserInfo?.isNewUser) {
+      await requireAgeForNewAccount(result.user);
     }
 
     // Apple shares the name only on the first authorization.
@@ -257,8 +288,12 @@ export async function createAccountWithEmail(
     if (!result.user) {
       throw new AuthError('UNKNOWN', 'Could not create account.');
     }
+    await requireAgeForNewAccount(result.user);
     return mapUser(result.user);
   } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
     throw mapFirebaseAuthError(error);
   }
 }

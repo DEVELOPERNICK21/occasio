@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { triggerTabHaptic } from '../platform/haptics';
 import { Text } from '../ui/Text';
 import {
@@ -21,10 +21,32 @@ import {
   VaultTabIcon,
 } from '../ui/icons/TabIcons';
 import { colors, shadow, spacing, typography } from '../theme/tokens';
-import { TAB_BAR_LAYOUT } from './tabBarConstants';
+import { FLOATING_TAB_BAR_HEIGHT, TAB_BAR_LAYOUT } from './tabBarConstants';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const AnimatedText = Animated.createAnimatedComponent(Text);
+
+/** Height of the soft fade where scrolling content meets the tab bar zone. */
+const CONTENT_FADE_HEIGHT = 36;
+
+/**
+ * Screens end exactly where the bar zone begins, so content would otherwise stop
+ * on a hard line. This eases it into the page colour instead.
+ */
+function ContentFade() {
+  return (
+    <View pointerEvents="none" style={styles.contentFade}>
+      <Svg width="100%" height={CONTENT_FADE_HEIGHT}>
+        <Defs>
+          <LinearGradient id="tabContentFade" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={colors.bg} stopOpacity={0} />
+            <Stop offset="1" stopColor={colors.bg} stopOpacity={1} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#tabContentFade)" />
+      </Svg>
+    </View>
+  );
+}
 
 const {
   barHeight: BAR_HEIGHT,
@@ -153,34 +175,15 @@ type TabBarLabelProps = {
   label: string;
 };
 
+/** Full-strength colour (never dimmed) so inactive labels keep 4.5:1 contrast. */
 function TabBarLabel({ focused, label }: TabBarLabelProps) {
-  const opacity = useSharedValue(focused ? 1 : 0.62);
-  const translateY = useSharedValue(focused ? 0 : 2);
-
-  useEffect(() => {
-    opacity.value = withTiming(focused ? 1 : 0.62, { duration: 180 });
-    translateY.value = withSpring(focused ? 0 : 2, {
-      damping: 22,
-      stiffness: 280,
-      mass: 0.7,
-    });
-  }, [focused, opacity, translateY]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
   return (
-    <AnimatedText
-      style={[
-        styles.label,
-        focused ? styles.labelActive : styles.labelInactive,
-        style,
-      ]}
+    <Text
+      numberOfLines={1}
+      style={[styles.label, focused ? styles.labelActive : styles.labelInactive]}
     >
       {label}
-    </AnimatedText>
+    </Text>
   );
 }
 
@@ -215,7 +218,7 @@ function TabPressable({
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
       accessibilityLabel={label}
       onPress={onPress}
@@ -282,6 +285,7 @@ export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarP
       pointerEvents="box-none"
       style={[styles.root, { paddingBottom: insets.bottom + BAR_BOTTOM_GAP }]}
     >
+      <ContentFade />
       <View
         style={styles.barShell}
         onLayout={(event) => {
@@ -320,7 +324,7 @@ export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarP
           })}
         </Animated.View>
 
-        <View style={styles.tabsRow}>
+        <View accessibilityRole="tablist" style={styles.tabsRow}>
           {state.routes.map((route, index) => {
             const focused = state.index === index;
             const config = TAB_CONFIG[route.name as TabRouteName];
@@ -367,6 +371,14 @@ const styles = StyleSheet.create({
     left: BAR_HORIZONTAL_MARGIN,
     right: BAR_HORIZONTAL_MARGIN,
     bottom: 0,
+  },
+  contentFade: {
+    position: 'absolute',
+    // Bleed past the bar's side margins so the fade spans the whole screen width.
+    left: -BAR_HORIZONTAL_MARGIN,
+    right: -BAR_HORIZONTAL_MARGIN,
+    bottom: FLOATING_TAB_BAR_HEIGHT,
+    height: CONTENT_FADE_HEIGHT,
   },
   barShell: {
     minHeight: BAR_HEIGHT + BUBBLE_RISE,

@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'crypto';
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import { requireUid } from './authUtil';
+import { sendSubscriptionConfirmation } from './subscriptionEmail';
 
 const ENTITLEMENT_PRO = 'occasio_pro';
 const WISH_CREDIT_PRODUCT_IDS = ['occasio_wish_single', 'single_wish'];
@@ -155,6 +156,7 @@ export async function handleRevenueCatWebhook(
   req: Request,
   res: Response,
   db: FirebaseFirestore.Firestore,
+  auth?: admin.auth.Auth,
 ): Promise<void> {
   const expected = process.env.OCCASIO_RC_WEBHOOK_AUTH;
   if (!expected) {
@@ -173,8 +175,21 @@ export async function handleRevenueCatWebhook(
   }
   try {
     await syncUserBilling(db, uid);
-    res.status(200).json({ ok: true });
   } catch (error) {
     billingFailure(res, error);
+    return;
   }
+  if (auth) {
+    try {
+      await sendSubscriptionConfirmation(
+        db,
+        auth,
+        uid,
+        (req.body as { event?: Record<string, unknown> }).event ?? {},
+      );
+    } catch (error) {
+      console.error('subscription confirmation failed', error);
+    }
+  }
+  res.status(200).json({ ok: true });
 }
