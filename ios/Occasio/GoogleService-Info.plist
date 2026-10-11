@@ -2,22 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>751525617274-lejd339l36uiqcjf9g0c8cgcrqgb1ue6.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.751525617274-lejd339l36uiqcjf9g0c8cgcrqgb1ue6</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>751525617274-2dhtklc40bbjon7aqoaii5f9g5u0p9ei.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyDnSJ_5Fyp2HBKkt-33xUOI0VRaMwMULis</string>
+	<key>BUNDLE_ID</key>
+	<string>com.occasio.ios</string>
+	<key>CLIENT_ID</key>
+	<string>751525617274-gbal408rrl8vdqbj3gdi9ab7vhijuo3h.apps.googleusercontent.com</string>
 	<key>GCM_SENDER_ID</key>
 	<string>751525617274</string>
-	<key>PLIST_VERSION</key>
-	<string>1</string>
-	<key>BUNDLE_ID</key>
-	<string>com.occasio</string>
-	<key>PROJECT_ID</key>
-	<string>occasio-app-dev</string>
-	<key>STORAGE_BUCKET</key>
-	<string>occasio-app-dev.firebasestorage.app</string>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:751525617274:ios:9c88ea16b7cf5466e265c3</string>
 	<key>IS_ADS_ENABLED</key>
 	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -28,7 +24,13 @@
 	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
 	<true/>
-	<key>GOOGLE_APP_ID</key>
-	<string>1:751525617274:ios:7e2c2ecefee4649ee265c3</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>PROJECT_ID</key>
+	<string>occasio-app-dev</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.751525617274-gbal408rrl8vdqbj3gdi9ab7vhijuo3h</string>
+	<key>STORAGE_BUCKET</key>
+	<string>occasio-app-dev.firebasestorage.app</string>
 </dict>
 </plist>

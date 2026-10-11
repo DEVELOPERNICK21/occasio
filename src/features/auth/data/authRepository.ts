@@ -2,7 +2,7 @@ import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { httpClient } from '../../../shared/api/httpClient';
-import { env, getApiBaseUrl } from '../../../shared/config/env';
+import { env } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
 import type { AuthUser } from '../domain/types';
 import {
@@ -437,7 +437,7 @@ export async function deleteAccount(): Promise<void> {
   }
 
   try {
-    await httpClient.delete(getApiBaseUrl(), '/v1/account', {
+    await httpClient.delete(env.sparkApiBaseUrl, '/api/v1/account', {
       Authorization: `Bearer ${token}`,
     });
   } catch {

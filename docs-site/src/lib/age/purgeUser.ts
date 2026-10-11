@@ -16,8 +16,8 @@ async function deleteAll(
 }
 
 /**
- * Erases an account and everything tied to it. Used when a person turns out to
- * be under 13: we must not keep their data. Mirrors `deleteAccountData` in
+ * Erases an account and everything tied to it. Used for in-app account deletion
+ * and when a person turns out to be under 13. Mirrors `deleteAccountData` in
  * `functions/src/account.ts` (that one is deployed separately).
  */
 export async function purgeUser(uid: string): Promise<void> {

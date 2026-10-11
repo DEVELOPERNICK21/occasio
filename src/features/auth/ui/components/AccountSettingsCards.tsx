@@ -353,13 +353,17 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightSemibold,
     color: colors.ink,
   },
+  // Pills size to their label and wrap onto a second row when the line is full, so a
+  // longer label ("Terms of Service") is never squeezed out of its own button.
   helpActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   helpButton: {
-    flex: 1,
+    flexGrow: 1,
     minHeight: 40,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.full,
     borderWidth: 1,
     borderColor: colors.accent,

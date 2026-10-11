@@ -88,3 +88,4 @@ docs-site/.vercel/
 
 # Firebase Functions build output
 functions/lib/
+.vercel
