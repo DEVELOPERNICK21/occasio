@@ -104,6 +104,75 @@ export function getPersonNextOccasion(
   };
 }
 
+/** Days until the nearest saved occasion, or null when no date is saved. */
+export function nextOccasionDays(
+  person: VaultPerson,
+  now = new Date(),
+): number | null {
+  const days = [person.birthday, person.anniversary]
+    .filter((date): date is NonNullable<typeof date> => date !== null)
+    .map((date) => daysUntilPersonDate(date, now));
+  return days.length === 0 ? null : Math.min(...days);
+}
+
+export type VaultSectionKey = 'week' | 'month' | 'later' | 'noDate';
+
+export type VaultSection = {
+  key: VaultSectionKey;
+  title: string;
+  people: VaultPerson[];
+};
+
+const WEEK_DAYS = 7;
+const MONTH_DAYS = 30;
+
+const SECTION_TITLES: Record<VaultSectionKey, string> = {
+  week: 'This week',
+  month: 'This month',
+  later: 'Later',
+  noDate: 'No date yet',
+};
+
+/** Sort by next occasion and bucket for the Vault list. Empty sections are dropped. */
+export function groupVaultPeople(
+  people: VaultPerson[],
+  now = new Date(),
+): VaultSection[] {
+  const buckets: Record<VaultSectionKey, { person: VaultPerson; days: number }[]> = {
+    week: [],
+    month: [],
+    later: [],
+    noDate: [],
+  };
+
+  for (const person of people) {
+    const days = nextOccasionDays(person, now);
+    const key: VaultSectionKey =
+      days === null
+        ? 'noDate'
+        : days <= WEEK_DAYS
+          ? 'week'
+          : days <= MONTH_DAYS
+            ? 'month'
+            : 'later';
+    buckets[key].push({ person, days: days ?? 0 });
+  }
+
+  const order: VaultSectionKey[] = ['week', 'month', 'later', 'noDate'];
+  return order
+    .map((key) => ({
+      key,
+      title: SECTION_TITLES[key],
+      people: buckets[key]
+        .sort(
+          (a, b) =>
+            a.days - b.days || a.person.personName.localeCompare(b.person.personName),
+        )
+        .map((item) => item.person),
+    }))
+    .filter((section) => section.people.length > 0);
+}
+
 export function filterVaultPeople(
   people: VaultPerson[],
   query: string,

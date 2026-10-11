@@ -31,9 +31,6 @@ export function starCapacity(
       case 'gate':
         total += 1;
         break;
-      case 'lamp':
-        total += 1;
-        break;
       case 'balloons':
         total += 4;
         break;

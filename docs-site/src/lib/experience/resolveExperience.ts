@@ -28,7 +28,7 @@ const CONTRACT_TYPES = new Set(['just_because']);
 /**
  * Story pack by moment. Every story opens with a YES/NO gate (a tap that also
  * unlocks browser audio) and ends on a finale with Replay + share loop:
- * gate → lamp → balloons → candle (birthday/anniversary) → gift →
+ * gate → balloons → candle (birthday/anniversary) → gift →
  * contract (just because) → hub (photos?, reasons?, letter — any order) → finale
  */
 export function resolveExperience(
@@ -49,7 +49,7 @@ export function resolveExperience(
     return { mode, scenes: [], revealLine };
   }
 
-  const scenes: SceneId[] = ['gate', 'lamp', 'balloons'];
+  const scenes: SceneId[] = ['gate', 'balloons'];
   if (CANDLE_TYPES.has(card.templateType)) {
     scenes.push('candle');
   }

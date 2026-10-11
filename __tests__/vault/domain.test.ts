@@ -18,6 +18,7 @@ import {
   formatArmedOccasions,
   formatPackSummary,
   getPersonNextOccasion,
+  groupVaultPeople,
 } from '../../src/features/vault/domain/vaultOccasion';
 import type { AutoSendPack } from '../../src/features/vault/domain/types';
 
@@ -165,6 +166,54 @@ describe('vaultOccasion', () => {
       new Date('2026-09-01'),
     );
     expect(anniversarySooner.headline).toContain('Anniversary');
+  });
+
+  it('sorts by next occasion and groups into week, month, later, no date', () => {
+    const now = new Date('2026-09-01');
+    const make = (
+      id: string,
+      personName: string,
+      birthday: { month: number; day: number } | null,
+    ) => ({
+      id,
+      userId: 'u',
+      personName,
+      relationshipType: 'friend' as const,
+      birthday,
+      anniversary: null,
+      whatsapp: null,
+      email: null,
+      autoSendBirthday: false,
+      autoSendAnniversary: false,
+      pack: null,
+      lastCreationId: null,
+      createdAt: '',
+      updatedAt: '',
+    });
+
+    const sections = groupVaultPeople(
+      [
+        make('later', 'Zed', { month: 12, day: 1 }),
+        make('none', 'Nina', null),
+        make('month', 'Mia', { month: 9, day: 20 }),
+        make('week-b', 'Bo', { month: 9, day: 5 }),
+        make('week-a', 'Al', { month: 9, day: 2 }),
+      ],
+      now,
+    );
+
+    expect(sections.map((section) => section.key)).toEqual([
+      'week',
+      'month',
+      'later',
+      'noDate',
+    ]);
+    expect(sections[0]?.people.map((person) => person.id)).toEqual(['week-a', 'week-b']);
+    expect(sections[1]?.people.map((person) => person.id)).toEqual(['month']);
+  });
+
+  it('drops empty sections', () => {
+    expect(groupVaultPeople([], new Date('2026-09-01'))).toEqual([]);
   });
 
   it('filters people by search query', () => {

@@ -89,6 +89,24 @@ export const onPhoto = {
 } as const;
 
 /**
+ * Materials the card frames imitate: film stock, notebook paper, grease pencil.
+ * Artwork colours rather than UI palette colours, so they are not part of
+ * design-tokens.json.
+ */
+export const frameArt = {
+  film: '#171210',
+  filmEdge: '#F0A24B',
+  filmHole: '#F6EDE4',
+  pencil: '#D4372C',
+  paper: '#FBF4E6',
+  paperRule: '#CBD9E6',
+  paperMargin: '#E7A4A0',
+  stampInk: '#9C3D38',
+  sepia: 'rgba(140, 92, 48, 0.14)',
+  boothCurtain: '#B8403C',
+} as const;
+
+/**
  * Pip, the Occasio mascot. These are artwork colours (the same orange body the
  * recipient web page uses for the birthday moment), not UI colours, so they
  * live here and are not part of design-tokens.json.

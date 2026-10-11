@@ -13,6 +13,11 @@ const SLOT_LABELS: Record<LayoutId, readonly string[]> = {
   asymmetric_split: ['Top left', 'Middle left', 'Tall', 'Footer'],
   big_words: ['Top left', 'Top right', 'Bottom left', 'Bottom right'],
   story_mosaic: ['Banner', 'Grid 1', 'Grid 2', 'Grid 3', 'Grid 4'],
+  cinema_still: ['Still'],
+  handwritten_note: ['Taped photo'],
+  postcard: ['Postcard photo'],
+  photo_booth: ['Shot 1', 'Shot 2', 'Shot 3'],
+  contact_sheet: ['Circled frame', 'Frame 2', 'Frame 3', 'Frame 4', 'Frame 5'],
 };
 
 export function slotLabels(layoutId: LayoutId, slotCount: number): string[] {

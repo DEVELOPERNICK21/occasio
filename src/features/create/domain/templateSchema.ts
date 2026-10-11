@@ -24,7 +24,12 @@ export type LayoutId =
   | 'scrapbook'
   | 'poster_type'
   | 'big_words'
-  | 'framed_blur';
+  | 'framed_blur'
+  | 'cinema_still'
+  | 'handwritten_note'
+  | 'postcard'
+  | 'photo_booth'
+  | 'contact_sheet';
 
 export type PhotoSlotCount = 1 | 2 | 3 | 4 | 5;
 
@@ -61,6 +66,11 @@ const LAYOUT_IDS = new Set<LayoutId>([
   'poster_type',
   'big_words',
   'framed_blur',
+  'cinema_still',
+  'handwritten_note',
+  'postcard',
+  'photo_booth',
+  'contact_sheet',
 ]);
 
 function isAudience(v: unknown): v is Audience {

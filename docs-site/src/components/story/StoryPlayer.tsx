@@ -12,13 +12,13 @@ import { FinaleScene } from '@/components/story/FinaleScene';
 import { GateScene } from '@/components/story/GateScene';
 import { GiftScene } from '@/components/story/GiftScene';
 import { HubScene } from '@/components/story/HubScene';
-import { LampScene } from '@/components/story/LampScene';
 import { JoyHud, JoyProvider, useJoy } from '@/components/story/fx/JoyProvider';
 import { ReportCardLink } from '@/components/ReportCardLink';
 import { MomentBackdrop } from '@/components/story/fx/MomentBackdrop';
 import { trackCardEvent } from '@/lib/cardEvents';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
 import { starCapacity } from '@/lib/experience/joy';
+import { startMusic, stopMusic, unlockMusic } from '@/lib/experience/occasionMusic';
 import { momentThemeFor } from '@/lib/experience/momentTheme';
 import type { SceneId } from '@/lib/experience/types';
 import type { RecipientCard } from '@/lib/recipientCard';
@@ -85,6 +85,8 @@ function StoryStage({ card, slug }: Props) {
   const theme = useMemo(() => momentThemeFor(card.templateType), [card.templateType]);
   const { award, stars, max } = useJoy();
   const [index, setIndex] = useState(0);
+  // True when the story is shown inside another page (the landing page's live sample).
+  const [embedded, setEmbedded] = useState(false);
   const [demoRoom, setDemoRoom] = useState<'photos' | 'reasons' | 'letter' | null>(null);
 
   // Demo cards only: `?scene=gift` jumps straight to a scene so each one can be reviewed.
@@ -99,6 +101,29 @@ function StoryStage({ card, slug }: Props) {
 
   const scene: SceneId | null = resolved.scenes[index] ?? null;
 
+  useEffect(() => {
+    const framed = window.self !== window.top;
+    setEmbedded(framed);
+    // Inside the landing page's phone there is no room for a scrollbar.
+    if (framed) document.documentElement.classList.add('is-embedded');
+    return () => document.documentElement.classList.remove('is-embedded');
+  }, []);
+
+  // The first tap anywhere unlocks the song, however the story was entered (gate, deep link, embed).
+  useEffect(() => {
+    const unlock = () => unlockMusic(card.templateType);
+    window.addEventListener('pointerdown', unlock, { once: true });
+    return () => window.removeEventListener('pointerdown', unlock);
+  }, [card.templateType]);
+
+  // The song plays under the message and the finale (and on after Replay's first scenes stop it).
+  const closing = scene === 'hub' || scene === 'finale';
+  useEffect(() => {
+    if (closing) startMusic(card.templateType);
+    else stopMusic();
+  }, [closing, card.templateType]);
+  useEffect(() => () => stopMusic(300), []);
+
   const advance = useCallback(() => {
     setIndex((i) => Math.min(i + 1, Math.max(resolved.scenes.length - 1, 0)));
   }, [resolved.scenes.length]);
@@ -109,27 +134,11 @@ function StoryStage({ card, slug }: Props) {
 
   const hubIndex = Math.max(resolved.scenes.indexOf('hub'), 0);
   const skipToMessage = () => setIndex(hubIndex);
-  const firstStoryIndex = Math.max(resolved.scenes.indexOf('lamp'), 0);
-  const replay = () => setIndex(firstStoryIndex);
+  // Replay starts again just after the gate: the recipient already said yes.
+  const replay = () => setIndex(Math.min(1, Math.max(resolved.scenes.length - 1, 0)));
   // The gate and finale bookend the story; progress counts only the scenes between.
   const bookends = resolved.scenes.filter((id) => id === 'gate' || id === 'finale').length;
   const showProgress = scene !== 'gate' && scene !== 'finale';
-
-  if (scene === 'lamp') {
-    return (
-      <LampScene
-        recipientName={card.recipientName}
-        templateType={card.templateType}
-        step={index}
-        total={resolved.scenes.length - bookends}
-        onComplete={() => {
-          award('lamp');
-          advance();
-        }}
-        onSkip={skipToMessage}
-      />
-    );
-  }
 
   return (
     <div
@@ -212,6 +221,7 @@ function StoryStage({ card, slug }: Props) {
             theme={theme}
             stars={stars}
             maxStars={max}
+            embedded={embedded}
             onReplay={replay}
           />
         ) : null}
@@ -226,7 +236,7 @@ function StoryStage({ card, slug }: Props) {
           </button>
         ) : null}
       </div>
-      <ReportCardLink slug={slug} />
+      {embedded ? null : <ReportCardLink slug={slug} />}
     </div>
   );
 }

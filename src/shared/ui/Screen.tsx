@@ -2,13 +2,8 @@ import type { ReactNode, RefObject } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { ScrollView as ScrollViewType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { colors, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
-
-type StepProgress = {
-  current: number;
-  total: number;
-};
 
 type Props = {
   title: string;
@@ -27,7 +22,8 @@ type Props = {
   /** Attach for tab re-press scroll-to-top via `useScrollToTop`. */
   scrollRef?: RefObject<ScrollViewType | null>;
   scroll?: boolean;
-  step?: StepProgress;
+  /** Progress through a multi-screen flow, shown above the title. */
+  progress?: ReactNode;
 };
 
 /** Room for sticky footer CTA above the floating tab bar. */
@@ -44,7 +40,7 @@ export function Screen({
   onBack,
   scrollRef,
   scroll = true,
-  step,
+  progress,
 }: Props) {
   const insets = useSafeAreaInsets();
   const scrollBottomPadding = spacing.xl + (footer ? FOOTER_SCROLL_RESERVE : 0);
@@ -69,22 +65,7 @@ export function Screen({
               <Text style={styles.backLabel}>←</Text>
             </Pressable>
           ) : null}
-          {step ? (
-            <View style={styles.stepRow}>
-              {Array.from({ length: step.total }, (_, index) => {
-                const active = index + 1 <= step.current;
-                return (
-                  <View
-                    key={index}
-                    style={[styles.stepDot, active && styles.stepDotActive]}
-                  />
-                );
-              })}
-              <Text style={styles.stepLabel}>
-                Step {step.current} of {step.total}
-              </Text>
-            </View>
-          ) : null}
+          {progress}
           <View style={styles.titleRow}>
             <View style={styles.titleBlock}>
               <Text style={styles.title}>{title}</Text>
@@ -156,26 +137,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.sizeXl,
     fontWeight: typography.weightMedium,
     color: colors.accent,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  stepDot: {
-    width: 24,
-    height: 4,
-    borderRadius: radius.full,
-    backgroundColor: colors.border,
-  },
-  stepDotActive: {
-    backgroundColor: colors.accent,
-  },
-  stepLabel: {
-    marginLeft: spacing.sm,
-    fontSize: typography.sizeXs,
-    color: colors.muted,
   },
   titleRow: {
     flexDirection: 'row',

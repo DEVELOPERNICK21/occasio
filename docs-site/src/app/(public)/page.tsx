@@ -1,5 +1,6 @@
 import { LandingHero } from '@/components/LandingHero';
 import { LandingAppShowcase } from '@/components/LandingAppShowcase';
+import { LandingFrames } from '@/components/LandingFrames';
 import {
   LandingClosingCta,
   LandingFeatures,
@@ -15,8 +16,9 @@ export default function LandingPage() {
     <>
       <LandingHero />
       <LandingTrustStrip />
-      <LandingAppShowcase />
       <LandingOccasions />
+      <LandingFrames />
+      <LandingAppShowcase />
       <LandingHowItWorks />
       <LandingFeatures />
       <LandingVaultVignette />

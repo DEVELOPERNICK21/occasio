@@ -27,6 +27,8 @@ type Props = {
   tone: Tone;
   width: number;
   recommended?: boolean;
+  /** Set when the frame needs more photos than added so far, e.g. "Add 2 more photos". Still tappable. */
+  needsNote?: string;
   onPress: () => void;
 };
 
@@ -44,6 +46,7 @@ export function DesignFrameCard({
   tone,
   width,
   recommended = false,
+  needsNote,
   onPress,
 }: Props) {
   const scale = useSharedValue(1);
@@ -54,8 +57,12 @@ export function DesignFrameCard({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${template.title}. ${cue}`}
-      accessibilityHint="Choose this design and arrange your photos in it"
+      accessibilityLabel={`${template.title}. ${cue}${needsNote ? `. ${needsNote} to use it` : ''}`}
+      accessibilityHint={
+        needsNote
+          ? 'Explains what this frame needs and lets you add photos'
+          : 'Choose this design and arrange your photos in it'
+      }
       onPress={onPress}
       onPressIn={() => {
         scale.value = withSpring(0.97, PRESS_SPRING);
@@ -87,9 +94,14 @@ export function DesignFrameCard({
             <Text style={styles.cue} numberOfLines={1}>
               {cue}
             </Text>
-            <Text style={styles.detail} numberOfLines={1}>
-              {STYLE_LABELS[template.style]} ·{' '}
-              {template.photoSlots === 1 ? '1 photo' : `${template.photoSlots} photos`}
+            <Text
+              style={[styles.detail, needsNote ? styles.detailNeeds : null]}
+              numberOfLines={1}
+            >
+              {needsNote ??
+                `${STYLE_LABELS[template.style]} · ${
+                  template.photoSlots === 1 ? '1 photo' : `${template.photoSlots} photos`
+                }`}
             </Text>
           </View>
         </Animated.View>
@@ -144,5 +156,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: typography.sizeXs,
     color: colors.muted,
+  },
+  detailNeeds: {
+    fontWeight: typography.weightSemibold,
+    color: colors.accentHover,
   },
 });

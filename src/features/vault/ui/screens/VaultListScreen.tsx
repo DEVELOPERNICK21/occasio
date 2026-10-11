@@ -27,10 +27,15 @@ import {
   occasionLabel,
 } from '../../domain/scheduledSend';
 import { getVaultCardTheme } from '../../domain/vaultCardTheme';
-import { filterVaultPeople, getPersonNextOccasion } from '../../domain/vaultOccasion';
+import {
+  filterVaultPeople,
+  getPersonNextOccasion,
+  groupVaultPeople,
+} from '../../domain/vaultOccasion';
 import type { OccasionType, VaultPerson } from '../../domain/types';
 import { ScheduledSendInboxCard } from '../components/ScheduledSendInboxCard';
 import { VaultPersonCard } from '../components/VaultPersonCard';
+import { VaultPersonRow } from '../components/VaultPersonRow';
 import { VaultSearchField } from '../components/VaultSearchField';
 
 type ListProps = NativeStackScreenProps<VaultStackParamList, 'VaultList'>;
@@ -56,6 +61,7 @@ function VaultListContent({ navigation, route }: ListProps) {
     () => filterVaultPeople(people, query),
     [people, query],
   );
+  const sections = useMemo(() => groupVaultPeople(filtered), [filtered]);
 
   useEffect(() => {
     setOptimisticArms((current) => {
@@ -227,6 +233,7 @@ function VaultListContent({ navigation, route }: ListProps) {
 
       {sends.length > 0 ? (
         <View style={styles.inbox}>
+          <Text style={styles.sectionTitle}>Needs review</Text>
           {sends.map((send) => {
             const person = people.find((item) => item.id === send.relationshipId);
             const personName =
@@ -275,44 +282,82 @@ function VaultListContent({ navigation, route }: ListProps) {
       ) : filtered.length === 0 ? (
         <Text style={styles.muted}>No one matches that search.</Text>
       ) : (
-        <View style={styles.list}>
-          {filtered.map((person) => {
-            const theme = getVaultCardTheme(person.relationshipType);
-            const occasion = getPersonNextOccasion(person);
-            const autoSendBirthday = resolveArm(person, 'birthday');
-            const autoSendAnniversary = resolveArm(person, 'anniversary');
+        sections.map((section) => (
+          <View key={section.key} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <View style={styles.list}>
+              {section.people.map((person) => {
+                const theme = getVaultCardTheme(person.relationshipType);
+                const occasion = getPersonNextOccasion(person);
+                const autoSendBirthday = resolveArm(person, 'birthday');
+                const autoSendAnniversary = resolveArm(person, 'anniversary');
+                const onOpen = () => handlePersonPress(person.id, person.personName);
+                const onMenu = () => openMenu(person.id, person.personName);
 
-            return (
-              <VaultPersonCard
-                key={person.id}
-                person={person}
-                theme={theme}
-                occasion={occasion}
-                autoSendBirthday={autoSendBirthday}
-                autoSendAnniversary={autoSendAnniversary}
-                autoSendNote={autoSendNoteFor(person)}
-                birthdayDisabled={
-                  !autoSendAllowed ||
-                  !person.birthday ||
-                  pendingId === person.id
+                if (section.key === 'later' || section.key === 'noDate') {
+                  return (
+                    <VaultPersonRow
+                      key={person.id}
+                      person={person}
+                      theme={theme}
+                      occasion={occasion}
+                      autoSendBirthday={autoSendBirthday}
+                      autoSendAnniversary={autoSendAnniversary}
+                      onOpen={onOpen}
+                      onMenu={onMenu}
+                    />
+                  );
                 }
-                anniversaryDisabled={
-                  !autoSendAllowed ||
-                  !person.anniversary ||
-                  pendingId === person.id
-                }
-                onBirthdayToggle={() =>
-                  handleAutoSendToggle(person.id, 'birthday', autoSendBirthday)
-                }
-                onAnniversaryToggle={() =>
-                  handleAutoSendToggle(person.id, 'anniversary', autoSendAnniversary)
-                }
-                onOpen={() => handlePersonPress(person.id, person.personName)}
-                onMenu={() => openMenu(person.id, person.personName)}
-              />
-            );
-          })}
-        </View>
+
+                const nextKind = occasion.kind === 'none' ? null : occasion.kind;
+                const nextArmed =
+                  nextKind === 'birthday' ? autoSendBirthday : autoSendAnniversary;
+                const quickArm =
+                  section.key === 'week' &&
+                  autoSendAllowed &&
+                  nextKind !== null &&
+                  !nextArmed &&
+                  pendingId !== person.id
+                    ? {
+                        label: `Turn on auto-send for ${occasionLabel(nextKind)}`,
+                        onPress: () => handleAutoSendToggle(person.id, nextKind, false),
+                      }
+                    : undefined;
+
+                return (
+                  <VaultPersonCard
+                    key={person.id}
+                    person={person}
+                    theme={theme}
+                    occasion={occasion}
+                    autoSendBirthday={autoSendBirthday}
+                    autoSendAnniversary={autoSendAnniversary}
+                    autoSendNote={autoSendNoteFor(person)}
+                    quickArm={quickArm}
+                    birthdayDisabled={
+                      !autoSendAllowed ||
+                      !person.birthday ||
+                      pendingId === person.id
+                    }
+                    anniversaryDisabled={
+                      !autoSendAllowed ||
+                      !person.anniversary ||
+                      pendingId === person.id
+                    }
+                    onBirthdayToggle={() =>
+                      handleAutoSendToggle(person.id, 'birthday', autoSendBirthday)
+                    }
+                    onAnniversaryToggle={() =>
+                      handleAutoSendToggle(person.id, 'anniversary', autoSendAnniversary)
+                    }
+                    onOpen={onOpen}
+                    onMenu={onMenu}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        ))
       )}
 
       {showAddAction ? (
@@ -362,8 +407,16 @@ export function VaultListScreen(props: ListProps) {
 }
 
 const styles = StyleSheet.create({
+  section: {
+    marginTop: spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.inkSoft,
+  },
   list: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
     gap: spacing.md,
   },
   inbox: {

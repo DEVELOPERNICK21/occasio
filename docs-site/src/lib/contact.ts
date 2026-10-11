@@ -2,6 +2,8 @@
 export const contact = {
   email: 'developernick1@gmail.com',
   mailto: 'mailto:developernick1@gmail.com',
+  /** Public Google Play listing (package com.occasio.greetings). */
+  playStore: 'https://play.google.com/store/apps/details?id=com.occasio.greetings',
   playStoreInternalTest:
     'https://play.google.com/apps/internaltest/4701727779269430683',
 } as const;

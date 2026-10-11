@@ -2864,431 +2864,6 @@ body {
   opacity: 0.25;
 }
 
-/* ---------- Story: lamp (dark room opener) ---------- */
-
-.lamp-stage {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  overflow: hidden;
-  background: #0b0a09;
-  color: #cfc7b9;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  font-family: var(--font-body), system-ui, sans-serif;
-}
-
-.lamp-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0, transparent 75%);
-  transition: opacity 0.25s ease;
-}
-
-.lamp-stage.is-dark .lamp-grid {
-  opacity: 0.25;
-}
-
-.lamp-hud {
-  position: absolute;
-  top: 14px;
-  z-index: 3;
-  margin: 0;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #8c857a;
-}
-
-.lamp-hud p {
-  margin: 0;
-}
-
-.lamp-hud b {
-  font-weight: 500;
-  color: #efe7d8;
-}
-
-.lamp-hud--left {
-  left: 16px;
-}
-
-.lamp-hud--right {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  z-index: 3;
-}
-
-.lamp-pill {
-  appearance: none;
-  padding: 5px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #cfc7b9;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.lamp-pill:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.24);
-}
-
-.lamp-pill--replace {
-  margin-top: 8px;
-  color: #f5c97a;
-  border-color: rgba(245, 201, 122, 0.35);
-}
-
-.lamp-copy {
-  position: absolute;
-  top: var(--content-top, 40%);
-  left: 0;
-  right: 0;
-  z-index: 1;
-  padding: 0 1rem;
-  text-align: center;
-  pointer-events: none;
-}
-
-.lamp-title {
-  margin: 0;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-size: clamp(2.2rem, min(10.5vw, 10vh), 6.2rem);
-  font-weight: 700;
-  line-height: 0.98;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
-  color: transparent;
-  background-image: radial-gradient(
-    700px circle at var(--lx, 50%) var(--ly, -200px),
-    #fbf3e2 0,
-    #eee3cc 160px,
-    #9a9288 330px,
-    #3a3734 520px,
-    #2a2826 700px
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.lamp-title__hl {
-  color: transparent;
-  background-image: radial-gradient(
-    700px circle at var(--lx, 50%) var(--ly, -200px),
-    #f7dc9c 0,
-    #e2bd73 180px,
-    #8d7446 380px,
-    #3e3528 600px
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.lamp-stage.is-dark .lamp-title,
-.lamp-stage.is-dark .lamp-title__hl {
-  background-image: none;
-  color: rgba(255, 255, 255, 0.06);
-}
-
-.lamp-sub {
-  max-width: 34rem;
-  margin: clamp(0.8rem, 2.5vh, 1.4rem) auto 0;
-  font-size: clamp(0.9rem, min(2.8vw, 2.4vh), 1.15rem);
-  line-height: 1.55;
-  color: #b7afa2;
-  transition: color 0.25s ease;
-}
-
-.lamp-stage.is-dark .lamp-sub {
-  color: #3a3836;
-}
-
-.lamp-svg {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.lamp-clock {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  fill: rgba(255, 255, 255, 0.16);
-}
-
-.lamp-cone,
-.lamp-halo {
-  opacity: 0;
-  transition: opacity 0.18s ease;
-}
-
-.lamp-stage.is-lit .lamp-cone,
-.lamp-stage.is-lit .lamp-halo {
-  opacity: 1;
-}
-
-.lamp-rim {
-  fill: #24221f;
-  transition: fill 0.18s ease;
-}
-
-.lamp-stage.is-lit .lamp-rim {
-  fill: #f6dfae;
-}
-
-.lamp-glass--lit {
-  opacity: 0;
-  transition: opacity 0.18s ease;
-}
-
-.lamp-stage.is-lit .lamp-glass--lit {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(255, 214, 140, 0.95))
-    drop-shadow(0 0 22px rgba(255, 190, 90, 0.55));
-}
-
-.lamp-filament {
-  stroke: #6b5a48;
-  stroke-width: 0.9;
-  transition: stroke 0.18s ease;
-}
-
-.lamp-stage.is-lit .lamp-filament {
-  stroke: #fffdf6;
-  stroke-width: 1.4;
-  filter: drop-shadow(0 0 1.5px rgba(255, 150, 40, 1)) drop-shadow(0 0 4px rgba(255, 190, 90, 0.9));
-}
-
-.lamp-stage.is-lit .lamp-title.is-flicker,
-.lamp-stage.is-lit .lamp-cone.is-flicker,
-.lamp-stage.is-lit .lamp-glass--lit.is-flicker {
-  animation: lamp-flicker 0.45s steps(1, end);
-}
-
-@keyframes lamp-flicker {
-  0% { opacity: 1; }
-  15% { opacity: 0.35; }
-  30% { opacity: 1; }
-  50% { opacity: 0.55; }
-  65% { opacity: 1; }
-}
-
-/* Frosted-glass wall plate with a glossy rocker. */
-.lamp-switch {
-  position: absolute;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 12px;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.02) 100%),
-    rgba(28, 27, 26, 0.55);
-  backdrop-filter: blur(8px) saturate(1.2);
-  -webkit-backdrop-filter: blur(8px) saturate(1.2);
-  box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.65),
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    inset 1px 0 0 rgba(255, 255, 255, 0.08);
-}
-
-/* Diagonal glass reflection. */
-.lamp-switch::before {
-  content: '';
-  position: absolute;
-  top: -30%;
-  left: -60%;
-  width: 70%;
-  height: 160%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transform: rotate(22deg);
-  pointer-events: none;
-}
-
-.lamp-switch__label {
-  position: relative;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 8px;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.38);
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
-}
-
-/* Clear glass rocker — backlit amber when the light is on. */
-.lamp-switch__toggle {
-  appearance: none;
-  position: relative;
-  width: 26px;
-  height: 46px;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 8px;
-  cursor: pointer;
-  background:
-    linear-gradient(180deg,
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(255, 255, 255, 0.1) 44%,
-      rgba(255, 255, 255, 0.03) 56%,
-      rgba(255, 255, 255, 0.14) 100%),
-    rgba(20, 19, 18, 0.35);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow:
-    0 5px 10px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 0 6px rgba(255, 255, 255, 0.06);
-  transform: perspective(90px) rotateX(-12deg);
-  transition: transform 0.14s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-/* Curved specular highlight on the glass. */
-.lamp-switch__toggle::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 3px;
-  width: 45%;
-  height: 55%;
-  border-radius: 6px 3px 12px 3px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
-  pointer-events: none;
-}
-
-.lamp-switch__toggle.is-on {
-  transform: perspective(90px) rotateX(12deg);
-  border-color: rgba(255, 214, 150, 0.55);
-  background:
-    radial-gradient(circle at 50% 38%, rgba(255, 196, 100, 0.6), rgba(255, 160, 60, 0.16) 55%, transparent 80%),
-    linear-gradient(180deg,
-      rgba(255, 255, 255, 0.14) 0%,
-      rgba(255, 255, 255, 0.04) 48%,
-      rgba(255, 255, 255, 0.22) 100%),
-    rgba(40, 28, 16, 0.35);
-  box-shadow:
-    0 -1px 4px rgba(0, 0, 0, 0.5),
-    0 0 16px rgba(255, 180, 80, 0.35),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 0 8px rgba(255, 190, 100, 0.35);
-}
-
-.lamp-switch__dot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 10px;
-  height: 2px;
-  margin: -1px 0 0 -5px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.3);
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.lamp-switch__toggle.is-on .lamp-switch__dot {
-  background: #ffd27a;
-  box-shadow: 0 0 4px rgba(255, 190, 80, 1), 0 0 10px rgba(255, 170, 60, 0.7);
-}
-
-.lamp-shard {
-  position: absolute;
-  z-index: 3;
-  width: 6px;
-  height: 7px;
-  margin: -3px 0 0 -3px;
-  background: rgba(255, 245, 225, 0.85);
-  clip-path: polygon(50% 0, 100% 100%, 0 80%);
-  pointer-events: none;
-  animation: lamp-shard 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
-}
-
-@keyframes lamp-shard {
-  to {
-    transform: translate(var(--dx), var(--dy)) rotate(var(--r));
-    opacity: 0;
-  }
-}
-
-.lamp-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: max(14px, env(safe-area-inset-bottom));
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.55rem;
-  pointer-events: none;
-}
-
-.lamp-bottom > * {
-  pointer-events: auto;
-}
-
-.lamp-continue {
-  min-width: 12rem;
-}
-
-.lamp-progress {
-  display: flex;
-  gap: 8px;
-}
-
-.lamp-skip {
-  padding: 0;
-  border: none;
-  background: none;
-  color: #8c857a;
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-size: 0.85rem;
-  font-style: italic;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.lamp-hint {
-  margin: 0;
-  padding: 0 1rem;
-  max-width: 30rem;
-  text-align: center;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: #6e685f;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lamp-stage .is-flicker {
-    animation: none;
-  }
-
-  .lamp-shard {
-    animation-duration: 0.01s;
-  }
-}
-
 /* ── Viral-loop scenes: gate, reasons, contract, finale, passcode lock ── */
 .story-continue {
   display: flex;
@@ -4633,4 +4208,918 @@ body {
 .report-card-link:hover,
 .report-card-link:focus-visible {
   opacity: 1;
+}
+
+/* ── Expressive frames: our movie, handwritten note, postcard, photo booth, contact sheet ──
+   Mirror the app layouts in src/features/create/ui/components/layouts. Materials: film stock,
+   notebook paper, a postage stamp, a booth curtain. Handwriting is Caveat (--font-hand). */
+
+/* Frame: our movie — title card, widescreen still, end credits. */
+.wish-card-root[data-layout='cinema_still'] .wish-card {
+  background: #171210;
+  border-color: #171210;
+}
+
+.wish-card-cinema__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem 1.25rem;
+  text-align: center;
+}
+
+.wish-card-cinema__tagline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: #f0a24b;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.wish-card-cinema__tagline::before,
+.wish-card-cinema__tagline::after {
+  content: '';
+  width: 1.5rem;
+  height: 1px;
+  background: #f0a24b;
+}
+
+.wish-card-cinema__name {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: clamp(1.5rem, 7vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.wish-card-hero--cinema {
+  aspect-ratio: 16 / 10;
+  background: #171210;
+}
+
+.wish-card-hero--cinema::after {
+  display: none;
+}
+
+.wish-card-cinema__corner {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 0 solid rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+}
+
+.wish-card-cinema__corner--tl {
+  top: 0.625rem;
+  left: 0.625rem;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.wish-card-cinema__corner--tr {
+  top: 0.625rem;
+  right: 0.625rem;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+
+.wish-card-cinema__corner--bl {
+  bottom: 0.625rem;
+  left: 0.625rem;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+
+.wish-card-cinema__corner--br {
+  right: 0.625rem;
+  bottom: 0.625rem;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+}
+
+.wish-card-cinema__credits {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 2rem;
+  text-align: center;
+}
+
+.wish-card-cinema__message {
+  max-width: 21rem;
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.wish-card-cinema__directed {
+  margin: 0;
+  color: #f0a24b;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.wish-card-cinema__directed strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Frame: handwritten note — ruled paper, taped photo, words as if by hand. */
+.wish-card-root[data-layout='handwritten_note'] .wish-card {
+  background: #fbf4e6;
+}
+
+.wish-card-note {
+  --note-line: 1.875rem;
+  position: relative;
+  padding: var(--note-line) 1rem var(--note-line) 3rem;
+  font-family: var(--font-hand), cursive;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--note-line) - 1px),
+    #cbd9e6 calc(var(--note-line) - 1px),
+    #cbd9e6 var(--note-line)
+  );
+}
+
+.wish-card-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2.5rem;
+  width: 1px;
+  background: #e7a4a0;
+}
+
+.wish-card-note__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: calc(var(--note-line) * 7);
+}
+
+.wish-card-note__greeting {
+  flex: 1;
+  min-width: 0;
+}
+
+.wish-card-note__occasion {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: var(--note-line);
+}
+
+.wish-card-note__name {
+  margin: 0;
+  color: var(--ink, #2a2220);
+  font-size: 1.65rem;
+  font-weight: 600;
+  line-height: var(--note-line);
+}
+
+.wish-card-note__print {
+  position: relative;
+  flex: 0 0 8.25rem;
+  align-self: flex-start;
+  height: calc(var(--note-line) * 6.4);
+  margin: 0;
+  padding: 0.3rem 0.3rem 0.75rem;
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  transform: rotate(3deg);
+}
+
+.wish-card-note__tape {
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  width: 3.5rem;
+  height: 1rem;
+  background: #f9d56e;
+  opacity: 0.8;
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.wish-card-note__message {
+  margin: 0;
+  color: var(--ink, #2a2220);
+  font-size: 1.25rem;
+  line-height: var(--note-line);
+  text-wrap: pretty;
+}
+
+.wish-card-note__signoff {
+  margin: var(--note-line) 0 0;
+  color: var(--ink, #2a2220);
+  font-size: 1.65rem;
+  line-height: var(--note-line);
+  text-align: right;
+}
+
+/* Frame: postcard — picture on the front, message and stamp on the back. */
+.wish-card-root[data-layout='postcard'] .wish-card {
+  background: #fbf4e6;
+}
+
+.wish-card-postcard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.wish-card-postcard__front {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0.3rem;
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  transform: rotate(-1deg);
+}
+
+.wish-card-postcard__front figcaption {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  color: #fff;
+  font-family: var(--font-hand), cursive;
+  font-size: 2rem;
+  font-weight: 600;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+
+.wish-card-postcard__back {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+
+.wish-card-postcard__message {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-right: 1rem;
+  border-right: 1px solid var(--border);
+  color: var(--ink, #2a2220);
+  font-family: var(--font-hand), cursive;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.wish-card-postcard__message p {
+  margin: 0;
+}
+
+.wish-card-postcard__signoff {
+  font-size: 1.45rem;
+}
+
+.wish-card-postcard__address {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wish-card-postcard__stamps {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.wish-card-postcard__stamp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.875rem;
+  border: 2px dashed #9c3d38;
+  background: #fce3e8;
+}
+
+.wish-card-postcard__stamp path {
+  fill: #9c3d38;
+  stroke: #9c3d38;
+}
+
+.wish-card-postcard__postmark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.625rem;
+  height: 3.625rem;
+  margin-top: 0.5rem;
+  margin-right: -1.5rem;
+  border: 1.5px solid #9c3d38;
+  border-radius: 50%;
+  color: #9c3d38;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+  transform: rotate(-12deg);
+}
+
+.wish-card-postcard__name {
+  margin: 0;
+  color: var(--ink, #2a2220);
+  font-family: var(--font-hand), cursive;
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.wish-card-postcard__rule {
+  display: block;
+  height: 1px;
+  margin-top: 1rem;
+  background: var(--border);
+}
+
+/* Frame: photo booth — a four-frame strip on a booth curtain. */
+.wish-card-root[data-layout='photo_booth'] .wish-card {
+  background: #b8403c;
+  border-color: #b8403c;
+}
+
+.wish-card-booth {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.wish-card-booth__strip {
+  display: flex;
+  flex: 0 0 36%;
+  flex-direction: column;
+  gap: 0.375rem;
+  aspect-ratio: 0.32;
+  padding: 0.375rem;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+  transform: rotate(-3deg);
+}
+
+.wish-card-booth__shot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.wish-card-booth__shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(140, 92, 48, 0.14);
+  pointer-events: none;
+}
+
+.wish-card-booth__shot--caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+  background: #fbf4e6;
+  text-align: center;
+}
+
+.wish-card-booth__shot--caption::after {
+  display: none;
+}
+
+.wish-card-booth__shot--caption span {
+  color: var(--ink, #2a2220);
+  font-family: var(--font-hand), cursive;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.wish-card-booth__copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.wish-card-booth__kicker {
+  margin: 0;
+  color: #f7c9b6;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.wish-card-booth__name {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.wish-card-booth__rule {
+  display: block;
+  width: 2rem;
+  height: 2px;
+  margin-top: 1rem;
+  background: #f7c9b6;
+}
+
+.wish-card-booth__message {
+  margin: 0;
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.wish-card-booth__signoff {
+  margin: 1rem 0 0;
+  color: #f7c9b6;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.5rem;
+}
+
+/* Frame: contact sheet — five frames off the roll, one circled in red pencil. */
+.wish-card-hero--sheet {
+  aspect-ratio: auto;
+  padding: 0.5rem 0 0.75rem;
+  background: #171210;
+}
+
+.wish-card-hero--sheet::after {
+  display: none;
+}
+
+.wish-card-sheet__edge {
+  margin: 0;
+  padding: 0 1.1rem 0.25rem;
+  overflow: hidden;
+  color: #f0a24b;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.wish-card-sheet__body {
+  display: flex;
+  align-items: stretch;
+}
+
+.wish-card-sheet__holes {
+  flex: 0 0 0.875rem;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #f6ede4 0,
+    #f6ede4 0.375rem,
+    transparent 0.375rem,
+    transparent 1.4rem
+  );
+  background-position: center 0.25rem;
+  background-repeat: no-repeat;
+  background-size: 0.5rem calc(100% - 0.5rem);
+}
+
+.wish-card-sheet__grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+}
+
+.wish-card-sheet__frame {
+  position: relative;
+  min-width: 0;
+}
+
+.wish-card-sheet__number {
+  display: block;
+  color: #f0a24b;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.wish-card-sheet__cell {
+  aspect-ratio: 1.2;
+  overflow: hidden;
+  background: #4d4340;
+}
+
+.wish-card-sheet__cell--note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  border: 1px dashed #f0a24b;
+  background: transparent;
+  text-align: center;
+}
+
+.wish-card-sheet__cell--note span {
+  color: #f0a24b;
+  font-family: var(--font-hand), cursive;
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+
+.wish-card-sheet__pencil {
+  position: absolute;
+  top: 0.9rem;
+  right: -0.4rem;
+  bottom: -0.4rem;
+  left: -0.4rem;
+  width: calc(100% + 0.8rem);
+  height: calc(100% - 0.5rem);
+  overflow: visible;
+  fill: none;
+  stroke: #d4372c;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+
+.wish-card-sheet__pencil path {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Under the gift: the iPhone-only "allow motion" link. */
+.story-hint-link {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: none;
+  color: var(--accent, #e8615d);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ── Landing: live sample phone, moment cards, frames gallery ─────────── */
+
+/* The hero phone is played with, so it holds still instead of floating. */
+.landing-hero-device--visible.landing-hero-device--still {
+  transform: none;
+  animation: none;
+}
+
+.landing-live {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-live__screen {
+  background: var(--bg);
+}
+
+.landing-live__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  border: 0;
+  background: var(--bg);
+  transform-origin: 0 0;
+}
+
+.landing-live__poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2.5rem 1rem 1.5rem;
+}
+
+.landing-live__ticket {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.landing-live__play {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  animation: landing-cta-glow 3s ease-in-out infinite;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.landing-live__play:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.landing-live__play:focus-visible,
+.landing-live__chip:focus-visible,
+.landing-live__replay:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.landing-live__play-icon {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.landing-live__loading {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.landing-live__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.landing-live__hint {
+  margin: 0;
+  max-width: 17rem;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.landing-live__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.landing-live__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.landing-live__chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.landing-live__chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface));
+  color: var(--ink);
+}
+
+.landing-live__replay {
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Moment cards: each takes on that moment's own colours and opens a real sample. */
+.landing-moment-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--moment-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--moment-bg) 0%, var(--moment-sidebar) 100%);
+  color: var(--moment-ink);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-moment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(42, 34, 32, 0.12);
+}
+
+.landing-moment-card:focus-visible {
+  outline: 2px solid var(--moment-accent);
+  outline-offset: 3px;
+}
+
+.landing-moment-card__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--moment-accent);
+}
+
+.landing-moment-card__label {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.landing-moment-card__line {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.landing-moment-card__cta {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  color: var(--moment-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.landing-moment-card:hover .landing-moment-card__cta span {
+  display: inline-block;
+  transform: translateX(3px);
+}
+
+/* Frames gallery. */
+.landing-frames__list {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.landing-frames__tab {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-height: 44px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.landing-frames__tab:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.landing-frames__tab[aria-selected='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 35%, var(--surface));
+  color: var(--ink);
+}
+
+.landing-frames__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.landing-frames__name {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.landing-frames__line {
+  display: none;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.landing-frames__preview {
+  width: 100%;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .landing-frames__list {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .landing-frames__tab {
+    flex: 1 1 auto;
+  }
+
+  .landing-frames__name {
+    white-space: normal;
+  }
+
+  .landing-frames__line {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-live__play {
+    animation: none;
+  }
+
+  .landing-moment-card,
+  .landing-moment-card:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* The story shown inside the landing page's phone: no scrollbar, the phone is the frame. */
+html.is-embedded {
+  scrollbar-width: none;
+}
+
+html.is-embedded::-webkit-scrollbar {
+  display: none;
+}
+
+/* Landing gallery only: the demo photos are portraits, so frame their middle rather than the sky. */
+.landing-frames__preview .wish-card-photo {
+  object-position: center 64%;
 }

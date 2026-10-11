@@ -17,22 +17,25 @@ export function PublicShell({ children }: Props) {
             Occasio
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href="/#frames"
+              className="hidden rounded-full px-3 py-1.5 text-xs font-medium text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)] sm:inline-flex"
+            >
+              Frames
+            </Link>
             <a
-              href={contact.playStoreInternalTest}
+              href={contact.playStore}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--ink-soft)] transition-colors hover:border-[color-mix(in_srgb,var(--accent)_35%,var(--border))] hover:text-[var(--ink)] sm:inline-flex"
+              className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
             >
-              Join beta
+              Get the app
             </a>
-            <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
-              Beta
-            </span>
           </div>
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-x-clip">{children}</main>
 
       <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-8 text-sm text-[var(--muted)] md:flex-row md:items-center md:justify-between">

@@ -5,6 +5,7 @@ import { CelebrationCanvas, type CelebrationHandle } from '@/components/story/fx
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { Pip, type PipMood } from '@/components/story/fx/Pip';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
+import { unlockMusic } from '@/lib/experience/occasionMusic';
 import { playBoing, playSadTrombone, playTada } from '@/lib/experience/sfx';
 
 type Props = {
@@ -53,6 +54,8 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
     (event: React.MouseEvent<HTMLButtonElement>) => {
       if (leaving) return;
       setLeaving(true);
+      // This tap is what lets the song start on its own at the end.
+      unlockMusic(theme.id);
       playTada();
       buzz(20);
       const rect = event.currentTarget.getBoundingClientRect();
@@ -61,7 +64,7 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
       award('gate', 1, { x: at.x, y: at.y - 30 });
       window.setTimeout(onComplete, 1100);
     },
-    [award, leaving, onComplete],
+    [award, leaving, onComplete, theme.id],
   );
 
   const no = useCallback(() => {

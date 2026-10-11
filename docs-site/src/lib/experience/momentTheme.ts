@@ -97,7 +97,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     palette: ['#FF4D6D', '#FFB703', '#3A86FF', '#8338EC', '#06D6A0', '#FB5607', '#FFD6E0'],
     starName: 'wishes',
     gift: { paper: '#FF5D7A', motif: '#FFFFFF', motif2: '#FFD166', ribbon: '#F2A900', ribbonSheen: '#FFE9A0', pattern: 'dots', glow: '#FFD166' },
-    cake: { side: '#FF8FB1', icing: '#FFF6EE', sponge: '#F8DFA8', filling: '#FFB3C8', accent: '#D62839', sprinkles: ['#FFD166', '#3A86FF', '#06D6A0', '#FF5D7A', '#FFFFFF'], topper: 'cherry' },
+    cake: { side: '#6B3A24', icing: '#FFF6EE', sponge: '#FBE3A3', filling: '#E0526F', accent: '#D62839', sprinkles: ['#FFD166', '#3A86FF', '#06D6A0', '#FF5D7A', '#FFFFFF'], topper: 'cherry' },
     letter: { envelope: '#FFB3C7', lining: '#FFF3D6', liningMotif: '#FFC233', wax: '#D62839', paper: '#FFFBF2', ink: '#3A2A3F', accent: '#F0476B', pattern: 'dots' },
     vars: {
       '--bg': '#FFF1E8',
@@ -136,7 +136,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     palette: ['#E0446A', '#FF7A95', '#F5A623', '#FFB3C7', '#C4325A', '#FF9DB5'],
     starName: 'hearts',
     gift: { paper: '#8E1B3A', motif: '#C93A5E', motif2: '#F5D7A1', ribbon: '#F1D9A4', ribbonSheen: '#FFF4D6', pattern: 'hearts', glow: '#FF9DB5' },
-    cake: { side: '#5B2333', icing: '#8A3350', sponge: '#3A1A22', filling: '#C2415F', accent: '#F5C76B', sprinkles: ['#F5C76B', '#FF7A95', '#FFE3EA'], topper: 'heart' },
+    cake: { side: '#5B2333', icing: '#8A3350', sponge: '#F6D8C4', filling: '#C2415F', accent: '#F5C76B', sprinkles: ['#F5C76B', '#FF7A95', '#FFE3EA'], topper: 'heart' },
     letter: { envelope: '#F1E3CC', lining: '#8E1B3A', liningMotif: '#E8C77A', wax: '#7A0F2B', paper: '#FFF8EC', ink: '#4A1E2D', accent: '#C93A5E', pattern: 'hearts' },
     vars: {
       '--bg': '#FFF1F4',
@@ -175,7 +175,7 @@ const THEMES: Record<MomentId, MomentTheme> = {
     palette: ['#FFC857', '#FFE29A', '#F4A261', '#9BD07C', '#FFF3C4', '#E9C46A'],
     starName: 'thanks',
     gift: { paper: '#F3E3B8', motif: '#8DBE72', motif2: '#D9822B', ribbon: '#5FA357', ribbonSheen: '#C9E8B5', pattern: 'leaves', glow: '#FFE29A' },
-    cake: { side: '#F3E3B8', icing: '#FFFDF4', sponge: '#F8E7BB', filling: '#BFE0A8', accent: '#D9822B', sprinkles: ['#8DBE72', '#D9822B', '#FFFFFF'], topper: 'cherry' },
+    cake: { side: '#86B873', icing: '#FFFDF4', sponge: '#F8E7BB', filling: '#BFE0A8', accent: '#D9822B', sprinkles: ['#8DBE72', '#D9822B', '#FFFFFF'], topper: 'cherry' },
     letter: { envelope: '#D9B98A', lining: '#F3E3B8', liningMotif: '#7FAF69', wax: '#3E7D48', paper: '#FFFDF4', ink: '#3B3222', accent: '#D9822B', pattern: 'leaves' },
     vars: {
       '--bg': '#FFF7E6',

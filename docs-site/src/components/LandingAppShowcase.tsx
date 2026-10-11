@@ -52,7 +52,7 @@ const slides: Slide[] = [
     body: 'Sign in to sync Vault and history across devices. Free tier lets you create and share today.',
     bullets: [
       'Google or email sign-in',
-      'Manage subscription when billing launches',
+      'Manage Occasio Pro and restore purchases',
       'Notification preferences in one place',
     ],
     image: '/landing/account.png',

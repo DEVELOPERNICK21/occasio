@@ -7,6 +7,7 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { AUDIENCE_OPTIONS } from '../../domain/audienceOccasion';
+import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 import type { Audience } from '../../domain/templateSchema';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'WhoFor'>;
@@ -21,7 +22,12 @@ export function WhoForScreen({ navigation }: Props) {
   };
 
   return (
-    <Screen title="Who is this for?" onBack={() => navigation.goBack()}>
+    <Screen
+      title="Who is this for?"
+      progress={<CreateProgress stage="who" />}
+      onBack={() => navigation.goBack()}
+    >
+      <CreateNudge stage="who" />
       <View style={styles.options}>
         {AUDIENCE_OPTIONS.map((option) => {
           const selected = draft.audience === option.id;

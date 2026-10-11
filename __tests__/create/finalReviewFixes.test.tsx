@@ -8,7 +8,7 @@ import { loadCatalog } from '../../src/features/create/data/templateCatalog';
 import { DualEditorial } from '../../src/features/create/ui/components/layouts/DualEditorial';
 import { MinimalFullscreen } from '../../src/features/create/ui/components/layouts/MinimalFullscreen';
 import { TemplateRenderer } from '../../src/features/create/ui/components/TemplateRenderer';
-import { getCreateStep } from '../../src/features/create/ui/createSteps';
+import { getCreateStep } from '../../src/features/create/domain/createProgress';
 
 function renderedText(element: React.ReactElement): string {
   let renderer: TestRenderer.ReactTestRenderer;
@@ -70,12 +70,13 @@ describe('template layout content', () => {
 });
 
 describe('create flow step indicators', () => {
-  it('uses five steps for the full flow', () => {
-    expect(getCreateStep('occasion', false)).toEqual({ current: 1, total: 5 });
-    expect(getCreateStep('photos', false)).toEqual({ current: 2, total: 5 });
-    expect(getCreateStep('frame', false)).toEqual({ current: 3, total: 5 });
-    expect(getCreateStep('details', false)).toEqual({ current: 4, total: 5 });
-    expect(getCreateStep('preview', false)).toEqual({ current: 5, total: 5 });
+  it('uses six steps for the full flow', () => {
+    expect(getCreateStep('who', false)).toEqual({ current: 1, total: 6 });
+    expect(getCreateStep('occasion', false)).toEqual({ current: 2, total: 6 });
+    expect(getCreateStep('photos', false)).toEqual({ current: 3, total: 6 });
+    expect(getCreateStep('frame', false)).toEqual({ current: 4, total: 6 });
+    expect(getCreateStep('details', false)).toEqual({ current: 5, total: 6 });
+    expect(getCreateStep('preview', false)).toEqual({ current: 6, total: 6 });
   });
 
   it('uses three steps for quick create', () => {

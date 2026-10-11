@@ -27,6 +27,7 @@ import { shareMessage } from '../../../create/domain/shareLink';
 import {
   filterHistoryEntries,
   historyStatusHeadline,
+  sortHistoryEntries,
   summarizeHistory,
 } from '../../domain/historyList';
 import { isHistoryEntryExpired } from '../../domain/historyRules';
@@ -52,7 +53,7 @@ function HistoryListContent({ navigation }: ListProps) {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(
-    () => filterHistoryEntries(entries, query),
+    () => sortHistoryEntries(filterHistoryEntries(entries, query)),
     [entries, query],
   );
   const summary = useMemo(() => summarizeHistory(entries), [entries]);

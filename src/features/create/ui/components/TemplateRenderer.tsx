@@ -2,12 +2,17 @@ import { occasionHeadline } from '../../domain/audienceOccasion';
 import type { Occasion, TemplateDefinition } from '../../domain/templateSchema';
 import { AsymmetricSplit } from './layouts/AsymmetricSplit';
 import { BigWords } from './layouts/BigWords';
+import { CinemaStill } from './layouts/CinemaStill';
+import { ContactSheet } from './layouts/ContactSheet';
 import { DualEditorial } from './layouts/DualEditorial';
 import { EditorialPortrait } from './layouts/EditorialPortrait';
 import { FilmStrip } from './layouts/FilmStrip';
 import { FramedBlur } from './layouts/FramedBlur';
+import { HandwrittenNote } from './layouts/HandwrittenNote';
 import { MinimalFullscreen } from './layouts/MinimalFullscreen';
+import { PhotoBooth } from './layouts/PhotoBooth';
 import { PolaroidOverlay } from './layouts/PolaroidOverlay';
+import { Postcard } from './layouts/Postcard';
 import { PosterType } from './layouts/PosterType';
 import { Scrapbook } from './layouts/Scrapbook';
 import { StoryMosaic } from './layouts/StoryMosaic';
@@ -86,6 +91,16 @@ export function TemplateRenderer({
       return <BigWords {...layoutProps} />;
     case 'framed_blur':
       return <FramedBlur {...layoutProps} />;
+    case 'cinema_still':
+      return <CinemaStill {...layoutProps} />;
+    case 'handwritten_note':
+      return <HandwrittenNote {...layoutProps} />;
+    case 'postcard':
+      return <Postcard {...layoutProps} />;
+    case 'photo_booth':
+      return <PhotoBooth {...layoutProps} />;
+    case 'contact_sheet':
+      return <ContactSheet {...layoutProps} />;
     case 'editorial_portrait':
     default:
       return <EditorialPortrait {...layoutProps} />;

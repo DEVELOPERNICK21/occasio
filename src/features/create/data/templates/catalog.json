@@ -254,5 +254,105 @@
       { "key": "headline", "role": "headline", "default": "Happy Birthday" },
       { "key": "body", "role": "body", "default": "Just this one." }
     ]
+  },
+  {
+    "id": "F01",
+    "title": "Our movie",
+    "category": "love",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "cinema_still",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Thank you for being in my story." }
+    ]
+  },
+  {
+    "id": "F02",
+    "title": "Handwritten note",
+    "category": "love",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "handwritten_note",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "I wanted you to have this in my own words." }
+    ]
+  },
+  {
+    "id": "F03",
+    "title": "Postcard",
+    "category": "love",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "elegant",
+    "layoutId": "postcard",
+    "photoSlots": 1,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Thinking of you, wherever you are." }
+    ]
+  },
+  {
+    "id": "F04",
+    "title": "Photo booth",
+    "category": "birthday",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "emotional",
+    "layoutId": "photo_booth",
+    "photoSlots": 3,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Three shots and every one of them is you." }
+    ]
+  },
+  {
+    "id": "F05",
+    "title": "Contact sheet",
+    "category": "love",
+    "audiences": ["mom", "dad", "partner", "friend", "family", "someone_special"],
+    "occasions": [
+      "birthday",
+      "anniversary",
+      "thank_you",
+      "congratulations",
+      "just_because"
+    ],
+    "style": "elegant",
+    "layoutId": "contact_sheet",
+    "photoSlots": 5,
+    "texts": [
+      { "key": "headline", "role": "headline", "default": "Happy Birthday" },
+      { "key": "body", "role": "body", "default": "Out of every frame, this is the one." }
+    ]
   }
 ]

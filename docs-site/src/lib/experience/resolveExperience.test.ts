@@ -37,7 +37,7 @@ describe('resolveExperience', () => {
       experienceMode: null,
     });
     assert.equal(r.mode, 'story');
-    assert.deepEqual(r.scenes, ['gate', 'lamp', 'balloons', 'candle', 'gift', 'hub', 'finale']);
+    assert.deepEqual(r.scenes, ['gate', 'balloons', 'candle', 'gift', 'hub', 'finale']);
     assert.ok(r.revealLine.length > 0);
   });
 
@@ -49,7 +49,7 @@ describe('resolveExperience', () => {
       recipientName: 'Sam',
     });
     assert.equal(r.mode, 'story');
-    assert.deepEqual(r.scenes, ['gate', 'lamp', 'balloons', 'gift', 'hub', 'finale']);
+    assert.deepEqual(r.scenes, ['gate', 'balloons', 'gift', 'hub', 'finale']);
   });
 
   it('the hub is always present, so photos and reasons never change the scene order', () => {
@@ -68,6 +68,19 @@ describe('resolveExperience', () => {
     const card = { mediaUrls: [], message: 'Hi.', recipientName: 'Sam' };
     assert.ok(resolveExperience({ ...card, templateType: 'just_because' }).scenes.includes('contract'));
     assert.ok(!resolveExperience({ ...card, templateType: 'birthday' }).scenes.includes('contract'));
+  });
+
+  it('never shows the dark-room lamp opener, for any moment', () => {
+    for (const templateType of ['birthday', 'anniversary', 'thank_you', 'congratulations', 'just_because']) {
+      const r = resolveExperience({
+        templateType,
+        mediaUrls: [],
+        message: 'Hi.',
+        recipientName: 'Sam',
+      });
+      assert.ok(!(r.scenes as string[]).includes('lamp'), templateType);
+      assert.equal(r.scenes[1], 'balloons', templateType);
+    }
   });
 
   it('always opens with the gate and closes on the finale', () => {

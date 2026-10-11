@@ -9,7 +9,12 @@ export type WishLayoutId =
   | "scrapbook"
   | "poster_type"
   | "big_words"
-  | "framed_blur";
+  | "framed_blur"
+  | "cinema_still"
+  | "handwritten_note"
+  | "postcard"
+  | "photo_booth"
+  | "contact_sheet";
 
 /**
  * Mirrors the seed catalog in the app
@@ -30,6 +35,11 @@ const LAYOUT_BY_TEMPLATE_ID: Record<string, WishLayoutId> = {
   G06: "poster_type",
   G07: "big_words",
   G08: "framed_blur",
+  F01: "cinema_still",
+  F02: "handwritten_note",
+  F03: "postcard",
+  F04: "photo_booth",
+  F05: "contact_sheet",
 };
 
 const MIN_PHOTOS: Record<WishLayoutId, number> = {
@@ -44,6 +54,11 @@ const MIN_PHOTOS: Record<WishLayoutId, number> = {
   poster_type: 1,
   big_words: 4,
   framed_blur: 1,
+  cinema_still: 1,
+  handwritten_note: 1,
+  postcard: 1,
+  photo_booth: 3,
+  contact_sheet: 5,
 };
 
 /** Cards created before frames shipped fall back to the original layout. */

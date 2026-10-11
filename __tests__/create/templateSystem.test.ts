@@ -6,7 +6,12 @@ import {
   occasionFromTemplateType,
 } from '../../src/features/create/domain/audienceOccasion';
 import { parseTemplateCatalog } from '../../src/features/create/domain/templateSchema';
-import { recommendTemplates } from '../../src/features/create/domain/recommendTemplates';
+import {
+  listFrames,
+  lockedTemplates,
+  nextUnlock,
+  recommendTemplates,
+} from '../../src/features/create/domain/recommendTemplates';
 import catalogJson from '../../src/features/create/data/templates/catalog.json';
 
 const catalog = parseTemplateCatalog(catalogJson);
@@ -72,19 +77,20 @@ describe('homeSelectionFromTemplateType', () => {
 });
 
 describe('loadCatalog', () => {
-  it('returns 13 templates', () => {
-    expect(loadCatalog()).toHaveLength(13);
+  it('returns 18 templates', () => {
+    expect(loadCatalog()).toHaveLength(18);
   });
 });
 
 describe('parseTemplateCatalog', () => {
-  it('parses the seed catalog (13 templates)', () => {
+  it('parses the seed catalog (18 templates)', () => {
     const parsed = parseTemplateCatalog(catalogJson);
-    expect(parsed).toHaveLength(13);
+    expect(parsed).toHaveLength(18);
     expect(parsed.map((t) => t.id).sort()).toEqual(
       [
-        'B01', 'B04', 'B10', 'G01', 'G02', 'G03', 'G04',
-        'G05', 'G06', 'G07', 'G08', 'L06', 'T01',
+        'B01', 'B04', 'B10', 'F01', 'F02', 'F03', 'F04', 'F05',
+        'G01', 'G02', 'G03', 'G04', 'G05', 'G06', 'G07', 'G08',
+        'L06', 'T01',
       ].sort(),
     );
   });
@@ -238,5 +244,134 @@ describe('recommendTemplates', () => {
       maxPhotosAllowed: 1,
     });
     expect(ids.length).toBeGreaterThan(0);
+  });
+});
+
+describe('expressive frames (F01–F05)', () => {
+  const byId = new Map(catalog.map((t) => [t.id, t]));
+
+  it('adds five new layouts with their photo needs', () => {
+    expect(
+      ['F01', 'F02', 'F03', 'F04', 'F05'].map((id) => [
+        byId.get(id)?.layoutId,
+        byId.get(id)?.photoSlots,
+      ]),
+    ).toEqual([
+      ['cinema_still', 1],
+      ['handwritten_note', 1],
+      ['postcard', 1],
+      ['photo_booth', 3],
+      ['contact_sheet', 5],
+    ]);
+  });
+
+  it('gives every layout exactly one template, so the picker never shows twins', () => {
+    const layouts = catalog.map((t) => t.layoutId);
+    const withMultiple = layouts.filter((id, i) => layouts.indexOf(id) !== i);
+    // editorial_portrait is shared on purpose by B01 / L06 / T01 (tuned per occasion).
+    expect(new Set(withMultiple)).toEqual(new Set(['editorial_portrait']));
+  });
+
+  it('offers one-photo people more than the original four frames', () => {
+    const oneSlot = recommendTemplates({
+      audience: 'friend',
+      occasion: 'birthday',
+      catalog,
+      maxPhotosAllowed: 1,
+    });
+    expect(oneSlot.map((t) => t.layoutId)).toEqual(
+      expect.arrayContaining(['cinema_still', 'handwritten_note', 'postcard']),
+    );
+    expect(oneSlot.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it('favours a handwritten note for a thank-you to mom, and a photo booth for a friend', () => {
+    const forMom = recommendTemplates({
+      audience: 'mom',
+      occasion: 'thank_you',
+      catalog,
+      maxPhotosAllowed: 5,
+    });
+    const forFriend = recommendTemplates({
+      audience: 'friend',
+      occasion: 'birthday',
+      catalog,
+      maxPhotosAllowed: 5,
+    });
+    expect(forMom.slice(0, 3).map((t) => t.layoutId)).toContain('handwritten_note');
+    expect(forFriend.slice(0, 3).map((t) => t.layoutId)).toContain('photo_booth');
+  });
+});
+
+describe('lockedTemplates and nextUnlock', () => {
+  const input = { occasion: 'birthday' as const, catalog, maxPhotos: 5 };
+
+  it('lists frames that need more photos, fewest extra first', () => {
+    const locked = lockedTemplates({ ...input, photoCount: 1 });
+    const needed = locked.map((l) => l.photosNeeded);
+    expect(needed).toEqual([...needed].sort((a, b) => a - b));
+    expect(locked.every((l) => l.template.photoSlots > 1)).toBe(true);
+    expect(locked[0].photosNeeded).toBe(1);
+  });
+
+  it('names the closest unlock', () => {
+    const next = nextUnlock({ ...input, photoCount: 2 });
+    expect(next?.photosNeeded).toBe(1);
+    expect(next?.template.photoSlots).toBe(3);
+  });
+
+  it('has nothing to unlock once every frame is available', () => {
+    expect(lockedTemplates({ ...input, photoCount: 5 })).toEqual([]);
+    expect(nextUnlock({ ...input, photoCount: 5 })).toBeNull();
+  });
+
+  it('never lists frames the app cannot fill', () => {
+    const locked = lockedTemplates({ ...input, photoCount: 1, maxPhotos: 3 });
+    expect(locked.every((l) => l.template.photoSlots <= 3)).toBe(true);
+  });
+});
+
+describe('listFrames: every frame stays visible and selectable', () => {
+  const base = {
+    audience: 'friend' as const,
+    occasion: 'birthday' as const,
+    catalog,
+    maxPhotos: 5,
+  };
+
+  it('lists every layout for the moment, whatever the photo count', () => {
+    const everything = listFrames({ ...base, photoCount: 5 });
+    const withOne = listFrames({ ...base, photoCount: 1 });
+
+    expect(withOne.map((c) => c.template.id).sort()).toEqual(
+      everything.map((c) => c.template.id).sort(),
+    );
+    expect(withOne.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('puts frames that fit the photos first, then the ones that need more', () => {
+    const list = listFrames({ ...base, photoCount: 2 });
+    const firstShort = list.findIndex((c) => c.photosNeeded > 0);
+
+    expect(firstShort).toBeGreaterThan(0);
+    expect(list.slice(0, firstShort).every((c) => c.template.photoSlots <= 2)).toBe(true);
+    expect(list.slice(firstShort).every((c) => c.photosNeeded > 0)).toBe(true);
+  });
+
+  it('says how many more photos each short frame needs', () => {
+    for (const choice of listFrames({ ...base, photoCount: 1 })) {
+      expect(choice.photosNeeded).toBe(Math.max(0, choice.template.photoSlots - 1));
+    }
+  });
+
+  it('does not call anything short before any photo is added', () => {
+    expect(listFrames({ ...base, photoCount: 0 }).every((c) => c.photosNeeded === 0)).toBe(true);
+  });
+
+  it('keeps every older frame in the list, not just the new ones', () => {
+    const ids = listFrames({ ...base, photoCount: 1 }).map((c) => c.template.id);
+    for (const id of ['B01', 'B04', 'B10', 'G01', 'G02', 'G03', 'G04', 'G05', 'G06', 'G07', 'G08']) {
+      expect(ids).toContain(id);
+    }
   });
 });

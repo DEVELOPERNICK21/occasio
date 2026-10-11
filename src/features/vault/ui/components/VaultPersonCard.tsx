@@ -21,6 +21,8 @@ type Props = {
   anniversaryDisabled: boolean;
   /** Why the switches are off when they are, so nothing looks broken. */
   autoSendNote?: string;
+  /** One-tap arm for the next occasion; replaces the two switches when set. */
+  quickArm?: { label: string; onPress: () => void };
   onBirthdayToggle: () => void;
   onAnniversaryToggle: () => void;
   onOpen: () => void;
@@ -45,6 +47,7 @@ export function VaultPersonCard({
   birthdayDisabled,
   anniversaryDisabled,
   autoSendNote,
+  quickArm,
   onBirthdayToggle,
   onAnniversaryToggle,
   onOpen,
@@ -108,18 +111,30 @@ export function VaultPersonCard({
           <Text style={styles.autoSendTitle}>Auto-send</Text>
           <Text style={styles.autoSendArmed}>{armedLabel}</Text>
         </View>
-        <ArmToggle
-          label="Birthday"
-          enabled={autoSendBirthday}
-          disabled={birthdayDisabled}
-          onToggle={onBirthdayToggle}
-        />
-        <ArmToggle
-          label="Anniversary"
-          enabled={autoSendAnniversary}
-          disabled={anniversaryDisabled}
-          onToggle={onAnniversaryToggle}
-        />
+        {quickArm ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={quickArm.onPress}
+            style={({ pressed }) => [styles.quickArm, pressed && styles.pressed]}
+          >
+            <Text style={styles.quickArmLabel}>{quickArm.label}</Text>
+          </Pressable>
+        ) : (
+          <>
+            <ArmToggle
+              label="Birthday"
+              enabled={autoSendBirthday}
+              disabled={birthdayDisabled}
+              onToggle={onBirthdayToggle}
+            />
+            <ArmToggle
+              label="Anniversary"
+              enabled={autoSendAnniversary}
+              disabled={anniversaryDisabled}
+              onToggle={onAnniversaryToggle}
+            />
+          </>
+        )}
         {note ? <Text style={styles.note}>{note}</Text> : null}
       </View>
     </View>
@@ -257,6 +272,19 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: typography.sizeSm,
     color: colors.inkSoft,
+  },
+  quickArm: {
+    minHeight: 44,
+    marginTop: spacing.xs,
+    borderRadius: radius.full,
+    backgroundColor: colors.accentHover,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickArmLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.white,
   },
   armRow: {
     flexDirection: 'row',

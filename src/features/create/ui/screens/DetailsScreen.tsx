@@ -1,6 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type TextInput as RNTextInput,
+} from 'react-native';
+import { PenLine } from 'lucide-react-native';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
@@ -15,12 +22,14 @@ import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import { getCreateStep } from '../createSteps';
+import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 import { MAX_REASONS, REASON_MAX_CHARS } from '../../domain/creationRules';
+import { messageStarters } from '../../domain/messageStarters';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Details'>;
 
 const MESSAGE_MAX = 280;
+const STARTER_WIDTH = 236;
 
 export function DetailsScreen({ navigation }: Props) {
   const { user } = useAuth();
@@ -51,6 +60,8 @@ export function DetailsScreen({ navigation }: Props) {
   const reasonRows =
     draft.reasons.length > 0 ? draft.reasons : ['', '', ''];
   const [lockOn, setLockOn] = useState(draft.passcode.length > 0);
+  const messageRef = useRef<RNTextInput>(null);
+  const starters = messageStarters(draft.occasion);
   const balloonWords = draft.balloonLine
     .trim()
     .split(/\s+/)
@@ -60,7 +71,7 @@ export function DetailsScreen({ navigation }: Props) {
     <Screen
       title="Your words"
       subtitle="Their name and a line from you."
-      step={getCreateStep('details', !draft.audience)}
+      progress={<CreateProgress stage="details" />}
       onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
@@ -70,6 +81,7 @@ export function DetailsScreen({ navigation }: Props) {
         />
       }
     >
+      <CreateNudge stage="details" />
       <View style={styles.form}>
         <Field label="To">
           <TextInput
@@ -95,14 +107,46 @@ export function DetailsScreen({ navigation }: Props) {
           label="Message"
           hint={`${draft.message.length}/${MESSAGE_MAX} characters`}
         >
-          <TextInput
-            placeholder="Write something personal"
-            placeholderTextColor={colors.muted}
-            value={draft.message}
-            onChangeText={(text) => setMessage(text.slice(0, MESSAGE_MAX))}
-            multiline
-            style={[styles.input, styles.textArea]}
-          />
+          <View style={styles.messageStack}>
+            {draft.message.trim().length === 0 ? (
+              <View style={styles.starters}>
+                <Text style={styles.startersLabel}>Not sure where to start? Tap one and finish it.</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.starterRow}
+                >
+                  {starters.map((starter) => (
+                    <Pressable
+                      key={starter}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Start with: ${starter.trim()}`}
+                      onPress={() => {
+                        setMessage(starter);
+                        messageRef.current?.focus();
+                      }}
+                      style={({ pressed }) => [styles.starter, pressed && styles.starterPressed]}
+                    >
+                      <PenLine size={14} color={colors.accentHover} strokeWidth={2} absoluteStrokeWidth />
+                      <Text style={styles.starterText} numberOfLines={2}>
+                        {starter.trim()}…
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
+            <TextInput
+              ref={messageRef}
+              placeholder="Write something personal"
+              placeholderTextColor={colors.muted}
+              value={draft.message}
+              onChangeText={(text) => setMessage(text.slice(0, MESSAGE_MAX))}
+              multiline
+              style={[styles.input, styles.textArea]}
+            />
+          </View>
         </Field>
 
         {interactiveDefault ? (
@@ -278,6 +322,41 @@ const styles = StyleSheet.create({
   },
   reasons: {
     gap: spacing.sm,
+  },
+  messageStack: {
+    gap: spacing.sm,
+  },
+  starters: {
+    gap: spacing.sm,
+  },
+  startersLabel: {
+    fontSize: typography.sizeSm,
+    color: colors.muted,
+  },
+  starterRow: {
+    gap: spacing.sm,
+    paddingRight: spacing.md,
+  },
+  starter: {
+    width: STARTER_WIDTH,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  starterPressed: {
+    backgroundColor: colors.sidebar,
+  },
+  starterText: {
+    flex: 1,
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.35,
+    color: colors.inkSoft,
   },
   addReason: {
     fontSize: typography.sizeSm,

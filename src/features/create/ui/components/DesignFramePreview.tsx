@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, frameArt, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { Text } from '../../../../shared/ui/Text';
 import type { LayoutId } from '../../domain/templateSchema';
 
@@ -241,6 +241,123 @@ export function DesignFramePreview({
             <View style={styles.framedPhoto}>
               <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
             </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'cinema_still') {
+    return (
+      <View style={[stageStyle, { backgroundColor: frameArt.film }]}>
+        <View style={styles.cineStack}>
+          <Text style={styles.cineTag} numberOfLines={1}>
+            {title}
+          </Text>
+          <View style={styles.cineName} />
+          <View style={styles.cineScreen}>
+            <PhotoFill uri={photoUris[0]} fallback={colors.inkSoft} />
+          </View>
+          <View style={styles.cineCredit} />
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'handwritten_note') {
+    return (
+      <View style={[stageStyle, { backgroundColor: frameArt.paper }]}>
+        <View style={styles.noteStage}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <View key={i} style={[styles.noteRule, { top: `${18 + i * 18}%` }]} />
+          ))}
+          <View style={styles.noteMargin} />
+          <View style={styles.noteCopy}>
+            <View style={[styles.noteInk, styles.noteInkLong]} />
+            <View style={styles.noteInk} />
+            <View style={styles.noteInk} />
+          </View>
+          <View style={styles.notePhoto}>
+            <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
+            <View style={styles.noteTape} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'postcard') {
+    return (
+      <View style={[stageStyle, { backgroundColor: frameArt.paper }]}>
+        <View style={styles.cardStack}>
+          <View style={styles.cardFront}>
+            <PhotoFill uri={photoUris[0]} fallback={tone.photo} />
+          </View>
+          <View style={styles.cardBack}>
+            <View style={styles.cardLines}>
+              <View style={styles.noteInk} />
+              <View style={styles.noteInk} />
+            </View>
+            <View style={styles.cardStamp} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'photo_booth') {
+    return (
+      <View style={[stageStyle, { backgroundColor: frameArt.boothCurtain }]}>
+        <View style={styles.boothRow}>
+          <View style={styles.boothStrip}>
+            {[0, 1, 2].map((i) => (
+              <View key={i} style={styles.boothShot}>
+                <PhotoFill uri={photoUris[i]} fallback={tone.photoAlt} />
+              </View>
+            ))}
+            <View style={[styles.boothShot, styles.boothCaption]} />
+          </View>
+          <View style={styles.boothCopy}>
+            <View style={styles.boothBarSmall} />
+            <View style={styles.boothBarLarge} />
+            <View style={styles.boothBar} />
+            <View style={styles.boothBar} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (layoutId === 'contact_sheet') {
+    return (
+      <View style={[stageStyle, { backgroundColor: frameArt.film }]}>
+        <View style={styles.sheetRow}>
+          <View style={styles.sheetHoles}>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <View key={i} style={styles.sheetHole} />
+            ))}
+          </View>
+          <View style={styles.sheetGrid}>
+            {[0, 1, 2].map((row) => (
+              <View key={row} style={styles.sheetGridRow}>
+                <View style={styles.sheetCell}>
+                  <PhotoFill uri={photoUris[row * 2]} fallback={colors.inkSoft} />
+                  {row === 0 ? <View style={styles.sheetPencil} /> : null}
+                </View>
+                {row === 2 ? (
+                  <View style={[styles.sheetCell, styles.sheetNote]} />
+                ) : (
+                  <View style={styles.sheetCell}>
+                    <PhotoFill uri={photoUris[row * 2 + 1]} fallback={colors.inkSoft} />
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+          <View style={styles.sheetHoles}>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <View key={i} style={styles.sheetHole} />
+            ))}
           </View>
         </View>
       </View>
@@ -540,5 +657,217 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
     overflow: 'hidden',
     transform: [{ rotate: '5deg' }],
+  },
+
+  cineStack: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  cineTag: {
+    color: frameArt.filmEdge,
+    fontSize: typography.sizeXs,
+    letterSpacing: 1.4,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  cineName: {
+    alignSelf: 'center',
+    width: '46%',
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+  },
+  cineScreen: {
+    flex: 1,
+    overflow: 'hidden',
+    borderRadius: 2,
+  },
+  cineCredit: {
+    alignSelf: 'center',
+    width: '34%',
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: frameArt.filmEdge,
+  },
+  noteStage: {
+    flex: 1,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  noteRule: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: frameArt.paperRule,
+  },
+  noteMargin: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '14%',
+    width: 1,
+    backgroundColor: frameArt.paperMargin,
+  },
+  noteCopy: {
+    position: 'absolute',
+    top: '12%',
+    left: '20%',
+    width: '34%',
+    gap: spacing.sm,
+  },
+  noteInk: {
+    height: 3,
+    width: '90%',
+    borderRadius: 2,
+    backgroundColor: colors.inkSoft,
+    opacity: 0.55,
+  },
+  noteInkLong: {
+    width: '100%',
+    height: 4,
+    opacity: 0.8,
+  },
+  notePhoto: {
+    position: 'absolute',
+    top: '10%',
+    right: '8%',
+    width: '34%',
+    height: '62%',
+    padding: 3,
+    backgroundColor: colors.white,
+    transform: [{ rotate: '3deg' }],
+  },
+  noteTape: {
+    position: 'absolute',
+    top: -4,
+    alignSelf: 'center',
+    width: '50%',
+    height: 8,
+    backgroundColor: colors.butter,
+    opacity: 0.85,
+  },
+  cardStack: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  cardFront: {
+    flex: 1.4,
+    padding: 3,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+    transform: [{ rotate: '-1deg' }],
+  },
+  cardBack: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  cardLines: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  cardStamp: {
+    width: 22,
+    height: 26,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: frameArt.stampInk,
+    backgroundColor: colors.roseSoft,
+  },
+  boothRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  boothStrip: {
+    width: '34%',
+    height: '100%',
+    gap: 3,
+    padding: 3,
+    backgroundColor: colors.white,
+    transform: [{ rotate: '-3deg' }],
+  },
+  boothShot: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: colors.border,
+  },
+  boothCaption: {
+    backgroundColor: frameArt.paper,
+  },
+  boothCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  boothBarSmall: {
+    width: '40%',
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.accentSoft,
+  },
+  boothBarLarge: {
+    width: '80%',
+    height: 6,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+  },
+  boothBar: {
+    width: '95%',
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+    opacity: 0.6,
+  },
+  sheetRow: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  sheetHoles: {
+    width: 6,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  sheetHole: {
+    width: 5,
+    height: 4,
+    borderRadius: 1,
+    backgroundColor: frameArt.filmHole,
+  },
+  sheetGrid: {
+    flex: 1,
+    gap: 3,
+  },
+  sheetGridRow: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 3,
+  },
+  sheetCell: {
+    flex: 1,
+    overflow: 'visible',
+    backgroundColor: colors.inkSoft,
+  },
+  sheetNote: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: frameArt.filmEdge,
+    backgroundColor: 'transparent',
+  },
+  sheetPencil: {
+    position: 'absolute',
+    top: -3,
+    left: -4,
+    right: -4,
+    bottom: -3,
+    borderWidth: 1.5,
+    borderColor: frameArt.pencil,
+    borderRadius: radius.full,
+    transform: [{ rotate: '-4deg' }],
   },
 });

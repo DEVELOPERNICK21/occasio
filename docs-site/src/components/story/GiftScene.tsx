@@ -6,6 +6,7 @@ import { momentThemeFor } from '@/lib/experience/momentTheme';
 import { playShimmer } from '@/lib/experience/sfx';
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
+import { useShake, type ShakeState } from '@/components/story/fx/useShake';
 import { playGiftRattle, playGiftUnwrap } from '@/lib/experience/playBalloonPop';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
@@ -18,6 +19,43 @@ type Props = {
 type Phase = 'wrapped' | 'opening' | 'open';
 
 const SHAKES_TO_OPEN = 3;
+
+/** Hint line under the gift: says what works on this device, and offers the iPhone permission. */
+function GiftHint({
+  shakes,
+  shakeState,
+  onEnableShake,
+}: {
+  shakes: number;
+  shakeState: ShakeState;
+  onEnableShake: () => void;
+}) {
+  const canShake = shakeState === 'ready';
+  const label =
+    shakes > 0
+      ? 'Again!'
+      : canShake
+        ? 'Tap or shake your phone'
+        : 'Tap to shake it · drag to turn it';
+
+  return (
+    <>
+      <span className="story-hint-chip">
+        {label}
+        <span className="story-hint-dots" aria-hidden>
+          {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
+            <span key={i} className={i < shakes ? 'is-on' : undefined} />
+          ))}
+        </span>
+      </span>
+      {shakeState === 'needs-permission' && shakes === 0 ? (
+        <button type="button" className="story-hint-link" onClick={onEnableShake}>
+          Or shake your phone: allow motion
+        </button>
+      ) : null}
+    </>
+  );
+}
 
 const ROSES = [
   { cx: 94, cy: 100, r: 16, petal: '#F07A8C', deep: '#C94A5E' },
@@ -121,6 +159,7 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
   }, [phase, shakes, award]);
 
   const remaining = SHAKES_TO_OPEN - shakes;
+  const { state: shakeState, enable: enableShake } = useShake(shake, phase === 'wrapped');
 
   return (
     <section
@@ -133,11 +172,15 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
       <button
         type="button"
         className={`story-gift-art${phase === 'wrapped' ? ' is-idle' : ''}${open ? ' is-open' : ''}`}
-        onClick={shake}
+        onClick={() => {
+          // A tap is the one moment an iPhone allows the motion permission to be asked for.
+          if (shakeState === 'needs-permission') void enableShake();
+          shake();
+        }}
         disabled={phase !== 'wrapped'}
         aria-label={
           phase === 'wrapped'
-            ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap' : 'taps'} to open`
+            ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap or shake' : 'taps or shakes'} to open`
             : 'Gift unwrapped'
         }
       >
@@ -304,14 +347,7 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
 
       <div className="story-hint-row" aria-live="polite">
         {phase === 'wrapped' ? (
-          <span className="story-hint-chip">
-            Shake it open
-            <span className="story-hint-dots" aria-hidden>
-              {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
-                <span key={i} className={i < shakes ? 'is-on' : undefined} />
-              ))}
-            </span>
-          </span>
+          <GiftHint shakes={shakes} shakeState={shakeState} onEnableShake={() => void enableShake()} />
         ) : null}
       </div>
 
@@ -357,6 +393,7 @@ function GiftScene3D({
   const copy = storyCopyFor(templateType);
   const { award } = useJoy();
   const stage = useRef<GiftStageHandle>(null);
+  const section = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<Phase>('wrapped');
   const [shakes, setShakes] = useState(0);
   const open = phase !== 'wrapped';
@@ -382,8 +419,19 @@ function GiftScene3D({
     [award, phase, shakes],
   );
 
+  // Shaking the phone counts exactly like a tap on the gift, so both work in any mix.
+  const shakeOpen = useCallback(() => {
+    const box = section.current?.getBoundingClientRect();
+    tap({
+      x: box ? box.left + box.width / 2 : window.innerWidth / 2,
+      y: box ? box.top + box.height * 0.45 : window.innerHeight * 0.45,
+    });
+  }, [tap]);
+  const { state: shakeState, enable: enableShake } = useShake(shakeOpen, phase === 'wrapped');
+
   return (
     <section
+      ref={section}
       className={`story-gift story-gift--${phase}`}
       aria-label={open ? `For ${name}` : `A gift for ${name}`}
     >
@@ -398,24 +446,21 @@ function GiftScene3D({
         disabled={phase !== 'wrapped'}
         ariaLabel={
           phase === 'wrapped'
-            ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap' : 'taps'} to open`
+            ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap or shake' : 'taps or shakes'} to open`
             : 'Gift unwrapped'
         }
-        onTap={tap}
+        onTap={(at) => {
+          // A tap is the one moment an iPhone allows the motion permission to be asked for.
+          if (shakeState === 'needs-permission') void enableShake();
+          tap(at);
+        }}
         onOpened={() => setPhase('open')}
         onFail={onFail}
       />
 
       <div className="story-hint-row" aria-live="polite">
         {phase === 'wrapped' ? (
-          <span className="story-hint-chip">
-            {shakes === 0 ? 'Tap to shake it · drag to turn it' : 'Again!'}
-            <span className="story-hint-dots" aria-hidden>
-              {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
-                <span key={i} className={i < shakes ? 'is-on' : undefined} />
-              ))}
-            </span>
-          </span>
+          <GiftHint shakes={shakes} shakeState={shakeState} onEnableShake={() => void enableShake()} />
         ) : null}
       </div>
 

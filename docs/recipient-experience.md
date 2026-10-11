@@ -5,7 +5,7 @@ What the person who **receives** a card sees. Product code lives in
 
 ## Flow
 
-`gate → lamp → balloons → candle (birthday, anniversary) → gift → contract (just because) → hub → finale`
+`gate → balloons → candle (birthday, anniversary) → gift → contract (just because) → hub → finale`
 
 - **gate** — "Do you want to see it?" with Pip. A playful "No" escalates twice, then both buttons become "Yes".
 - **hub** — camera (photos), jar (reasons), envelope (letter), opened in any order. Photos are a swipe deck
@@ -29,6 +29,38 @@ normal blending (never additive) so they stay visible on light backgrounds.
 
 The gift and the cake use three.js, loaded lazily (`gift3d/`). If WebGL is unavailable, or the GPU context is
 lost, the scene falls back to the flat SVG version. Entry-level phones get a smaller pixel ratio and shadow map.
+
+The cake is chocolate outside and cream sponge with strawberry layers inside (birthday), so the cut face reads
+at a glance against it. Each moment's `CakeStyle` in `momentTheme.ts` must keep the sponge visibly different from
+the cake's side; the cut slice slides out far enough to show both cut faces, and the faces glow slightly.
+
+## Opening the gift: tap or shake
+
+Three taps open the gift, and so do three shakes of the phone; they count the same and can be mixed.
+`lib/experience/shake.ts` detects a shake from accelerometer readings (pure and tested). Android needs nothing.
+iPhones only send motion after a permission request that must come from a tap, so the first tap on the gift asks
+for it and an "allow motion" link is shown under the hint. Desktops show the tap-only hint.
+
+## Music under the message and the finale
+
+`lib/experience/occasionMusic.ts` plays the moment's song (`public/sounds/*.mp3`, chosen in `occasionSongs.ts`)
+once the story reaches the message (hub) and keeps it going through the finale. It stops when Replay starts and
+fades back in at the message.
+
+- Browsers only allow sound after a tap, and iPhones need each audio element started from a tap before it may be
+  started later. The first tap anywhere in the story calls `unlockMusic` (the gate's "Yes" is normally that tap).
+- It is a normal `<audio>` element, not Web Audio, so it keeps playing on an iPhone whose ring switch is on silent.
+  iPhones ignore the volume setting and play at the phone's own volume.
+- The sound switch (top right, also on the finale) stops it and brings it back. If a browser still refuses to
+  play, the story carries on silently.
+
+## The landing page's live sample
+
+The hero phone on `/` is an `<iframe>` of a real demo card (`/c/demo-<moment>-maya-abc123`, see
+`lib/landingMoments.ts`). Nothing loads until someone taps "Play a sample", which keeps the page light, avoids a
+scroll trap on phones, and is the tap that lets the sample play its sound. When the story detects it is framed it
+hides the "Report this card" links and the "Make one on Occasio" block so the site never nests inside itself, and
+hides its scrollbar.
 
 ## Behavior-design rules (do not break these)
 

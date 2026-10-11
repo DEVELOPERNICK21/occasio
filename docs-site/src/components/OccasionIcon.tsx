@@ -42,6 +42,26 @@ export function OccasionIcon({ templateType, className = '' }: Props) {
           <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
         </svg>
       );
+    case 'thank_you':
+      return (
+        <svg className={shared} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 21V11" />
+          <path d="M12 11c0-4 3-6 7-6 0 4-3 6-7 6Z" />
+          <path d="M12 16c0-3-2.5-5-6-5 0 3 2.5 5 6 5Z" />
+        </svg>
+      );
+    case 'congratulations':
+      return (
+        <svg className={shared} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5l-5.4 3 1.2-6L3.3 9.3l6.1-.7Z" />
+        </svg>
+      );
+    case 'just_because':
+      return (
+        <svg className={shared} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 3c.6 4.4 2.6 6.4 7 7-4.4.6-6.4 2.6-7 7-.6-4.4-2.6-6.4-7-7 4.4-.6 6.4-2.6 7-7Z" />
+        </svg>
+      );
     case 'proposal':
       return (
         <svg className={shared} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>

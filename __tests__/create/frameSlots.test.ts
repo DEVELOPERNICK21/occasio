@@ -9,6 +9,12 @@ describe('slotLabels', () => {
     expect(slotLabels('story_mosaic', 3)).toEqual(['Banner', 'Grid 1', 'Grid 2']);
   });
 
+  it('names the spots in the newer frames', () => {
+    expect(slotLabels('photo_booth', 3)).toEqual(['Shot 1', 'Shot 2', 'Shot 3']);
+    expect(slotLabels('contact_sheet', 5)[0]).toBe('Circled frame');
+    expect(slotLabels('cinema_still', 1)).toEqual(['Still']);
+  });
+
   it('falls back to numbered labels past the known ones', () => {
     expect(slotLabels('editorial_portrait', 2)).toEqual(['Main photo', 'Photo 2']);
   });

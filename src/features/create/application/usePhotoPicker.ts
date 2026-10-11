@@ -76,9 +76,66 @@ async function pickFromSource(source: PickSource): Promise<PickedPhoto | null> {
   }
 }
 
+/** Multi-select from the library (no crop — the native picker can't crop several at once). */
+async function pickManyFromLibrary(maxFiles: number): Promise<PickedPhoto[]> {
+  const compact = env.useBase64Media;
+
+  try {
+    const images = await ImageCropPicker.openPicker({
+      multiple: true,
+      maxFiles,
+      mediaType: 'photo',
+      compressImageMaxWidth: compact ? 800 : CARD_PHOTO_CROP_WIDTH,
+      compressImageMaxHeight: compact ? 640 : CARD_PHOTO_CROP_HEIGHT,
+      compressImageQuality: compact ? 0.45 : 0.8,
+      includeBase64: compact,
+      forceJpg: true,
+    });
+    return images.slice(0, maxFiles).map(photoFromCropResult);
+  } catch (error) {
+    if (isPickerCancelled(error)) return [];
+
+    const message = error instanceof Error ? error.message : 'Something went wrong.';
+    Alert.alert('Could not get photos', message);
+    return [];
+  }
+}
+
 /** Gallery or camera with fixed 5:4 crop for the card hero. */
 export function usePhotoPicker() {
   const [picking, setPicking] = useState(false);
+
+  /** Library allows several photos at once (up to `maxCount`); camera adds one. */
+  const pickPhotos = useCallback(
+    (maxCount: number): Promise<PickedPhoto[]> => {
+      if (picking || maxCount < 1) return Promise.resolve([]);
+
+      return new Promise((resolve) => {
+        Alert.alert('Add photos', 'Choose a source', [
+          {
+            text: 'Photo library',
+            onPress: () => {
+              setPicking(true);
+              pickManyFromLibrary(maxCount)
+                .then(resolve)
+                .finally(() => setPicking(false));
+            },
+          },
+          {
+            text: 'Camera',
+            onPress: () => {
+              setPicking(true);
+              pickFromSource('camera')
+                .then((photo) => resolve(photo ? [photo] : []))
+                .finally(() => setPicking(false));
+            },
+          },
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve([]) },
+        ]);
+      });
+    },
+    [picking],
+  );
 
   const pickPhoto = useCallback((): Promise<PickedPhoto | null> => {
     if (picking) return Promise.resolve(null);
@@ -108,5 +165,5 @@ export function usePhotoPicker() {
     });
   }, [picking]);
 
-  return { pickPhoto, picking };
+  return { pickPhoto, pickPhotos, picking };
 }

@@ -2,6 +2,7 @@ import {
   filterHistoryEntries,
   historyStatusHeadline,
   recipientInitials,
+  sortHistoryEntries,
   summarizeHistory,
 } from '../../src/features/history/domain/historyList';
 import {
@@ -78,6 +79,22 @@ describe('historyList', () => {
       active: 1,
       thisMonth: 1,
     });
+  });
+
+  it('puts active links first and expired last, keeping order otherwise', () => {
+    const entries = [
+      sampleEntry('expired-new', '2026-09-01T00:00:00Z', '2026-09-05T00:00:00Z'),
+      sampleEntry('active-a', '2026-09-10T00:00:00Z', '2026-10-10T00:00:00Z'),
+      sampleEntry('expired-old', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z'),
+      sampleEntry('active-b', '2026-09-09T00:00:00Z', '2026-10-09T00:00:00Z'),
+    ];
+
+    expect(sortHistoryEntries(entries, now).map((entry) => entry.id)).toEqual([
+      'active-a',
+      'active-b',
+      'expired-new',
+      'expired-old',
+    ]);
   });
 
   it('describes link status for active and expired entries', () => {

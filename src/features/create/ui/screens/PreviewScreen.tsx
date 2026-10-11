@@ -21,7 +21,7 @@ import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
-import { getCreateStep } from '../createSteps';
+import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
@@ -159,9 +159,10 @@ export function PreviewScreen({ navigation }: Props) {
           ? 'Updates keep the same share link'
           : 'This is what they’ll open'
       }
-      step={getCreateStep('preview', !draft.audience)}
+      progress={<CreateProgress stage="preview" />}
       onBack={() => navigation.goBack()}
     >
+      <CreateNudge stage="preview" />
       <CardPreviewStage
         recipientName={draft.recipientName}
         message={draft.message}

@@ -29,6 +29,10 @@ const CAP_H = 0.06;
 const WEDGE_LEN = Math.PI / 5.4;
 const WEDGE_START = -WEDGE_LEN / 2;
 
+/** How far the cut slice slides out, and how far it turns, once it is cut. */
+const SLICE_SLIDE = 0.85;
+const SLICE_TURN = 0.2;
+
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -148,10 +152,15 @@ export function createCake(canvas: HTMLCanvasElement, opts: CakeOptions): CakeCo
     clearcoatRoughness: 0.35,
   });
   const spongeMat = new THREE.MeshStandardMaterial({ color: style.sponge, roughness: 0.9 });
+  const sliceTexture = track(makeSliceTexture(style));
   const wallMat = new THREE.MeshStandardMaterial({
-    map: track(makeSliceTexture(style)),
+    map: sliceTexture,
     roughness: 0.85,
     side: THREE.DoubleSide,
+    // The cut faces glow a little so the cut reads clearly even in the cake's own shadow.
+    emissive: new THREE.Color('#ffffff'),
+    emissiveMap: sliceTexture,
+    emissiveIntensity: 0.3,
   });
 
   const root = new THREE.Group();
@@ -519,8 +528,9 @@ export function createCake(canvas: HTMLCanvasElement, opts: CakeOptions): CakeCo
       cutT += dt;
       const k = clamp(cutT / 1.1, 0, 1);
       const e = easeOutCubic(k);
-      wedgeGroup.position.set(0, Math.sin(k * Math.PI) * 0.06, 0.55 * e);
-      wedgeGroup.rotation.y = 0.12 * e;
+      // The slice slides well clear, so the cut faces on both sides are fully on show.
+      wedgeGroup.position.set(0, Math.sin(k * Math.PI) * 0.06, SLICE_SLIDE * e);
+      wedgeGroup.rotation.y = SLICE_TURN * e;
       if (cutT > 0.5) celebrate('cut');
     }
 

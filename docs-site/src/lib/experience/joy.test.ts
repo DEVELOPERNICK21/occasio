@@ -2,12 +2,12 @@ import { STICKERS, pickSticker, starCapacity, tierFor } from './joy';
 
 describe('joy stars', () => {
   it('sums capacity from the scenes that exist', () => {
-    const cap = starCapacity(['gate', 'lamp', 'balloons', 'candle', 'gift', 'hub', 'finale'], {
+    const cap = starCapacity(['gate', 'balloons', 'candle', 'gift', 'hub', 'finale'], {
       reasons: 0,
       photos: 0,
     });
-    // gate 1 + lamp 1 + balloons 4 + candle 4 + gift 4 + hub (letter room 1 + envelope 1 + letter 1)
-    expect(cap).toBe(1 + 1 + 4 + 4 + 4 + 3);
+    // gate 1 + balloons 4 + candle 4 + gift 4 + hub (letter room 1 + envelope 1 + letter 1)
+    expect(cap).toBe(1 + 4 + 4 + 4 + 3);
   });
 
   it('counts reasons and photos only when those scenes are present, capped at 5', () => {

@@ -13,7 +13,7 @@ import {
 import { getTemplateTheme } from '../../domain/templateTheme';
 import type { Occasion } from '../../domain/templateSchema';
 import { OccasionCard } from '../components/OccasionCard';
-import { getCreateStep } from '../createSteps';
+import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Occasion'>;
 
@@ -34,9 +34,10 @@ export function OccasionScreen({ navigation }: Props) {
     <Screen
       title="What’s the moment?"
       subtitle={subtitle}
-      step={getCreateStep('occasion', false)}
+      progress={<CreateProgress stage="occasion" />}
       onBack={() => navigation.goBack()}
     >
+      <CreateNudge stage="occasion" />
       <View style={styles.options}>
         {OCCASION_OPTIONS.map((option) => {
           const theme = getTemplateTheme(option.id);

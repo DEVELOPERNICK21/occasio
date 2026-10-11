@@ -14,15 +14,18 @@ import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useTemplateCatalog } from '../../application/useTemplateCatalog';
 import { occasionHeadline } from '../../domain/audienceOccasion';
-import { recommendTemplates } from '../../domain/recommendTemplates';
+import { listFrames } from '../../domain/recommendTemplates';
 import type { TemplateDefinition } from '../../domain/templateSchema';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import type { TemplateType } from '../../domain/types';
 import { ArrangePhotosSheet } from '../components/ArrangePhotosSheet';
 import { DesignFrameCard } from '../components/DesignFrameCard';
-import { getCreateStep } from '../createSteps';
+import { NeedMorePhotosSheet } from '../components/NeedMorePhotosSheet';
+import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'TemplateRecommend'>;
+
+type ShortFrame = { template: TemplateDefinition; photosNeeded: number };
 
 const environmentMaxPhotos = env.useBase64Media
   ? MAX_PHOTOS_BASE64
@@ -43,6 +46,11 @@ const TEMPLATE_CUES: Record<string, string> = {
   G06: 'Bold words around one photo',
   G07: 'Four photos, huge headline',
   G08: 'One photo in a soft blur',
+  F01: 'A title card for their story',
+  F02: 'Your words, as if by hand',
+  F03: 'A stamp, a photo, a few lines',
+  F04: 'Three shots and a name',
+  F05: 'Five frames, one circled',
 };
 
 const STYLE_TONES: Record<
@@ -72,11 +80,12 @@ const STYLE_TONES: Record<
   },
 };
 
-export function TemplateRecommendScreen({ navigation }: Props) {
+export function TemplateRecommendScreen({ navigation, route }: Props) {
   const { width } = useWindowDimensions();
   const { draft, setTemplateId, setPhotoUris } = useCreateDraftContext();
   const { templates } = useTemplateCatalog();
   const [arranging, setArranging] = useState<TemplateDefinition | null>(null);
+  const [needsPhotos, setNeedsPhotos] = useState<ShortFrame | null>(null);
 
   const occasionTheme = useMemo(() => {
     const occasion = draft.occasion;
@@ -86,17 +95,16 @@ export function TemplateRecommendScreen({ navigation }: Props) {
 
   const photoCount = draft.photoUris.filter(Boolean).length;
 
-  const recommended = useMemo(() => {
+  // Every frame for this moment, ones that fit the photos so far first. Nothing is hidden:
+  // a frame that needs more photos is still listed and can be chosen.
+  const frames = useMemo(() => {
     if (!draft.audience || !draft.occasion) return [];
-    return recommendTemplates({
+    return listFrames({
       audience: draft.audience,
       occasion: draft.occasion,
       catalog: templates,
-      // Frames needing more photos than the user added would render empty slots.
-      maxPhotosAllowed: Math.min(
-        environmentMaxPhotos,
-        photoCount || environmentMaxPhotos,
-      ),
+      photoCount,
+      maxPhotos: environmentMaxPhotos,
     });
   }, [draft.audience, draft.occasion, photoCount, templates]);
 
@@ -114,13 +122,29 @@ export function TemplateRecommendScreen({ navigation }: Props) {
     navigation.navigate('Details');
   };
 
-  const openTemplate = (template: TemplateDefinition) => {
+  const openTemplate = (template: TemplateDefinition, photosNeeded: number) => {
+    if (photosNeeded > 0) {
+      setNeedsPhotos({ template, photosNeeded });
+      return;
+    }
     if (photos.length > 1) {
       setArranging(template);
     } else {
       selectTemplate(template.id);
     }
   };
+
+  const openFrameId = route.params?.openFrame;
+  useEffect(() => {
+    if (!openFrameId) return;
+    const target = frames.find((choice) => choice.template.id === openFrameId);
+    navigation.setParams({ openFrame: undefined });
+    if (target && target.photosNeeded === 0) {
+      openTemplate(target.template, 0);
+    }
+    // Run once per request to open a frame, not on every list change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openFrameId]);
 
   const confirmArrangement = (ordered: string[]) => {
     if (!arranging) return;
@@ -145,7 +169,7 @@ export function TemplateRecommendScreen({ navigation }: Props) {
     <Screen
       title="Choose a frame"
       subtitle="Same photo, same words — only the arrangement changes."
-      step={getCreateStep('frame', false)}
+      progress={<CreateProgress stage="frame" />}
       onBack={() => navigation.goBack()}
       scroll={false}
     >
@@ -153,13 +177,14 @@ export function TemplateRecommendScreen({ navigation }: Props) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {recommended.length === 0 ? (
+        <CreateNudge stage="frame" />
+        {frames.length === 0 ? (
           <Text style={styles.empty}>
             No designs matched. Go back and pick who this is for.
           </Text>
         ) : (
           <View style={styles.grid}>
-            {recommended.map((template, index) => (
+            {frames.map(({ template, photosNeeded }, index) => (
               <DesignFrameCard
                 key={template.id}
                 template={template}
@@ -168,13 +193,32 @@ export function TemplateRecommendScreen({ navigation }: Props) {
                 photoUris={draft.photoUris}
                 tone={toneFor(template)}
                 width={cardWidth}
-                recommended={index === 0 && recommended.length > 1}
-                onPress={() => openTemplate(template)}
+                recommended={index === 0 && photosNeeded === 0 && frames.length > 1}
+                needsNote={
+                  photosNeeded > 0
+                    ? `Add ${photosNeeded} more ${photosNeeded === 1 ? 'photo' : 'photos'}`
+                    : undefined
+                }
+                onPress={() => openTemplate(template, photosNeeded)}
               />
             ))}
           </View>
         )}
       </ScrollView>
+      {needsPhotos ? (
+        <NeedMorePhotosSheet
+          template={needsPhotos.template}
+          photoCount={photoCount}
+          photosNeeded={needsPhotos.photosNeeded}
+          onClose={() => setNeedsPhotos(null)}
+          onAddPhotos={() => {
+            const frameId = needsPhotos.template.id;
+            setNeedsPhotos(null);
+            // Back to the existing photos screen, remembering which frame we came for.
+            navigation.popTo('AddPhotos', { forFrame: frameId });
+          }}
+        />
+      ) : null}
       {arranging ? (
         <ArrangePhotosSheet
           key={arranging.id}
@@ -192,6 +236,8 @@ export function TemplateRecommendScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   scrollContent: {
+    // The screen is not a scroll view itself, so it supplies its own side margins.
+    paddingHorizontal: spacing.lg,
     paddingBottom: spacing['2xl'],
   },
   grid: {

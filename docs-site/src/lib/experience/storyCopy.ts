@@ -2,11 +2,7 @@
  * Moment-aware story copy. Keep calm Occasio tone — no hype.
  */
 
-/** Lamp headline: `lead` in the lamplight, `highlight` in gold, then a period. */
-export type LampTitle = { lead: string; highlight: string };
-
 export type StoryCopy = {
-  lampTitle: (name: string) => LampTitle;
   balloonsTitle: string;
   balloonsSub: string;
   candleTitle: (name: string) => string;
@@ -22,22 +18,7 @@ export type StoryCopy = {
   letterWriteTitle: string;
 };
 
-/** With a name the name is the gold word; without one, the moment's last word is. */
-function lampTitle(
-  leadWithName: string,
-  leadNoName: string,
-  highlightNoName: string,
-): (name: string) => LampTitle {
-  return (name) => {
-    const trimmed = name.trim();
-    return trimmed
-      ? { lead: leadWithName, highlight: trimmed }
-      : { lead: leadNoName, highlight: highlightNoName };
-  };
-}
-
 const DEFAULT: StoryCopy = {
-  lampTitle: lampTitle('Thinking of you,', 'Thinking of', 'you'),
   balloonsTitle: 'Pop the balloons',
   balloonsSub: 'One tap at a time',
   candleTitle: (name) => `Blow the candles, ${name}`,
@@ -55,7 +36,6 @@ const DEFAULT: StoryCopy = {
 
 const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
   birthday: {
-    lampTitle: lampTitle('Happy birthday,', 'Happy', 'birthday'),
     balloonsTitle: 'Pop the balloons',
     candleTitle: (name) => `Blow the candles, ${name}`,
     candleSubLit: 'Make a wish, then tap the cake',
@@ -69,7 +49,6 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
     photoCaptions: ['Happy birthday', 'This one', 'Your smile', 'Celebrate'],
   },
   anniversary: {
-    lampTitle: lampTitle('Happy anniversary,', 'Happy', 'anniversary'),
     balloonsTitle: 'Pop for us',
     candleTitle: (name) => `A wish for you both, ${name}`,
     candleSubLit: 'Tap the cake — for another year',
@@ -84,7 +63,6 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
     envelopeTitle: (name) => `Written for ${name}`,
   },
   thank_you: {
-    lampTitle: lampTitle('Thank you,', 'Thank', 'you'),
     balloonsTitle: 'A little thank-you',
     giftTitle: (name, open) =>
       open ? `Thank you, ${name}` : `For ${name}`,
@@ -97,7 +75,6 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
     letterWriteTitle: 'With thanks',
   },
   congratulations: {
-    lampTitle: lampTitle('Well done,', 'Well', 'done'),
     balloonsTitle: 'Celebrate with a pop',
     giftTitle: (name, open) =>
       open ? `Well done, ${name}` : `A gift for ${name}`,
@@ -110,7 +87,6 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
     letterWriteTitle: 'A note of pride',
   },
   just_because: {
-    lampTitle: lampTitle('Thinking of you,', 'Thinking of', 'you'),
     balloonsTitle: 'Just because',
     giftTitle: (name, open) =>
       open ? `For ${name}` : `A small surprise`,

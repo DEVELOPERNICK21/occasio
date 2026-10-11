@@ -16,6 +16,16 @@ export function isSfxMuted(): boolean {
   return muted;
 }
 
+const muteListeners = new Set<(muted: boolean) => void>();
+
+/** Hears about the mute switch, so music can stop and resume with it. Returns an unsubscribe. */
+export function onSfxMuteChange(listener: (muted: boolean) => void): () => void {
+  muteListeners.add(listener);
+  return () => {
+    muteListeners.delete(listener);
+  };
+}
+
 export function setSfxMuted(value: boolean): void {
   muted = value;
   try {
@@ -23,6 +33,7 @@ export function setSfxMuted(value: boolean): void {
   } catch {
     // private mode: mute still applies for this visit
   }
+  muteListeners.forEach((listener) => listener(value));
 }
 
 function audio(): AudioContext | null {

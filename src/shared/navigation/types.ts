@@ -4,8 +4,10 @@ export type CreateStackParamList = {
   CreateHome: undefined;
   WhoFor: undefined;
   Occasion: undefined;
-  TemplateRecommend: undefined;
-  AddPhotos: undefined;
+  /** `openFrame`: a frame to open straight away (set when coming back from adding photos for it). */
+  TemplateRecommend: { openFrame?: string } | undefined;
+  /** `forFrame`: the frame the person chose that needs more photos than they have. */
+  AddPhotos: { forFrame?: string } | undefined;
   Details: undefined;
   Preview: undefined;
   ShareSuccess: {

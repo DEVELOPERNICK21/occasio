@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef } from 'react';
 import { CardReaction } from '@/components/CardReaction';
 import { CelebrationCanvas, type CelebrationHandle } from '@/components/story/fx/CelebrationCanvas';
+import { JoyMute } from '@/components/story/fx/JoyProvider';
 import { Pip } from '@/components/story/fx/Pip';
 import { StickerReveal } from '@/components/story/fx/StickerReveal';
 import { trackCardEvent } from '@/lib/cardEvents';
@@ -18,6 +19,8 @@ type Props = {
   theme: MomentTheme;
   stars: number;
   maxStars: number;
+  /** Shown inside another page: no links out, so the sample never nests the site inside itself. */
+  embedded?: boolean;
   onReplay: () => void;
 };
 
@@ -28,7 +31,15 @@ const TAP_COOLDOWN_MS = 220;
  * recipient is in control: tap anywhere for a small pop in this moment's
  * style. Nothing loops on its own.
  */
-export function FinaleScene({ card, slug, theme, stars, maxStars, onReplay }: Props) {
+export function FinaleScene({
+  card,
+  slug,
+  theme,
+  stars,
+  maxStars,
+  embedded = false,
+  onReplay,
+}: Props) {
   const fx = useRef<CelebrationHandle>(null);
   const lastTap = useRef(0);
   const name = card.recipientName.trim();
@@ -64,6 +75,7 @@ export function FinaleScene({ card, slug, theme, stars, maxStars, onReplay }: Pr
   return (
     <section className="finale" onPointerDown={pop} aria-label="Finale">
       <CelebrationCanvas ref={fx} preset={theme.fx} colors={theme.palette} fixed autoBurst />
+      <JoyMute />
 
       <div className="finale__hero">
         <Pip mood="joy" theme={theme} size={176} />
@@ -96,6 +108,7 @@ export function FinaleScene({ card, slug, theme, stars, maxStars, onReplay }: Pr
         </button>
       </div>
 
+      {embedded ? null : (
       <div className="finale__loop">
         <p>Someone made this for you. Make one for someone you love.</p>
         <Link
@@ -106,6 +119,7 @@ export function FinaleScene({ card, slug, theme, stars, maxStars, onReplay }: Pr
           Make one on Occasio
         </Link>
       </div>
+      )}
       <p className="finale__tap-hint">Tap anywhere for a little more</p>
     </section>
   );

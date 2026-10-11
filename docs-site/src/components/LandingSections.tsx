@@ -4,6 +4,8 @@ import { LandingCardMock } from '@/components/LandingCardMock';
 import { LandingPhoneFrame } from '@/components/LandingPhoneFrame';
 import { LandingScrollReveal } from '@/components/LandingScrollReveal';
 import { contact } from '@/lib/contact';
+import { momentThemeFor } from '@/lib/experience/momentTheme';
+import { LANDING_MOMENTS, sampleWishPath } from '@/lib/landingMoments';
 
 const trustPoints = [
   {
@@ -33,15 +35,6 @@ const steps = [
     title: 'Save dates in Vault',
     body: 'Optional: sign in, add birthdays once, and see upcoming occasions on Create.',
   },
-];
-
-const occasions = [
-  { id: 'birthday', label: 'Birthdays' },
-  { id: 'anniversary', label: 'Anniversaries' },
-  { id: 'mothers_day', label: "Mother's Day" },
-  { id: 'fathers_day', label: "Father's Day" },
-  { id: 'proposal', label: 'Proposals' },
-  { id: 'sorry', label: 'Thinking of you' },
 ];
 
 const features = [
@@ -102,25 +95,49 @@ export function LandingOccasions() {
       <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
         <LandingScrollReveal>
           <div className="max-w-2xl">
-            <p className="text-sm font-medium text-[var(--accent)]">Occasions</p>
+            <p className="text-sm font-medium text-[var(--accent)]">Moments</p>
             <h2 className="landing-section-title mt-2 text-2xl md:text-[1.75rem]">
-              For every moment that matters
+              A different feeling for every moment
             </h2>
             <p className="mt-3 text-[var(--ink-soft)]">
-              Start with a template tuned to the relationship — then make it personal with your
-              words and photos.
+              Each moment has its own look, colours and surprise. Open a real sample of any of them.
             </p>
           </div>
         </LandingScrollReveal>
-        <ul className="mt-10 flex flex-wrap gap-3">
-          {occasions.map((occasion, index) => (
-            <LandingScrollReveal key={occasion.id} delay={index * 60} variant="scale">
-              <li className="landing-occasion-chip inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--ink-soft)]">
-                <OccasionIcon templateType={occasion.id} className="h-4 w-4 text-[var(--accent)]" />
-                {occasion.label}
-              </li>
-            </LandingScrollReveal>
-          ))}
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {LANDING_MOMENTS.map((moment, index) => {
+            const theme = momentThemeFor(moment.id);
+            return (
+              <LandingScrollReveal key={moment.id} delay={index * 60} variant="scale">
+                <li className="h-full">
+                  <a
+                    href={sampleWishPath(moment.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="landing-moment-card"
+                    style={
+                      {
+                        '--moment-bg': theme.vars['--bg'],
+                        '--moment-sidebar': theme.vars['--sidebar'],
+                        '--moment-border': theme.vars['--border'],
+                        '--moment-accent': theme.vars['--accent'],
+                        '--moment-ink': theme.vars['--ink'],
+                      } as React.CSSProperties
+                    }
+                  >
+                    <span className="landing-moment-card__icon" aria-hidden>
+                      <OccasionIcon templateType={moment.id} className="h-5 w-5" />
+                    </span>
+                    <span className="landing-moment-card__label">{moment.label}</span>
+                    <span className="landing-moment-card__line">{moment.line}</span>
+                    <span className="landing-moment-card__cta">
+                      Play the sample <span aria-hidden>→</span>
+                    </span>
+                  </a>
+                </li>
+              </LandingScrollReveal>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -266,7 +283,7 @@ export function LandingRecipientCta() {
               view it.
             </p>
             <p className="mt-6 text-sm text-[var(--muted)]">
-              Want to send one back? Join the Android beta or email us for access.
+              Want to send one back? Get Occasio on Google Play. An iPhone version is coming.
             </p>
           </div>
         </LandingScrollReveal>
@@ -288,32 +305,22 @@ export function LandingClosingCta() {
             Ready when the moment arrives
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-[var(--ink-soft)]">
-            Pick an occasion, share a link, and save people to Vault when you are ready. Try the
-            Android beta today — we&apos;d love your feedback.
+            Pick an occasion, share a link, and save people to Vault when you are ready. It is free
+            to start, and the person you send it to needs nothing but the link.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={contact.playStoreInternalTest}
+              href={contact.playStore}
               target="_blank"
               rel="noopener noreferrer"
               className="landing-btn-primary"
             >
-              Join Android beta
+              Get it on Google Play
             </a>
-            <Link href="#app" className="landing-btn-secondary">
-              See app screens
+            <Link href="#try" className="landing-btn-secondary">
+              Play a sample wish
             </Link>
           </div>
-          <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-[var(--muted)]">
-            Need an invite? Email{' '}
-            <a
-              href={contact.mailto}
-              className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
-            >
-              {contact.email}
-            </a>{' '}
-            and we&apos;ll get you on the internal test list.
-          </p>
         </LandingScrollReveal>
       </div>
     </section>

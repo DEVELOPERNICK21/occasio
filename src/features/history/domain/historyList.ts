@@ -28,6 +28,21 @@ export function filterHistoryEntries(
   );
 }
 
+/** Active links first, expired last. Otherwise keeps the incoming order. */
+export function sortHistoryEntries(
+  entries: HistoryEntry[],
+  now = new Date(),
+): HistoryEntry[] {
+  return entries
+    .map((entry, index) => ({
+      entry,
+      index,
+      expired: isHistoryEntryExpired(entry, now),
+    }))
+    .sort((a, b) => Number(a.expired) - Number(b.expired) || a.index - b.index)
+    .map((item) => item.entry);
+}
+
 export function summarizeHistory(
   entries: HistoryEntry[],
   now = new Date(),
