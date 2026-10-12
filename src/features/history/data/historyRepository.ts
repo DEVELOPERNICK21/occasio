@@ -1,5 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import firestore, { type FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { HttpError } from '../../../shared/api/errors';
 import { httpClient } from '../../../shared/api/httpClient';
 import { env } from '../../../shared/config/env';
 import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
@@ -178,12 +179,17 @@ export async function deleteHistoryEntry(entryId: string): Promise<void> {
         `/api/v1/creations/${encodeURIComponent(entryId)}`,
         { Authorization: `Bearer ${token}` },
       );
-    } catch {
-      // Fallback: at least remove from History if revoke API is unreachable.
-      await ref.delete();
+    } catch (error) {
+      // The card is already gone (expired and cleaned up): nothing left to turn off.
+      if (error instanceof HttpError && (error.status === 404 || error.status === 410)) {
+        await ref.delete();
+        return;
+      }
+      // Keep the History row. Deleting it now would hide a link that still works,
+      // leaving the owner no way to turn it off.
       throw new HistoryError(
         'NETWORK',
-        'Removed from History, but the share link may still work. Try again.',
+        'Could not turn off the share link. Check your connection and try again.',
       );
     }
   } catch (error) {

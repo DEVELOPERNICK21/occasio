@@ -88,7 +88,7 @@ PRIVATE BY DESIGN
 
 START FREE
 - Make and share your first card with no account.
-- Free: 1 card a month and 1 saved person.
+- Free: 1 card to try and 1 saved person. Free links stay open for 30 days.
 - Occasio Pro: 24 cards a year and up to 5 saved people. Need just one more card? Buy a single card instead.
 
 SUBSCRIPTION INFORMATION
@@ -182,7 +182,7 @@ PRIVATE BY DESIGN
 
 START FREE
 - Make and share your first card without an account
-- Free plan: 1 card a month and 1 saved person
+- Free plan: 1 card to try and 1 saved person (free links stay open for 30 days)
 - Occasio Pro (monthly or yearly subscription): 24 cards a year and up to 5 saved people
 - Need just one more card? Buy a single card instead
 

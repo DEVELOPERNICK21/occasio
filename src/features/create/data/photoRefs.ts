@@ -1,7 +1,7 @@
 import { MAX_PHOTOS_BASE64 } from '../../../shared/config/media';
 import { env } from '../../../shared/config/env';
 import { assertDataUrlFits, toDataUrl } from './base64MediaService';
-import { uploadPhotoToStorage } from './storageService';
+import { deleteUploadedPhotos, uploadPhotoToStorage } from './storageService';
 import { CreationApiError } from './types';
 
 export type ResolvedCreationMedia = {
@@ -59,14 +59,20 @@ export async function resolveCreationMedia(
   }
 
   const photoRefs: string[] = [];
-  for (const uri of photoUris) {
-    if (uri.startsWith('placeholder://')) {
-      throw new CreationApiError(
-        'VALIDATION_ERROR',
-        'Pick real photos before sharing (placeholders are dev-only).',
-      );
+  try {
+    for (const uri of photoUris) {
+      if (uri.startsWith('placeholder://')) {
+        throw new CreationApiError(
+          'VALIDATION_ERROR',
+          'Pick real photos before sharing (placeholders are dev-only).',
+        );
+      }
+      photoRefs.push(await uploadPhotoToStorage(uri));
     }
-    photoRefs.push(await uploadPhotoToStorage(uri));
+  } catch (error) {
+    // One photo failed: do not leave the ones that already went up.
+    await deleteUploadedPhotos(photoRefs);
+    throw error;
   }
 
   return { photoRefs, mediaUrls: [] };

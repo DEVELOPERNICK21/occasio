@@ -26,6 +26,17 @@ export function rateLimit(
   return true;
 }
 
+/** True when `key` has already used its quota. Counts nothing. */
+export function isRateLimited(
+  key: string,
+  limit: number,
+  windowMs: number,
+  now = Date.now(),
+): boolean {
+  const recent = (buckets.get(key) ?? []).filter((t) => now - t < windowMs);
+  return recent.length >= limit;
+}
+
 export function clientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0]!.trim();

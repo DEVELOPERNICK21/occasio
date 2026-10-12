@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Occasio collects, uses, and protects your information.
-updated: 2026-10-09
+updated: 2026-10-12
 ---
 
 This Privacy Policy explains how **Occasio** (“we”, “us”, “our”) handles information when you use our mobile app, recipient web pages at shared links, and related services (collectively, the **Service**).
@@ -44,8 +44,9 @@ You can create and share cards **without signing in**. In that case we do not co
 | **Purchase status** | Whether you have an active subscription or bought a single card, from the App Store or Google Play via RevenueCat — to provide what you paid for |
 | **IP address and browser info** | When someone opens a share link, and when you use the app's servers — security, abuse prevention, and delivery (kept in our hosting provider's logs) |
 | **Unsubscribe list** | If someone unsubscribes from our emails we keep a one-way hash of their email address, so we never email them again. It cannot be turned back into the address |
+| **Usage and crash reports (only if you turn them on)** | Off by default. If you switch on **Share usage and crash reports** in the app's Account tab, the app sends: which steps you use (for example "occasion picked", "card shared", which plan you looked at), a random app-install ID, your phone model, operating system, app version and approximate country (from the IP address, which is not stored). If the app crashes, it also sends the error and your account ID if you are signed in. Never your cards, photos, messages, contacts or share links, and no advertising ID. Used only to fix bugs and see which parts of the app work. Switching it off stops this immediately, deletes crash reports not yet sent and resets the app-install ID |
 
-**We do not use analytics, advertising, session-replay or screen-recording tools, and we do not track you across other apps or websites.** The app does not collect usage statistics or crash reports today. If we add them, they will stay off until you turn them on, and you will be able to turn them off again at any time.
+**We do not use advertising, session-replay or screen-recording tools, and we do not track you across other apps or websites.** Apart from the optional usage and crash reports above, the app does not collect usage statistics.
 
 We do **not** scrape your phone contacts. Vault data is limited to what you manually enter.
 
@@ -76,7 +77,7 @@ We do **not** sell your personal information.
 | --- | --- |
 | **Shared card links (guest)** | Links expire after **30 days**; the card, its photos and related server data are then deleted automatically within **14 days** |
 | **Shared card links (signed-in free)** | **30 days** by default |
-| **Shared card links (paid)** | Cards you create in the app expire **30 days** after creation. Cards prepared by the on-their-day feature (Occasio Pro) can last up to **365 days** |
+| **Shared card links (Occasio Pro)** | Cards made under an active Occasio Pro plan stay open for **365 days**. A single extra wish bought on the free plan stays open for **30 days** |
 | **Vault and account data** | Until you delete the person or your account, or ask us to delete it |
 | **Creation history (metadata)** | Until you delete entries or your account |
 | **Server logs** | Typically up to **90 days**, unless needed longer for security or legal reasons |
@@ -91,6 +92,7 @@ We use trusted service providers to run Occasio. They process data only on our i
 | Provider | What it receives and why |
 | --- | --- |
 | **Google Firebase** (Authentication, Cloud Firestore, Cloud Messaging; Cloud Functions and Storage once enabled) | Your account, Vault, history and card content, and your push token, to run the service |
+| **Google Analytics for Firebase and Firebase Crashlytics** (Google) | Only if you turn on usage and crash reports: the data described in section 3.2, to fix bugs and improve the app. Not used for advertising. Crash reports are kept for 90 days and usage events for 2 months |
 | **Google Sign-In / Sign in with Apple** | The sign-in you choose (name and email as you allow), to authenticate you |
 | **RevenueCat** | Your account ID and purchase receipts, to manage subscriptions and purchases |
 | **Vercel** | API and public web hosting for share links; it sees requests (including IP addresses) and handles card content in transit |

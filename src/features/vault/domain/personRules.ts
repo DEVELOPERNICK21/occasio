@@ -6,6 +6,8 @@ import type {
   RelationshipType,
 } from './types';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export type PersonValidationResult =
   | { ok: true; input: CreatePersonInput }
   | { ok: false; error: string };
@@ -116,6 +118,15 @@ export function validatePersonDraft(
 
   const emailRaw = draft.email.trim();
   const email = emailRaw || null;
+  if (email && !EMAIL_PATTERN.test(email)) {
+    return { ok: false, error: 'Enter a valid email address or leave blank.' };
+  }
+  if (email && !draft.emailConsent) {
+    return {
+      ok: false,
+      error: 'Confirm they agreed to get cards by email, or clear the email.',
+    };
+  }
 
   return {
     ok: true,
@@ -126,6 +137,7 @@ export function validatePersonDraft(
       anniversary,
       whatsapp,
       email,
+      emailConsent: email !== null && draft.emailConsent,
       autoSendBirthday: options.autoSendBirthday,
       autoSendAnniversary,
     },

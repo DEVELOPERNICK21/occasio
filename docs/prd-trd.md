@@ -73,8 +73,8 @@ The one-off card ("HeartCraft" model) is the acquisition hook. The **auto-send r
 
 | Tier | Price (India) | What's included |
 |---|---|---|
-| **Free** | ₹0 | 1 manual card/month, watermark on shared card, no auto-send, up to 1 saved person (manual reminder only, no auto-generate) |
-| **Personal** | ₹149/month or ₹999/year | Unlimited manual cards, up to 5 saved people with auto-send, no watermark, all templates |
+| **Free** | ₹0 | 1 card per account (lifetime), 30-day links, watermark on shared card, no auto-send, 1 saved person |
+| **Personal** | ₹149/month or ₹999/year | 24 manual cards per rolling year (then single wishes), 365-day links, up to 5 saved people with auto-send, no watermark, all templates |
 | **Family** | ₹299/month or ₹1,999/year | Up to 15 saved people, priority/seasonal templates, video templates (Phase 2), early access to new occasions |
 | **One-off unlock** (no subscription) | ₹49–99/card | For users who just want a single polished card — this is the HeartCraft-equivalent entry point, kept intentionally cheap to funnel into subscription |
 

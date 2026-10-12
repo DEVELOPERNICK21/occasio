@@ -242,7 +242,8 @@ describe('shareSlug', () => {
     expect(isValidShareSlug('6agd6sg9')).toBe(true);
     expect(isValidShareSlug('demo-mom-abc')).toBe(false);
     expect(isValidShareSlug('abc')).toBe(false);
-    expect(SHARE_SLUG_LENGTH).toBe(8);
+    expect(isValidShareSlug('6agd6sg9k2mq')).toBe(true);
+    expect(SHARE_SLUG_LENGTH).toBe(12);
   });
 });
 
@@ -408,6 +409,23 @@ describe('viral-loop draft rules', () => {
     expect(rules.canGenerateShareLink({ ...ready, passcode: '' })).toBe(true);
     expect(rules.canGenerateShareLink({ ...ready, passcode: '1408' })).toBe(true);
     expect(rules.canGenerateShareLink({ ...ready, passcode: '14' })).toBe(false);
+  });
+
+  it('blocks sharing a frame with fewer photos than it has slots', () => {
+    expect(rules.framePhotosShort(1, 4)).toBe(3);
+    expect(rules.framePhotosShort(4, 4)).toBe(0);
+    expect(rules.framePhotosShort(1, null)).toBe(0);
+    expect(rules.canGenerateShareLink(ready, 4)).toBe(false);
+    expect(
+      rules.canGenerateShareLink({ ...ready, photoUris: ['a', 'b', 'c', 'd'] }, 4),
+    ).toBe(true);
+    expect(rules.framePhotosMessage(3, 4)).toContain('Add 3 more photos');
+  });
+
+  it('keeps the quota bypass off', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { env } = require('../../src/shared/config/env');
+    expect(env.devRelaxedQuota).toBe(false);
   });
 
   it('writes a caption that carries the link', () => {

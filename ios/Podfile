@@ -9,6 +9,8 @@ platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 $RNFirebaseAsStaticFramework = true
+# Analytics without the advertising identifier (no IDFA, no AdSupport framework).
+$RNFirebaseAnalyticsWithoutAdIdSupport = true
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil

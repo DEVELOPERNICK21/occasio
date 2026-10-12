@@ -60,7 +60,7 @@ First-three-screenshot patterns across the set: headline over a busy collage of 
 |---|---|---|
 | The recipient *plays* the card (balloons, candles, 3D gift, letter), with no app or account for them | Yes | MyHeartCraft (web, paid per card) |
 | Create and share your first card with **no account** | Yes | Few of the apps above allow it |
-| Free to start with a real free tier | Yes (1 card a month, 1 saved person) | MyHeartCraft charges from the first card |
+| Free to start with a real free tier | Yes (1 free card, 1 saved person) | MyHeartCraft charges from the first card |
 | Saves the dates of the people you care about, with widgets | Yes | BirthdayAlarm and the countdown apps do this better on volume and contact import |
 | Card prepared for you on the day, you review and send | **Built, not verified end to end** | None found. Hold this back until verified (`03-positioning.md` §5) |
 | Privacy: no contact scraping, unlisted links, passcode lock, in-app account delete | Yes | Reminder apps that import contacts |

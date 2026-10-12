@@ -3,7 +3,7 @@ import { ENTITLEMENT_PRO } from './entitlements';
 
 /**
  * Map active RevenueCat entitlement IDs → Occasio subscription tier.
- * `occasio_pro` unlocks Personal-tier limits (5 Vault people, unlimited cards).
+ * `occasio_pro` unlocks Personal-tier limits (5 Vault people, 24 cards a year, 365-day links).
  */
 export function tierFromEntitlements(
   activeEntitlementIds: readonly string[],

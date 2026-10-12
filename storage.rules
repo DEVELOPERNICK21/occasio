@@ -1,11 +1,21 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /uploads/guest/{fileName} {
-      // Create-only: nobody can overwrite or delete another person's photo.
-      allow create: if request.resource != null
+    // Photos live under the signed-in user's own folder. Only that user can add
+    // or remove files there, so nobody can fill the bucket anonymously or delete
+    // someone else's photo.
+    //
+    // Read stays public: the recipient's web page loads each photo by URL with no
+    // sign-in. File names are random, so a link is only known to who got the card.
+    // `uploads/guest/*` holds older photos; it is read-only now.
+    match /uploads/{uid}/{fileName} {
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource != null
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp|heic)');
+      allow delete: if request.auth != null && request.auth.uid == uid;
       allow read: if true;
     }
   }

@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onRequest } from 'firebase-functions/v2/https';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import express, { type Request, type Response } from 'express';
 import { handleDeleteAccount } from './account';
@@ -10,6 +11,8 @@ import {
   handleRevenueCatWebhook,
 } from './billing';
 import { purgeExpiredCards } from './purgeExpired';
+import { purgeOrphanUploads } from './purgeOrphanUploads';
+import { enforceVaultCap } from './vaultCap';
 import {
   handleApproveScheduledSend,
   handleCancelScheduledSend,
@@ -130,5 +133,29 @@ export const purgeExpired = onSchedule(
   async () => {
     const removed = await purgeExpiredCards(db);
     console.info('purgeExpired removed', removed);
+  },
+);
+
+/** Keeps the Vault within the plan's person limit; the app check alone can be bypassed. */
+export const enforceVaultLimit = onDocumentCreated(
+  { document: 'relationships/{relationshipId}', region: 'asia-south1' },
+  async (event) => {
+    const uid = event.data?.get('userId');
+    if (typeof uid === 'string') {
+      await enforceVaultCap(db, uid);
+    }
+  },
+);
+
+/** Deletes uploaded photos that no card points to (failed shares, replaced photos). */
+export const purgeOrphans = onSchedule(
+  {
+    schedule: '45 3 * * *',
+    timeZone: 'Asia/Kolkata',
+    region: 'asia-south1',
+  },
+  async () => {
+    const removed = await purgeOrphanUploads(db);
+    console.info('purgeOrphans removed', removed);
   },
 );

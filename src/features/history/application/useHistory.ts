@@ -92,6 +92,8 @@ export function useRecordHistory() {
       await recordHistoryEntry(input);
     } catch {
       recordedRef.current.delete(input.creationId);
+      // Keep it for the next sign-in/app start instead of losing the card from History.
+      await enqueuePendingHistoryEntry(input).catch(() => undefined);
     }
   }, []);
 

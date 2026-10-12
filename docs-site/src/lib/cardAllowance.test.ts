@@ -2,6 +2,7 @@ import {
   billingStateFromSubscriber,
   decideCreateAllowance,
   freeClaimId,
+  linkTtlDaysFor,
   PRO_YEARLY_CARD_LIMIT,
   proCardTimesInWindow,
   recipientEditAllowed,
@@ -91,6 +92,14 @@ describe('decideCreateAllowance', () => {
         pro,
       ),
     ).toBe('pro');
+  });
+});
+
+describe('linkTtlDaysFor', () => {
+  it('gives Pro cards a year and everything else 30 days', () => {
+    expect(linkTtlDaysFor('pro')).toBe(365);
+    expect(linkTtlDaysFor('free')).toBe(30);
+    expect(linkTtlDaysFor('credit')).toBe(30);
   });
 });
 

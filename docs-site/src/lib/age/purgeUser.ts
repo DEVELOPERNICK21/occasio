@@ -1,6 +1,8 @@
 import { getAuth } from 'firebase-admin/auth';
 import type { Firestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { getAdminApp, getAdminFirestore } from '@/lib/firebaseAdmin';
+import { storageBucketName } from '@/lib/storagePaths';
 
 const BATCH = 400;
 
@@ -13,6 +15,31 @@ async function deleteAll(
     refs.slice(i, i + BATCH).forEach((ref) => batch.delete(ref));
     await batch.commit();
   }
+}
+
+/** Storage paths (`uploads/...`) named in a list of Firestore photoRefs fields. */
+function storagePathsOf(values: unknown[]): string[] {
+  const paths: string[] = [];
+  for (const value of values) {
+    if (!Array.isArray(value)) continue;
+    for (const item of value) {
+      if (typeof item === 'string' && item.startsWith('uploads/')) paths.push(item);
+    }
+  }
+  return paths;
+}
+
+/**
+ * Deletes the user's photos. Everything they upload lives under `uploads/<uid>/`,
+ * and photos from before that change are found through the cards that name them.
+ * Throws if Storage fails, so the account is not erased while photos remain.
+ */
+async function deleteUserPhotos(uid: string, legacyPaths: string[]): Promise<void> {
+  const bucket = getStorage(getAdminApp()).bucket(storageBucketName());
+  await bucket.deleteFiles({ prefix: `uploads/${uid}/`, force: true });
+  await Promise.all(
+    legacyPaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true })),
+  );
 }
 
 /**
@@ -29,15 +56,21 @@ export async function purgeUser(uid: string): Promise<void> {
     db.collection('creations').where('userId', '==', uid).get(),
   ]);
 
-  const creations = new Map<string, FirebaseFirestore.DocumentReference>();
-  history.docs.forEach((d) => creations.set(d.id, db.collection('creations').doc(d.id)));
-  owned.docs.forEach((d) => creations.set(d.id, d.ref));
+  // Only cards this user owns are deleted. A History row is just a pointer, so
+  // it can never be used to delete somebody else's card.
+  await deleteUserPhotos(
+    uid,
+    storagePathsOf([
+      ...owned.docs.map((d) => d.get('photoRefs')),
+      ...relationships.docs.map((d) => d.get('photoRefs')),
+    ]),
+  );
 
   await deleteAll(db, [
     ...relationships.docs.map((d) => d.ref),
     ...sends.docs.map((d) => d.ref),
     ...history.docs.map((d) => d.ref),
-    ...creations.values(),
+    ...owned.docs.map((d) => d.ref),
     db.collection('users').doc(uid),
   ]);
 

@@ -140,7 +140,7 @@ Written on **8 Oct 2026** after reading your App Store Connect screens, Apple's 
 
 | Page | Answer |
 |---|---|
-| **App Privacy** (nutrition label) | Declare, all **linked to the user**, **not used for tracking**: **Contact Info** (email address; name if shared by Apple/Google; the names, emails or phone numbers of people the user saves in the Vault), **User Content** (photos, card messages), **Identifiers** (user ID, device token for push), **Purchases** (purchase history). Add **Usage Data** and **Diagnostics** only when you actually wire analytics and crash reporting (the current build has neither) |
+| **App Privacy** (nutrition label) | Declare, all **linked to the user**, **not used for tracking**: **Contact Info** (email address; name if shared by Apple/Google; the names, emails or phone numbers of people the user saves in the Vault), **User Content** (photos, card messages), **Identifiers** (user ID, device token for push), **Purchases** (purchase history). From the build with Crashlytics + Analytics (both opt-in): add **Diagnostics → Crash Data** (linked to the user via account ID; App Functionality) and **Usage Data → Product Interaction** (not linked; Analytics). Neither used for tracking. No advertising data, no IDFA |
 | **Age rating** (new questionnaire) | Answer honestly. Cards are user-generated and shared by private link, so say *user-generated content: yes*. No unrestricted web access, gambling, or mature content. Expect 4+; accept 12+ if the form says so |
 | **Content rights** | The app does not show third-party content; users supply their own |
 | **Pricing and availability** | Free app; countries: start with India and the US. Remove EU storefronts if you will not publish trader details |
@@ -150,7 +150,7 @@ Written on **8 Oct 2026** after reading your App Store Connect screens, Apple's 
 
 ### RevenueCat paywall checklist (this is the 3.1.2 rejection risk)
 
-In the RevenueCat dashboard paywall for the current offering, make sure the template shows: the plan name (**Occasio Pro**), the **period** (monthly / yearly), the **price** from the store (billed amount largest), **"Payment will be charged to your Apple ID… renews automatically unless cancelled at least 24 hours before the end of the current period"**, a **Restore purchases** button, and footer links to **Terms of Use** (`…/terms`) and **Privacy Policy** (`…/privacy`). Do not mention "365-day links" or "priority support".
+In the RevenueCat dashboard paywall for the current offering, make sure the template shows: the plan name (**Occasio Pro**), the **period** (monthly / yearly), the **price** from the store (billed amount largest), **"Payment will be charged to your Apple ID… renews automatically unless cancelled at least 24 hours before the end of the current period"**, a **Restore purchases** button, and footer links to **Terms of Use** (`…/terms`) and **Privacy Policy** (`…/privacy`). "365-day links" is now true for Pro cards (server-enforced) and may be mentioned; still do not mention "priority support" unless it exists.
 
 ---
 

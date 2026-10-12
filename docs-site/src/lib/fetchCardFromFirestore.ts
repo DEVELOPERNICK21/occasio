@@ -1,3 +1,5 @@
+import { headers } from 'next/headers';
+import { allowCardRead, recordCardMiss } from '@/lib/cardReadLimit';
 import { lookupCardBySlug } from '@/lib/creationsServer';
 import type { RecipientCard } from '@/lib/recipientCard';
 
@@ -9,8 +11,23 @@ export type CardFetchResult =
 
 /** Fetch card via Firebase Admin (server-only). */
 export async function fetchCardFromFirestore(slug: string): Promise<CardFetchResult> {
+  // The public page reads here directly, not through the API route, so the same
+  // per-IP limit applies. Outside a request (build, tests) there is no IP to limit.
+  let ip: string | null = null;
   try {
-    return await lookupCardBySlug(slug);
+    const incoming = await headers();
+    ip = (incoming.get('x-forwarded-for')?.split(',')[0] ?? incoming.get('x-real-ip'))?.trim() || null;
+  } catch {
+    ip = null;
+  }
+  if (ip && !allowCardRead(ip)) {
+    return { status: 'not_found' };
+  }
+
+  try {
+    const result = await lookupCardBySlug(slug);
+    if (ip && result.status === 'not_found') recordCardMiss(ip);
+    return result;
   } catch {
     return { status: 'not_found' };
   }

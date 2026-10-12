@@ -8,6 +8,7 @@ import {
   fetchBillingState,
   freeCardsUsed,
   freeClaimId,
+  linkTtlDaysFor,
   proCardTimesInWindow,
   recipientEditAllowed,
   wishCreditsUsed,
@@ -21,9 +22,12 @@ import {
   verifyPasscode,
 } from '@/lib/passcode';
 import { generateShareSlug } from '@/lib/shareSlug';
+import { MAX_MESSAGE_CHARS, MAX_PHOTOS, mediaViolation } from '@/lib/creationMedia';
+import { isDevRelaxedQuota } from '@/lib/devQuota';
+import { storageBucketName } from '@/lib/storagePaths';
 
-const GUEST_LINK_TTL_DAYS_PROD = 30;
-const GUEST_LINK_TTL_DAYS_DEV = 3;
+/** Dev-relaxed mode only — short links make expiry easy to test. */
+const LINK_TTL_DAYS_DEV = 3;
 
 export type CreateCreationInput = {
   templateType: string;
@@ -89,67 +93,32 @@ async function uniqueShareSlug(db: Firestore): Promise<string> {
   throw new ApiRouteError(500, 'INTERNAL', 'Could not generate share link');
 }
 
-const MAX_PHOTOS = 5;
-/** Per inline photo — keep total under Firestore ~1 MB with message + metadata. */
-const MAX_BASE64_DATA_URL_CHARS = 160_000;
-
-/** Local docs-site dev or explicit env — never enable on production Vercel. */
-export function isDevRelaxedQuota(devModeRequested = false): boolean {
-  if (process.env.OCCASIO_DEV_RELAXED_QUOTA === 'true') {
-    return true;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
-  return devModeRequested && process.env.OCCASIO_ALLOW_DEV_CREATE === 'true';
-}
-
-function guestLinkTtlDays(devModeRequested = false): number {
-  return isDevRelaxedQuota(devModeRequested)
-    ? GUEST_LINK_TTL_DAYS_DEV
-    : GUEST_LINK_TTL_DAYS_PROD;
-}
-
-function computeExpiresAt(createdAt: Date, devModeRequested = false): Date {
+function computeExpiresAt(
+  createdAt: Date,
+  allowance: 'free' | 'pro' | 'credit',
+  relaxed: boolean,
+): Date {
+  const days = relaxed ? LINK_TTL_DAYS_DEV : linkTtlDaysFor(allowance);
   const expiresAt = new Date(createdAt);
-  expiresAt.setDate(expiresAt.getDate() + guestLinkTtlDays(devModeRequested));
+  expiresAt.setDate(expiresAt.getDate() + days);
   return expiresAt;
 }
 
-function isInlineBase64(photoRefs: string[]): boolean {
-  return photoRefs.length >= 1 && /^inline:\d+$/.test(photoRefs[0] ?? '');
-}
-
-function validateMediaUrls(mediaUrls: string[], photoRefs: string[]): void {
-  // Storage-only creates send photoRefs without embedded mediaUrls.
-  if (mediaUrls.length === 0) {
-    return;
-  }
-
-  if (mediaUrls.length < 1 || mediaUrls.length > MAX_PHOTOS) {
-    throw new ApiRouteError(
-      400,
-      'VALIDATION_ERROR',
-      `mediaUrls must contain 1–${MAX_PHOTOS} items`,
-    );
-  }
-
-  if (isInlineBase64(photoRefs)) {
-    if (mediaUrls.length !== photoRefs.length) {
-      throw new ApiRouteError(
-        400,
-        'VALIDATION_ERROR',
-        'Inline photos must match photoRefs',
-      );
-    }
-    for (const url of mediaUrls) {
-      if (!url.startsWith('data:image/')) {
-        throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Invalid image data URL');
-      }
-      if (url.length > MAX_BASE64_DATA_URL_CHARS) {
-        throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Photo is too large');
-      }
-    }
+/** Photos and image URLs must be ones this card is allowed to hold (see creationMedia.ts). */
+function assertAllowedMedia(
+  input: CreateCreationInput,
+  uid: string,
+  existingRefs: string[] = [],
+): void {
+  const problem = mediaViolation({
+    photoRefs: input.photoRefs,
+    mediaUrls: input.mediaUrls ?? [],
+    uid,
+    bucket: storageBucketName(),
+    existingRefs,
+  });
+  if (problem) {
+    throw new ApiRouteError(400, 'VALIDATION_ERROR', problem);
   }
 }
 
@@ -179,7 +148,7 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   if (templateId && !/^[A-Za-z0-9_-]{1,16}$/.test(templateId)) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Invalid template id');
   }
-  if (message.length > 500) {
+  if (message.length > MAX_MESSAGE_CHARS) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Message is too long');
   }
   if (
@@ -196,8 +165,6 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   if (!Array.isArray(mediaUrls)) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'mediaUrls must be an array');
   }
-
-  validateMediaUrls(mediaUrls, photoRefs);
 
   const rawBalloon =
     typeof input.balloonLine === 'string' ? input.balloonLine.trim() : '';
@@ -292,13 +259,13 @@ export async function createCreation(
   user: { uid: string; email?: string | null },
 ): Promise<CreateCreationResult> {
   const { uid } = user;
+  assertAllowedMedia(input, uid);
   const db = getAdminFirestore();
   const createdAt = new Date();
   const nowMs = createdAt.getTime();
   const claimId = freeClaimId(user.email);
   const claimRef = claimId ? db.collection('free_claims').doc(claimId) : null;
   const relaxed = isDevRelaxedQuota(input.devMode === true);
-  const expiresAt = computeExpiresAt(createdAt, input.devMode === true);
   const shareSlug = await uniqueShareSlug(db);
   const shareBase =
     process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';
@@ -328,11 +295,12 @@ export async function createCreation(
     viewCount: 0,
     reactionCount: 0,
     createdAt: Timestamp.fromDate(createdAt),
-    expiresAt: Timestamp.fromDate(expiresAt),
     userId: uid,
   };
 
   let billing: BillingState | null = null;
+  let expiresAt = createdAt;
+  let spent: 'free' | 'pro' | 'credit' = 'free';
   for (;;) {
     const allowance = await db.runTransaction(async (tx) => {
       const doc = ((await tx.get(userRef)).data() ?? {}) as AllowanceUserDoc;
@@ -363,7 +331,23 @@ export async function createCreation(
           tx.set(userRef, { wishCreditsUsed: wishCreditsUsed(doc) + 1 }, { merge: true });
         }
       }
-      tx.set(ref, cardFields);
+      // The plan decides how long the link lives: Pro 365 days, everything else 30.
+      spent = decided;
+      expiresAt = computeExpiresAt(createdAt, decided, relaxed);
+      tx.set(ref, { ...cardFields, expiresAt: Timestamp.fromDate(expiresAt) });
+      // The owner's History row is written with the card, so History is right even
+      // when the app's own save fails. The app may still write it; same id, same data.
+      tx.set(db.collection('user_creations').doc(ref.id), {
+        userId: uid,
+        creationId: ref.id,
+        shareSlug,
+        shareUrl: `${shareBase}/c/${shareSlug}`,
+        recipientName: input.recipientName,
+        templateType: input.templateType,
+        message: input.message,
+        createdAt: Timestamp.fromDate(createdAt),
+        expiresAt: Timestamp.fromDate(expiresAt),
+      });
       return decided;
     });
 
@@ -382,6 +366,24 @@ export async function createCreation(
     } catch (error) {
       console.error('[createCreation] billing check failed', error);
       throw new ApiRouteError(503, 'INTERNAL', 'Could not check your plan. Try again.');
+    }
+  }
+
+  // A subscriber's very first card spends the free card, but they still pay for
+  // the year-long link. Best effort: if RevenueCat is unreachable they keep 30 days.
+  if (spent === 'free' && !relaxed) {
+    try {
+      const state = billing ?? (await fetchBillingState(uid));
+      if (state.proActive) {
+        expiresAt = computeExpiresAt(createdAt, 'pro', false);
+        await ref.update({ expiresAt: Timestamp.fromDate(expiresAt) });
+        await db
+          .collection('user_creations')
+          .doc(ref.id)
+          .set({ expiresAt: Timestamp.fromDate(expiresAt) }, { merge: true });
+      }
+    } catch (error) {
+      console.error('[createCreation] could not check plan for link length', error);
     }
   }
 
@@ -596,17 +598,9 @@ async function assertOwnedCreation(creationId: string, uid: string) {
 
   const db = getAdminFirestore();
   const historyRef = db.collection('user_creations').doc(id);
-  const historySnap = await historyRef.get();
 
-  if (!historySnap.exists) {
-    return { status: 'not_found' as const };
-  }
-
-  const history = historySnap.data() as { userId?: string } | undefined;
-  if (!history || history.userId !== uid) {
-    return { status: 'forbidden' as const };
-  }
-
+  // Ownership comes from the card itself. A History row is only a pointer that
+  // any signed-in user could try to create, so it proves nothing.
   const creationRef = db.collection('creations').doc(id);
   const creationSnap = await creationRef.get();
   if (!creationSnap.exists) {
@@ -614,6 +608,9 @@ async function assertOwnedCreation(creationId: string, uid: string) {
   }
 
   const creationData = creationSnap.data() ?? {};
+  if (creationData.userId !== uid) {
+    return { status: 'forbidden' as const };
+  }
   const expiresAt = creationData.expiresAt as Timestamp | undefined;
   if (expiresAt && expiresAt.toDate() < new Date()) {
     return { status: 'expired' as const };
@@ -721,6 +718,14 @@ export async function updateCreation(
     return { status: owned.status };
   }
 
+  assertAllowedMedia(
+    input,
+    uid,
+    Array.isArray(owned.creationData.photoRefs)
+      ? (owned.creationData.photoRefs as string[])
+      : [],
+  );
+
   const previousRecipient =
     typeof owned.creationData.recipientName === 'string'
       ? owned.creationData.recipientName
@@ -761,6 +766,7 @@ export async function updateCreation(
 
   await owned.historyRef.set(
     {
+      userId: uid,
       recipientName: input.recipientName,
       templateType: input.templateType,
       message: input.message,
@@ -805,27 +811,32 @@ export async function revokeCreation(
 
   const db = getAdminFirestore();
   const historyRef = db.collection('user_creations').doc(id);
-  const historySnap = await historyRef.get();
+  const creationRef = db.collection('creations').doc(id);
+  const creationSnap = await creationRef.get();
 
-  if (!historySnap.exists) {
-    return { status: 'not_found' };
+  if (!creationSnap.exists) {
+    // The card is already gone (purged). Only the person whose History row it is
+    // may clear the leftover row.
+    const historySnap = await historyRef.get();
+    if (!historySnap.exists) return { status: 'not_found' };
+    if ((historySnap.data() as { userId?: string } | undefined)?.userId !== uid) {
+      return { status: 'forbidden' };
+    }
+    await historyRef.delete();
+    return { status: 'revoked' };
   }
 
-  const history = historySnap.data() as { userId?: string } | undefined;
-  if (!history || history.userId !== uid) {
+  // Ownership comes from the card itself, not from the History row.
+  if (creationSnap.get('userId') !== uid) {
     return { status: 'forbidden' };
   }
 
-  const creationRef = db.collection('creations').doc(id);
-  const creationSnap = await creationRef.get();
-  if (creationSnap.exists) {
-    // Expire immediately so GET /cards/:slug returns 410.
-    await creationRef.update({
-      expiresAt: Timestamp.fromDate(new Date(0)),
-      revokedAt: Timestamp.now(),
-      revokedBy: uid,
-    });
-  }
+  // Expire immediately so GET /cards/:slug returns 410.
+  await creationRef.update({
+    expiresAt: Timestamp.fromDate(new Date(0)),
+    revokedAt: Timestamp.now(),
+    revokedBy: uid,
+  });
 
   await historyRef.delete();
   return { status: 'revoked' };

@@ -111,9 +111,22 @@ Everything below was checked against the real code and, where possible, the live
   until the user turns it on.
 * I did **not** add a settings toggle: a switch that controls nothing is exactly what your UI guide forbids.
 
+**Crashlytics (added 12 Oct)**
+* Wired in `src/shared/firebase/crashlytics.ts`: collection is off in `firebase.json`, switched on only in release builds
+  while consent is granted, and turning it off deletes unsent reports. It is a sink for event names (breadcrumbs) only.
+* The "Send crash reports" switch on the Account tab (Privacy card) calls `setAnalyticsConsent`. The privacy policy §3.2
+  and §6 describe it; the tripwire test checks it stays opt-in and is imported in that one file.
+
+**Firebase Analytics (added 12 Oct)**
+* Wired in `src/shared/firebase/analytics.ts` behind the same switch (now "Share usage and crash reports"). Off in
+  `firebase.json`; no advertising ID (Android `AD_ID` permission removed, iOS built without AdSupport, ad consent flags
+  off, automatic screen reporting off). Only allow-listed event fields are sent, never `shareSlug` or free text.
+  Turning the switch off resets the analytics install ID.
+
 **You still need to**
-* When you add Crashlytics / Analytics: attach it via `registerAnalyticsSink`, add a toggle on the Account screen wired to
-  `setAnalyticsConsent`, update the privacy policy and the Play *Data safety* / App Store labels.
+* Play *Data safety*: Crash logs (collected, optional, app functionality) and App interactions (collected, optional,
+  analytics). Keep "Advertising ID" = No.
+* App Store label: Diagnostics → Crash Data and Usage Data → Product Interaction, before this build ships.
 * Never enable session replay or keystroke capture behind this switch; it would need its own consent and masking of every
   input.
 

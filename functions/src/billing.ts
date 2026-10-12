@@ -79,6 +79,34 @@ export async function syncUserBilling(
   };
 }
 
+/**
+ * When a subscription ends (expiry, cancellation, refund), cards still waiting
+ * for review or delivery are cancelled at once instead of waiting for the next sweep.
+ */
+export async function cancelOpenSendsForUser(
+  db: FirebaseFirestore.Firestore,
+  uid: string,
+): Promise<number> {
+  const open = await db
+    .collection('scheduled_sends')
+    .where('userId', '==', uid)
+    .where('status', 'in', ['review', 'approved'])
+    .get();
+  if (open.empty) {
+    return 0;
+  }
+  const batch = db.batch();
+  open.docs.forEach((doc) =>
+    batch.update(doc.ref, {
+      status: 'cancelled',
+      lastError: 'subscription_inactive',
+      updatedAt: admin.firestore.Timestamp.now(),
+    }),
+  );
+  await batch.commit();
+  return open.size;
+}
+
 function billingFailure(res: Response, error: unknown): void {
   const message = error instanceof Error ? error.message : 'unknown';
   console.error('billing sync failed', message);
@@ -102,6 +130,9 @@ export async function handleBillingSync(
   }
   try {
     const state = await syncUserBilling(db, uid);
+    if (state.tier === 'free') {
+      await cancelOpenSendsForUser(db, uid);
+    }
     res.status(200).json({ ok: true, ...state });
   } catch (error) {
     billingFailure(res, error);
@@ -174,7 +205,12 @@ export async function handleRevenueCatWebhook(
     return;
   }
   try {
-    await syncUserBilling(db, uid);
+    // Every event (renewal, expiry, cancellation, refund, billing issue) re-reads
+    // the truth from RevenueCat, so the stored tier follows it.
+    const state = await syncUserBilling(db, uid);
+    if (state.tier === 'free') {
+      await cancelOpenSendsForUser(db, uid);
+    }
   } catch (error) {
     billingFailure(res, error);
     return;

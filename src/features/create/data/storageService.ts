@@ -1,10 +1,25 @@
+import auth from '@react-native-firebase/auth';
 import storage from '@react-native-firebase/storage';
 import { MAX_STORAGE_PHOTO_BYTES } from '../../../shared/config/media';
 import { CreationApiError } from './types';
 
+/** Each user uploads into their own folder; storage.rules only lets them write there. */
 function newStoragePath(): string {
+  const uid = auth().currentUser?.uid;
+  if (!uid) {
+    throw new CreationApiError('VALIDATION_ERROR', 'Sign in to share your card.');
+  }
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  return `uploads/guest/${id}.jpg`;
+  return `uploads/${uid}/${id}.jpg`;
+}
+
+/** Best effort: remove photos uploaded for a share that did not go through. */
+export async function deleteUploadedPhotos(paths: string[]): Promise<void> {
+  await Promise.allSettled(
+    paths
+      .filter((path) => path.startsWith('uploads/'))
+      .map(async (path) => storage().ref(path).delete()),
+  );
 }
 
 /**

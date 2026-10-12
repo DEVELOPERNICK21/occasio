@@ -91,9 +91,12 @@ export function ScheduledSendReviewScreen({ navigation, route }: Props) {
   const handleApprove = async () => {
     const result = await approve(send.id);
     if (!result) return;
-    const shareUrl = result.shareUrl ?? send.shareUrl;
-    if (shareUrl) {
-      await openShareSheet(shareUrl);
+    // Already emailed by us: nothing left for the owner to send.
+    if (result.status !== 'sent') {
+      const shareUrl = result.shareUrl ?? send.shareUrl;
+      if (shareUrl) {
+        await openShareSheet(shareUrl);
+      }
     }
     goBackToList();
   };
@@ -144,13 +147,21 @@ export function ScheduledSendReviewScreen({ navigation, route }: Props) {
         <Text style={styles.warning}>{REVIEW_NO_PHOTOS_COPY}</Text>
       ) : null}
 
+      {send.status === 'review' ? (
+        <Text style={[styles.hint, styles.hintBlock]}>
+          {send.autoDeliver
+            ? `We email this card to ${personName} when you approve it, or when the review window ends. Cancel to stop it.`
+            : `Nothing is sent automatically. After you approve, share the link with ${personName} yourself.`}
+        </Text>
+      ) : null}
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <ScreenActions>
         {send.status === 'review' ? (
           <>
             <Button
-              label="Approve & send"
+              label={send.autoDeliver ? 'Approve & send' : 'Approve & share'}
               onPress={() => void handleApprove()}
               loading={isPending}
               disabled={!canApprove || isPending}
@@ -224,6 +235,10 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
     color: colors.accent,
+  },
+  hintBlock: {
+    marginTop: spacing.md,
+    lineHeight: typography.sizeSm * 1.4,
   },
   warning: {
     marginTop: spacing.md,

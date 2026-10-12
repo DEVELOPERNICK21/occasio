@@ -1,10 +1,13 @@
 import * as admin from 'firebase-admin';
 import { pruneFcmTokens, sendAutosendSent } from './fcm';
 import {
+  applyDeliveryConsent,
   channelDestinations,
   deliveryProviders,
+  hasDeliverableChannel,
   type DeliveryProvider,
 } from './providers';
+import { verifyPaidAtSendTime, type SendTimeTierCheck } from './tier';
 import {
   isAutosendDispatchEnabled,
   type DeliveryChannel,
@@ -83,6 +86,23 @@ export async function attemptChannels(
   };
 }
 
+/** Where this person agreed to receive cards. Empty strings mean "do not use". */
+export async function loadDeliveryDestinations(
+  db: FirebaseFirestore.Firestore,
+  relationshipId: string,
+): Promise<Record<DeliveryChannel, string>> {
+  const relSnap = relationshipId
+    ? await db.collection('relationships').doc(relationshipId).get()
+    : null;
+  const relData = relSnap?.data();
+  const contactRaw = relData?.contactChannel;
+  const contact =
+    contactRaw && typeof contactRaw === 'object'
+      ? (contactRaw as { whatsapp?: unknown; phone?: unknown; email?: unknown })
+      : {};
+  return applyDeliveryConsent(channelDestinations(contact), relData?.deliveryConsent);
+}
+
 async function notifySent(
   db: FirebaseFirestore.Firestore,
   messaging: admin.messaging.Messaging,
@@ -112,6 +132,7 @@ export async function dispatchScheduledSend(
   messaging: admin.messaging.Messaging,
   sendId: string,
   providers: DeliveryProvider[] = deliveryProviders(db),
+  verifyTier: SendTimeTierCheck = verifyPaidAtSendTime,
 ): Promise<DispatchResult> {
   const sendRef = db.collection(SCHEDULED_SENDS).doc(sendId);
   const snap = await sendRef.get();
@@ -175,6 +196,60 @@ export async function dispatchScheduledSend(
     };
   }
 
+  // No channel this person agreed to: the owner shares the link themselves.
+  // That is a normal resting state, not a failure, so the sweep skips it.
+  const destinations = await loadDeliveryDestinations(
+    db,
+    asString(data.relationshipId),
+  );
+  if (!hasDeliverableChannel(providers, destinations)) {
+    if (data.manual !== true) {
+      await sendRef.update({
+        manual: true,
+        lastError: null,
+        updatedAt: admin.firestore.Timestamp.now(),
+      });
+    }
+    return {
+      status: 'approved',
+      shareUrl,
+      deliveryChannelUsed: null,
+      lastError: null,
+    };
+  }
+
+  // The plan is checked now, not when the send was scheduled: a lapsed or
+  // refunded subscriber must not trigger delivery to someone else.
+  const userId = asString(data.userId);
+  const tier = await verifyTier(db, userId);
+  if (tier === 'lapsed') {
+    await sendRef.update({
+      status: 'cancelled',
+      lastError: 'subscription_inactive',
+      dispatchClaimedAt: null,
+      updatedAt: admin.firestore.Timestamp.now(),
+    });
+    return {
+      status: 'cancelled',
+      shareUrl,
+      deliveryChannelUsed: null,
+      lastError: 'subscription_inactive',
+    };
+  }
+  if (tier === 'unknown') {
+    // Stay approved; the 15-minute sweep asks again. Not counted as an attempt.
+    await sendRef.update({
+      lastError: 'billing_unavailable',
+      updatedAt: admin.firestore.Timestamp.now(),
+    });
+    return {
+      status: 'approved',
+      shareUrl,
+      deliveryChannelUsed: null,
+      lastError: 'billing_unavailable',
+    };
+  }
+
   // Claim so a concurrent approve + sweep cannot deliver the same wish twice.
   const claimed = await db.runTransaction(async (tx) => {
     const fresh = await tx.get(sendRef);
@@ -202,19 +277,8 @@ export async function dispatchScheduledSend(
     };
   }
 
-  const relationshipId = asString(data.relationshipId);
-  const relSnap = relationshipId
-    ? await db.collection('relationships').doc(relationshipId).get()
-    : null;
-  const contactRaw = relSnap?.data()?.contactChannel;
-  const contact =
-    contactRaw && typeof contactRaw === 'object'
-      ? (contactRaw as { whatsapp?: unknown; phone?: unknown; email?: unknown })
-      : {};
-  const destinations = channelDestinations(contact);
   const personName = asString(data.personName);
   const occasionType = asString(data.occasionType) || 'birthday';
-  const userId = asString(data.userId);
 
   const attempt = await attemptChannels(providers, destinations, {
     shareUrl,

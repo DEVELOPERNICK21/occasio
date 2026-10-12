@@ -47,7 +47,7 @@ No purchase data exists, so this ranking is **ASSUMPTION** built on what the app
 
 | # | Feature (what the user gets) | Free or paid today | Why it ranks here |
 |---|---|---|---|
-| 1 | **Unlimited cards** (free is 1 per month) | Paid (Pro) or a single-card purchase | It is the only limit a user hits during normal use, at the moment they want to send a second card. The paywall opens here. `quota.ts` |
+| 1 | **24 cards a year and 365-day links** (free is 1 card per account, 30-day links) | Paid (Pro) or a single-card purchase | It is the only limit a user hits during normal use, at the moment they want to send a second card. The paywall opens here. `quota.ts` |
 | 2 | **Cards prepared on their day, with a review window** (the "auto-send" engine: card built from the saved photo + message, push to review, 2-hour approve/cancel window, then share the link) | Paid (arming is gated to Pro) | It is the reason to subscribe rather than buy one card, and the retention engine. **Not fully verified end to end** (see §9 and the claims gate in `03-positioning.md`). `functions/src/autosend`, `vault-blueprint.md` |
 | 3 | **Vault: save up to 5 people** with birthday and anniversary, "Coming up" on Create, home-screen widgets (free: 1 person) | Paid for 2–5 people | Turns Occasio from a one-off tool into something opened every year. `tierLimits.ts` |
 | 4 | **The interactive card the recipient plays** (gate with Pip, balloons, candles, 3D gift, photo deck, reasons, wax-sealed letter, stickers) | Free | It is the acquisition hook and the reason a sender picks Occasio over a static card. Nobody pays for it directly, but it is why they come back. `recipient-experience.md` |
@@ -66,7 +66,7 @@ Honourable mentions (real, but weaker as pay drivers): the Wish journey (levels,
 
 | | Free (no account needed to start) | Occasio Pro |
 |---|---|---|
-| Cards | **1 per calendar month** | Unlimited |
+| Cards | **1 per account, ever** (30-day links) | **24 per rolling year**, then single wishes (365-day links) |
 | Saved people (Vault) | **1** | **Up to 5** |
 | On-their-day card prep ("auto-send") | Off | On (arm per person) |
 | Extra single card | Buy one "wish" (consumable) | n/a |
@@ -78,11 +78,11 @@ Honourable mentions (real, but weaker as pay drivers): the Wish journey (levels,
 
 **What triggers an upgrade today:**
 
-1. Tapping *Create the link* on a second card in the same month → paywall ("One wish per month"). `PreviewScreen.tsx`, `PaywallModal.tsx`
+1. Tapping *Create the link* on a second card as a free user → paywall ("Your free card is used"). `PreviewScreen.tsx`, `PaywallModal.tsx`
 2. Trying to add a second person to the Vault, or to arm auto-send, as a free user. `useSavePerson.ts`, `useToggleAutoSend.ts`
 3. Account → *See Occasio Pro*.
 
-**The in-app paywall** lists: "Unlimited cards each month", "Links active for 365 days", "Save up to 5 people in Vault", "Priority support for Pro". **Two of those four are not backed by the code I could find** (see §9), so none of them is used in store copy except the first and third.
+**The in-app paywall** lists: "24 cards a year, and single wishes beyond that", "Links active for 365 days", "Save up to 5 people in Vault", "Priority support for Pro". The first three are enforced by the server (card allowance, link length) and `tierLimits.ts`.
 
 ## 7. Brand: colours, fonts, logo, tone
 
@@ -115,11 +115,11 @@ Honourable mentions (real, but weaker as pay drivers): the Wish journey (levels,
 
 These affect what the listing may claim. Details and the rules I applied are in `03-positioning.md` §5 and `00-summary.md`.
 
-> **Update, 8 Oct (Apple compliance pass, `06-apple-submission.md`):** the Account screen no longer says "year-long links" (related to item 2), the privacy policy now matches the real sign-in methods (item 8), and the delete-account page describes the in-app path. The server still sets 30-day expiry on manual cards, and the RevenueCat paywall text is yours to check.
+> **Update, 12 Oct:** Pro cards now expire in 365 days and free/credit cards in 30 (`linkTtlDaysFor`). Free is 1 card per account (lifetime), Pro is 24 per rolling year — both enforced on the create API. Auto-send only emails a consented address (or asks the owner to share the link). WhatsApp/SMS are not sold.
 
-1. **Auto-send delivery is not fully live.** The engine builds the card, pushes "Review {name}'s card… You have 2 hours", and on *Approve & send* opens the system share sheet. Server-side delivery is switched off by default (`OCCASIO_AUTOSEND_DISPATCH=false`); WhatsApp and SMS providers are **mocks**; email works only if Resend is configured. The blueprint lists end-to-end verification as not done. → Store copy says the card is *prepared* and *you approve and send*. It never says Occasio sends it for you on WhatsApp or SMS.
-2. **"Links active for 365 days" is only true for auto-send cards.** Manually created cards go through the Vercel API, which sets a flat **30-day** expiry for everyone (`creationsServer.ts`: `GUEST_LINK_TTL_DAYS_PROD = 30`; no tier branch). The paywall perk and the privacy policy's "up to 365 days" therefore overpromise for normal cards. → Not used in store copy. **Fix or reword before launch**, because it is exactly the kind of mismatch that produces refund requests and 1-star reviews.
-3. **The 1-card-a-month limit is enforced in the app only.** The create API has no auth or quota check (an IP rate limit of 20 per hour only). Fine for store copy ("1 card a month on the free plan"), but a business risk.
+1. **Auto-send delivery is email only.** The engine prepares the card and asks for a 2-hour review. If the person has a saved email and they agreed, we email the link after approve (or after the window, when dispatch is on). Otherwise the owner shares the link themselves. WhatsApp and SMS providers are mocks for tests only.
+2. **~~"Links active for 365 days" was only true for auto-send.~~ Done.** The create API uses `linkTtlDaysFor`: Pro 365 days, free and single-wish 30 days. Redeploy the website API if this is not live yet.
+3. **~~The 1-card-a-month limit is enforced in the app only.~~ Done.** The create API counts `freeCardsUsed` (1 lifetime) and Pro `proCardTimes` (24 / 365 days). Store copy must say that — never "unlimited" or "1 per month".
 4. **"Priority support for Pro"** appears in the paywall; no support tooling exists in the repo. → Not used.
 5. **Analytics is a stub.** `trackEvent` only logs in `__DEV__`. There is no Firebase Analytics dependency. Without it, activation, share rate and paywall conversion cannot be measured, and the growth plan cannot run. (`src/shared/analytics/events.ts`)
 6. **No in-app review prompt exists** (no store-review library in `package.json`).

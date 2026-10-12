@@ -22,7 +22,7 @@ export type WriteCreationResult = {
   expiresAt: admin.firestore.Timestamp;
 };
 
-export function randomSlug(length = 8): string {
+export function randomSlug(length = 12): string {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let slug = '';
   for (let i = 0; i < length; i += 1) {
@@ -59,13 +59,26 @@ export function storagePathToUrl(path: string): string | null {
   return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?alt=media`;
 }
 
+export function isSafeMediaUrl(url: string): boolean {
+  if (url.startsWith('data:image/')) {
+    return /^data:image\/(jpeg|png|webp|heic);base64,[A-Za-z0-9+/=]+$/.test(url);
+  }
+  const bucket = storageBucketName();
+  return (
+    bucket !== null &&
+    url.startsWith(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o/uploads%2F`)
+  );
+}
+
 /** Display URLs for a creation: known URLs first, else resolve storage paths. */
 export function resolveMediaUrls(
   mediaUrls: string[],
   photoRefs: string[],
 ): string[] {
-  if (mediaUrls.length > 0) {
-    return mediaUrls;
+  // Only embedded images or our own Storage; never an arbitrary web address.
+  const safe = mediaUrls.filter(isSafeMediaUrl);
+  if (safe.length > 0) {
+    return safe;
   }
   return photoRefs
     .map(storagePathToUrl)

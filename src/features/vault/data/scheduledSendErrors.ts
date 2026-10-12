@@ -6,6 +6,8 @@ export type ScheduledSendApiErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'FORBIDDEN'
+  | 'SUBSCRIPTION_REQUIRED'
+  | 'BILLING_UNAVAILABLE'
   | 'INTERNAL';
 
 export class ScheduledSendApiError extends Error {

@@ -140,6 +140,33 @@ export function channelDestinations(contact: {
   };
 }
 
+/**
+ * A channel is only used when the sender recorded that this person agreed to
+ * get cards that way (`deliveryConsent.<channel> === true` on the relationship).
+ */
+export function applyDeliveryConsent(
+  destinations: Record<DeliveryChannel, string>,
+  consent: unknown,
+): Record<DeliveryChannel, string> {
+  const given =
+    consent && typeof consent === 'object'
+      ? (consent as Record<string, unknown>)
+      : {};
+  return {
+    whatsapp: given.whatsapp === true ? destinations.whatsapp : '',
+    sms: given.sms === true ? destinations.sms : '',
+    email: given.email === true ? destinations.email : '',
+  };
+}
+
+/** True when at least one registered provider has a consented destination. */
+export function hasDeliverableChannel(
+  providers: DeliveryProvider[],
+  destinations: Record<DeliveryChannel, string>,
+): boolean {
+  return providers.some((provider) => Boolean(destinations[provider.channel]));
+}
+
 function asNonEmptyString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }

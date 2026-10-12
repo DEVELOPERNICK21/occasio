@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { lookupCardBySlug } from '@/lib/creationsServer';
 import { isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
+import { allowCardRead, recordCardMiss } from '@/lib/cardReadLimit';
+import { clientIp } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -8,7 +10,7 @@ type RouteContext = {
   params: Promise<{ slug: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   if (!isFirebaseAdminConfigured()) {
     return NextResponse.json(
       { code: 'INTERNAL', message: 'Server is not configured' },
@@ -24,7 +26,18 @@ export async function GET(_request: Request, context: RouteContext) {
     );
   }
 
+  const ip = clientIp(request);
+  if (!allowCardRead(ip)) {
+    return NextResponse.json(
+      { code: 'THROTTLED', message: 'Too many requests. Try again shortly.' },
+      { status: 429 },
+    );
+  }
+
   const result = await lookupCardBySlug(slug);
+  if (result.status === 'not_found') {
+    recordCardMiss(ip);
+  }
   if (result.status === 'expired') {
     return NextResponse.json(
       { code: 'EXPIRED', message: 'This link has expired' },

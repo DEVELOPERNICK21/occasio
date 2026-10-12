@@ -25,6 +25,7 @@ import { configureGoogleSignIn } from '../data/googleSignIn';
 import { AuthError } from '../data/authErrors';
 import { env } from '../../../shared/config/env';
 import { isFirebaseConfigured } from '../../../shared/firebase/app';
+import { setCrashReportUser } from '../../../shared/firebase/crashlytics';
 import type { AuthSessionStatus, AuthSignInMethod, AuthUser, GatedAction } from '../domain/types';
 
 type SoftAuthRequest = {
@@ -72,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const unsubscribe = subscribeAuthState((nextUser) => {
+      setCrashReportUser(nextUser?.uid ?? null);
       setUser(nextUser);
       setStatus(nextUser ? 'signed_in' : 'guest');
     });

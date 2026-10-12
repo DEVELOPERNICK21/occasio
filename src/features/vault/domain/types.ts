@@ -42,6 +42,8 @@ export type VaultPerson = {
   anniversary: PersonDate | null;
   whatsapp: string | null;
   email: string | null;
+  /** The sender recorded that this person agreed to get cards by email. */
+  emailConsent?: boolean;
   autoSendBirthday: boolean;
   autoSendAnniversary: boolean;
   pack: AutoSendPack | null;
@@ -59,6 +61,7 @@ export type PersonDraft = {
   anniversaryDay: string;
   whatsapp: string;
   email: string;
+  emailConsent: boolean;
 };
 
 export type CreatePersonInput = {
@@ -68,6 +71,7 @@ export type CreatePersonInput = {
   anniversary: PersonDate | null;
   whatsapp: string | null;
   email: string | null;
+  emailConsent: boolean;
   autoSendBirthday: boolean;
   autoSendAnniversary: boolean;
 };
@@ -81,4 +85,5 @@ export const EMPTY_PERSON_DRAFT: PersonDraft = {
   anniversaryDay: '',
   whatsapp: '',
   email: '',
+  emailConsent: false,
 };

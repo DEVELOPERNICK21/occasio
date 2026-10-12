@@ -41,6 +41,21 @@ jest.mock('@react-native-firebase/storage', () => ({
   default: () => ({ ref: jest.fn() }),
 }));
 
+jest.mock('@react-native-firebase/analytics', () => ({
+  getAnalytics: jest.fn(() => ({})),
+  setAnalyticsCollectionEnabled: jest.fn(async () => undefined),
+  resetAnalyticsData: jest.fn(async () => undefined),
+  logEvent: jest.fn(async () => undefined),
+}));
+
+jest.mock('@react-native-firebase/crashlytics', () => ({
+  getCrashlytics: jest.fn(() => ({})),
+  setCrashlyticsCollectionEnabled: jest.fn(async () => null),
+  deleteUnsentReports: jest.fn(async () => undefined),
+  setUserId: jest.fn(async () => null),
+  log: jest.fn(),
+}));
+
 jest.mock('@react-native-google-signin/google-signin', () => ({
   GoogleSignin: { configure: jest.fn(), signOut: jest.fn(), hasPlayServices: jest.fn() },
   statusCodes: {},

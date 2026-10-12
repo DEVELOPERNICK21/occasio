@@ -76,6 +76,29 @@ describe('personRules', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('needs a valid email and their agreement before an email is kept', () => {
+    const base = {
+      ...EMPTY_PERSON_DRAFT,
+      personName: 'Mom',
+      relationshipType: 'parent' as const,
+    };
+    const options = { autoSendBirthday: false };
+
+    expect(validatePersonDraft({ ...base, email: 'mom@example.com' }, options).ok).toBe(false);
+    expect(validatePersonDraft({ ...base, email: 'nope', emailConsent: true }, options).ok).toBe(
+      false,
+    );
+
+    const agreed = validatePersonDraft(
+      { ...base, email: 'mom@example.com', emailConsent: true },
+      options,
+    );
+    expect(agreed.ok && agreed.input.emailConsent).toBe(true);
+
+    const noEmail = validatePersonDraft({ ...base, emailConsent: true }, options);
+    expect(noEmail.ok && noEmail.input.emailConsent).toBe(false);
+  });
+
   it('formats dates and computes days until birthday', () => {
     expect(formatPersonDate({ month: 9, day: 12 })).toBe('12 Sep');
     const days = daysUntilPersonDate(
@@ -274,8 +297,9 @@ describe('armed occasions copy', () => {
 
   it('uses honest delivery copy instead of coming soon', () => {
     expect(AUTO_SEND_DELIVERY_COPY).toBe(
-      'Armed for delivery when the date arrives',
+      'We prepare the card on the day and ask you to review it. We email it only if they agreed; otherwise you share the link.',
     );
+    expect(AUTO_SEND_DELIVERY_COPY.toLowerCase()).not.toContain('delivery');
     expect(AUTO_SEND_DELIVERY_COPY.toLowerCase()).not.toContain('coming soon');
   });
 

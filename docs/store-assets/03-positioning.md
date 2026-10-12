@@ -21,7 +21,7 @@ One line of reasoning follows each major choice.
 | Pillar | Proof the user can see | Where it shows up |
 |---|---|---|
 | **They play it, not just read it.** | Pip at the gate, balloons to pop, candles to blow out, a 3D gift, a wax-sealed letter, stickers | Screenshots 1, 2, 5, 6, 7 |
-| **Quick and free to start.** | "Most cards take under two minutes", no account to create or share, 1 free card a month | Screenshots 4, 8; first lines of every description |
+| **Quick and free to start.** | "Most cards take under two minutes", 1 free card to try | Screenshots 4, 8; first lines of every description |
 | **Remembers for you.** | Vault with birthdays and anniversaries, "Coming up" on Create, home-screen widgets | Screenshot 3; Description section "Remember every date" |
 
 *Why three:* a store page is read in seconds; three ideas with visible proof beat ten features. The pillars map one-to-one onto the first three screenshots, which are the only ones most people see in search results.
@@ -44,7 +44,7 @@ Occasio's boldest idea, **auto-send**, is built but not verified end to end. Del
 | "Share a private link by text or any messaging app" | Any mention of WhatsApp, SMS or email *delivery* by Occasio |
 | "Recipients need no app and no account" | "Pushes you on their birthday" as a guaranteed feature (needs Pro + armed + the daily job live) |
 | "Save birthdays and anniversaries; see who's next; home-screen widgets" | "Links last a year" (manual cards expire after 30 days today) |
-| "1 free card a month; Pro is unlimited" | "Priority support" |
+| "1 free card; Pro is 24 cards a year with 365-day links" | "Priority support" |
 | "You can delete your account in the app" | Any number of users, cards sent, ratings, or "loved by" claims (none exist) |
 
 **If auto-send is verified live at launch,** use the *"On their day"* blocks marked **[ADD AFTER VERIFIED]** in `04-listing.md`. They are written, character-checked and ready. The wording stays honest even then: *we prepare it, you approve it, you send the link* (that is what the review screen does), and *never* "we message them for you" unless the dispatch flag is on and a real provider is configured.
@@ -71,7 +71,7 @@ Each changes **one idea**, so a test can be read cleanly. The recommended listin
 | Plain, warm, specific: "Add a photo and your words." | Hype: "amazing", "unlock", "supercharge", "revolutionary" |
 | Benefit first, mechanism second | Lead with technology (Firebase, 3D engine, "AI") |
 | Show playfulness in screenshots (Pip, "No" reacts) | Fill descriptions with emoji or exclamation marks |
-| State limits plainly ("1 card a month on Free") | Hide the free limit until the paywall |
+| State limits plainly ("1 free card, then Pro or single wishes") | Hide the free limit until the paywall |
 | "They open a link" | "Download the app to receive" (false) |
 
 Store listings use no emoji in titles or subtitles (Play prohibits them) and none in the description, which also matches the project's own copy rules (`product-principles.md` §7).

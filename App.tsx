@@ -17,11 +17,16 @@ import {
   getFirebaseProjectId,
   isFirebaseConfigured,
 } from './src/shared/firebase/app';
+import { startAnalytics } from './src/shared/firebase/analytics';
+import { startCrashReporting } from './src/shared/firebase/crashlytics';
 
 function App() {
   useEffect(() => {
     lockToPortrait();
-    void loadAnalyticsConsent();
+    void loadAnalyticsConsent().then(() => {
+      startCrashReporting();
+      startAnalytics();
+    });
     if (__DEV__) {
       const projectId = getFirebaseProjectId();
       console.log(

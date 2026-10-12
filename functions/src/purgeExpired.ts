@@ -66,7 +66,11 @@ export async function purgeExpiredCards(
 
   for (let i = 0; i < doomed.length; i += BATCH) {
     const batch = db.batch();
-    doomed.slice(i, i + BATCH).forEach((doc) => batch.delete(doc.ref));
+    doomed.slice(i, i + BATCH).forEach((doc) => {
+      batch.delete(doc.ref);
+      // The owner's History row shares the card's id; drop it so it doesn't point at nothing.
+      batch.delete(db.collection('user_creations').doc(doc.id));
+    });
     await batch.commit();
   }
   return doomed.length;

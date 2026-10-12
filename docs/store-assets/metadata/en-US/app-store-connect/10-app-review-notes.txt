@@ -11,7 +11,7 @@ SIGN-IN (only for Vault, History and subscriptions)
 Account tab > Continue with email, using the demo account in the Sign-In Information fields. Sign in with Apple and Google are also offered.
 
 PURCHASES
-Occasio Pro, auto-renewing: Monthly $2.99, Yearly $19.99. One consumable: One Extra Wish $0.99 (one more card in a month). Free plan: 1 card per calendar month and 1 saved person. To see the paywall: create a second card in the same month, or tap the subscription button on the Account tab, or reach the last step of the intro. Restore Purchases is on the Account tab. Terms: https://occasio-greetings.vercel.app/terms  Privacy: https://occasio-greetings.vercel.app/privacy
+Occasio Pro, auto-renewing: Monthly $2.99, Yearly $19.99 (24 cards a year, up to 5 saved people, links stay open for 365 days). One consumable: One Extra Wish $0.99 (one more card, also available once the 24 yearly cards are used). Free plan: 1 card per account and 1 saved person; free links stay open for 30 days. To see the paywall: create a second card, or tap the subscription button on the Account tab, or reach the last step of the intro. Restore Purchases is on the Account tab. Terms: https://occasio-greetings.vercel.app/terms  Privacy: https://occasio-greetings.vercel.app/privacy
 
 USER CONTENT (1.2)
 Cards are private one-to-one links. There is no public feed, search, comments or messaging; a recipient can only add a heart count. Every card page has a "Report this card" link (bottom right) that emails developernick1@gmail.com. Reported cards are reviewed and removed if they break the Terms, which prohibit abusive content.
@@ -23,13 +23,13 @@ AUTO-SEND (Occasio Pro)
 In the Vault a Pro user can arm auto-send for a saved birthday or anniversary. On the day the app sends a push asking them to review a prepared card; they have 2 hours to approve or cancel, then the share sheet opens so they send the link.
 
 EXTERNAL SERVICES
-Firebase (Google): Authentication, Firestore, Cloud Functions, Cloud Messaging push. RevenueCat with Apple In-App Purchase: subscriptions. Sign in with Apple and Google Sign-In. Resend: subscription confirmation emails. Vercel: hosts the card web pages and our API. No AI services, no ads, no tracking.
+Firebase (Google): Authentication, Firestore, Cloud Functions, Cloud Messaging push. RevenueCat with Apple In-App Purchase: subscriptions. Sign in with Apple and Google Sign-In. Resend: subscription confirmation emails. Vercel: hosts the card web pages and our API. Firebase Analytics and Crashlytics: off unless the user turns on "Share usage and crash reports" in Account; no advertising identifier. No AI services, no ads, no tracking.
 
 REGIONS
 Identical features and content in every region. Only prices (set by the App Store) and the device language of system dialogs differ. The app is in English.
 
 REGULATED INDUSTRY / THIRD-PARTY MATERIAL
-Not a regulated industry; no licences needed. [CONFIRM: The app bundles five short sound effects and five animations; we hold the rights to use them.]
+Not a regulated industry; no licences needed.
 
 PERMISSIONS
 Camera and Photos only when adding a photo. Notifications after sign-in, only to say a card is ready to review. No location, contacts, microphone or tracking.

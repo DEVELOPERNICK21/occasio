@@ -1,7 +1,13 @@
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import { requireUid } from '../authUtil';
-import { dispatchScheduledSend } from './dispatch';
+import { dispatchScheduledSend, loadDeliveryDestinations } from './dispatch';
+import {
+  deliveryProviders,
+  hasDeliverableChannel,
+  type DeliveryProvider,
+} from './providers';
+import { verifyPaidAtSendTime, type SendTimeTierCheck } from './tier';
 import {
   hasCreationPhotos,
   isAutosendDispatchEnabled,
@@ -12,6 +18,11 @@ import {
 
 const SCHEDULED_SENDS = 'scheduled_sends';
 const PAGE_SIZE = 100;
+/**
+ * A card that cannot be delivered automatically waits for its owner. After this
+ * long past the review window it is closed so the Vault inbox does not fill up.
+ */
+const STALE_REVIEW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export type SweepResult = {
   expiredReviews: number;
@@ -91,6 +102,7 @@ export async function handleApproveScheduledSend(
   db: FirebaseFirestore.Firestore,
   messaging: admin.messaging.Messaging,
   auth: admin.auth.Auth,
+  verifyTier: SendTimeTierCheck = verifyPaidAtSendTime,
 ): Promise<void> {
   const uid = await requireUid(req, auth);
   if (!uid) {
@@ -107,6 +119,28 @@ export async function handleApproveScheduledSend(
   const sendRef = db.collection(SCHEDULED_SENDS).doc(id);
 
   try {
+    // Prepared cards are an Occasio Pro feature: check the plan now, not when
+    // the card was prepared, so a lapsed subscriber cannot approve it.
+    const tier = await verifyTier(db, uid);
+    if (tier === 'unknown') {
+      res.status(503).json({ code: 'BILLING_UNAVAILABLE' });
+      return;
+    }
+    if (tier === 'lapsed') {
+      await sendRef.get().then(async (snap) => {
+        const data = snap.data();
+        if (snap.exists && data?.userId === uid && data.status === 'review') {
+          await sendRef.update({
+            status: 'cancelled',
+            lastError: 'subscription_inactive',
+            updatedAt: admin.firestore.Timestamp.now(),
+          });
+        }
+      });
+      res.status(402).json({ code: 'SUBSCRIPTION_REQUIRED' });
+      return;
+    }
+
     const decision = await db.runTransaction(async (tx) => {
       const snap = await tx.get(sendRef);
       if (!snap.exists) {
@@ -233,7 +267,18 @@ async function resolveExpiredReview(
   messaging: admin.messaging.Messaging,
   doc: FirebaseFirestore.QueryDocumentSnapshot,
   now: Date,
+  providers: DeliveryProvider[],
 ): Promise<'wait' | 'dispatch' | 'incomplete_pack' | 'skipped'> {
+  // Only a card that can really be delivered by us is approved on the owner's
+  // behalf. Otherwise nothing is sent and nothing pretends it was.
+  const firstLook = doc.data();
+  const deliverable =
+    isAutosendDispatchEnabled() &&
+    hasDeliverableChannel(
+      providers,
+      await loadDeliveryDestinations(db, String(firstLook.relationshipId ?? '')),
+    );
+
   const claimed = await db.runTransaction(async (tx) => {
     const snap = await tx.get(doc.ref);
     if (!snap.exists) {
@@ -245,6 +290,16 @@ async function resolveExpiredReview(
     }
     const deadline = timestampToDate(data.reviewDeadline);
     if (!isReviewExpired(deadline, now)) {
+      return 'wait' as const;
+    }
+    if (!deliverable) {
+      if (deadline && now.getTime() - deadline.getTime() > STALE_REVIEW_MS) {
+        tx.update(doc.ref, {
+          status: 'cancelled',
+          lastError: 'review_expired',
+          updatedAt: admin.firestore.Timestamp.now(),
+        });
+      }
       return 'wait' as const;
     }
     const hasPhotos = await loadCreationPhotos(
@@ -270,7 +325,7 @@ async function resolveExpiredReview(
   });
 
   if (claimed === 'dispatch') {
-    await dispatchScheduledSend(db, messaging, doc.id);
+    await dispatchScheduledSend(db, messaging, doc.id, providers);
   }
   return claimed;
 }
@@ -280,13 +335,14 @@ export async function sweepExpiredReviews(
   messaging: admin.messaging.Messaging,
   now: Date,
 ): Promise<SweepResult> {
+  const providers = deliveryProviders(db);
   const reviews = await paginateByStatus(db, 'review');
   let expiredReviews = 0;
   let autoDispatched = 0;
   let incompletePack = 0;
 
   for (const doc of reviews) {
-    const outcome = await resolveExpiredReview(db, messaging, doc, now);
+    const outcome = await resolveExpiredReview(db, messaging, doc, now, providers);
     if (outcome === 'wait' || outcome === 'skipped') {
       continue;
     }
@@ -302,7 +358,8 @@ export async function sweepExpiredReviews(
   if (isAutosendDispatchEnabled()) {
     const approved = await paginateByStatus(db, 'approved');
     for (const doc of approved) {
-      const result = await dispatchScheduledSend(db, messaging, doc.id);
+      if (doc.data().manual === true) continue;
+      const result = await dispatchScheduledSend(db, messaging, doc.id, providers);
       if (result.status === 'sent' || result.status === 'failed') {
         approvedRetried += 1;
       }

@@ -42,10 +42,8 @@ export async function deleteAccountData(
     .get();
   const owned = await db.collection('creations').where('userId', '==', uid).get();
 
+  // Only cards this user owns are deleted; a History row is just a pointer.
   const creationRefs = new Map<string, FirebaseFirestore.DocumentReference>();
-  for (const doc of history.docs) {
-    creationRefs.set(doc.id, db.collection('creations').doc(doc.id));
-  }
   for (const doc of owned.docs) {
     creationRefs.set(doc.id, doc.ref);
   }
@@ -62,18 +60,22 @@ export async function deleteAccountData(
       }
     }
   }
-  if (storagePaths.length > 0) {
-    try {
-      const bucket = admin.storage().bucket();
-      await Promise.all(
-        storagePaths.map((path) =>
-          bucket.file(path).delete({ ignoreNotFound: true }),
-        ),
-      );
-    } catch (error) {
-      console.error('account delete: storage cleanup failed', error);
+  for (const doc of relationships.docs) {
+    const photoRefs = doc.data().photoRefs;
+    if (Array.isArray(photoRefs)) {
+      for (const item of photoRefs) {
+        if (typeof item === 'string' && isStoragePath(item)) {
+          storagePaths.push(item);
+        }
+      }
     }
   }
+  // Fail before erasing anything else, so a retry can finish the job.
+  const bucket = admin.storage().bucket();
+  await bucket.deleteFiles({ prefix: `uploads/${uid}/`, force: true });
+  await Promise.all(
+    storagePaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true })),
+  );
 
   await deleteRefs(db, [
     ...relationships.docs.map((d) => d.ref),

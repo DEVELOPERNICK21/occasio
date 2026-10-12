@@ -21,6 +21,27 @@ export function AddPersonNameField({
   );
 }
 
+export function AddPersonEmailField({
+  value,
+  onChangeText,
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+}) {
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder="Their email (optional)"
+      placeholderTextColor={colors.muted}
+      keyboardType="email-address"
+      autoCapitalize="none"
+      autoCorrect={false}
+      style={styles.nameInput}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   nameInput: {
     backgroundColor: colors.surface,

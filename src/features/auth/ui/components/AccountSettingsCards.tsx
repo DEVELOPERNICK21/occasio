@@ -1,4 +1,10 @@
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Linking, Pressable, StyleSheet, Switch, View } from 'react-native';
+import {
+  canCollectAnalytics,
+  setAnalyticsConsent,
+  subscribeAnalyticsConsent,
+} from '../../../../shared/analytics/consent';
 import { env } from '../../../../shared/config/env';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -104,6 +110,12 @@ export function AccountNotificationsCard() {
 const SUPPORT_EMAIL = 'developernick1@gmail.com';
 
 export function AccountPrivacyCard() {
+  const [crashReports, setCrashReports] = useState(canCollectAnalytics());
+  useEffect(
+    () => subscribeAnalyticsConsent((value) => setCrashReports(value === 'granted')),
+    [],
+  );
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -112,6 +124,23 @@ export function AccountPrivacyCard() {
       </View>
       <Text style={styles.body}>
         See what Occasio collects, how long it is kept, and how to delete it.
+      </Text>
+      <View style={styles.toggleRow}>
+        <Text style={styles.toggleLabel}>Share usage and crash reports</Text>
+        <Switch
+          accessibilityLabel="Share usage and crash reports"
+          value={crashReports}
+          onValueChange={(next) => {
+            void setAnalyticsConsent(next);
+          }}
+          trackColor={{ false: colors.border, true: colors.accent }}
+          thumbColor={colors.white}
+        />
+      </View>
+      <Text style={styles.body}>
+        Off unless you turn it on. Sends which steps you use (for example "card shared") and,
+        if the app crashes, your phone model, app version and account ID. Never your cards,
+        photos, messages or contacts, and no advertising ID.
       </Text>
       <View style={styles.helpActions}>
         <Pressable

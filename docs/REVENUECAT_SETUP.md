@@ -15,7 +15,7 @@ cd ios && pod install && cd ..
 
 | Identifier | Purpose |
 |---|---|
-| `occasio_pro` | Unlocks Personal-tier limits (unlimited cards, 5 Vault people, auto-send gate) |
+| `occasio_pro` | Unlocks Personal-tier limits (24 cards a year, 365-day links, 5 Vault people, auto-send gate) |
 
 ### 2. Products / packages (current offering)
 

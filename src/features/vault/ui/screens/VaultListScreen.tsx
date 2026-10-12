@@ -396,7 +396,7 @@ export function VaultListScreen(props: ListProps) {
         benefits={[
           'Save birthdays and anniversaries in one place',
           'See who is coming up next at a glance',
-          'Auto-send cards you have reviewed first',
+          'We prepare a card on the day; you review it, then we email it if they agreed',
         ]}
         onSignIn={() => requireAuth('vault_view', () => undefined)}
       />

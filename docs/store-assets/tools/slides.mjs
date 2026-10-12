@@ -29,7 +29,7 @@ export const COPY = {
     f7: { l: 'Even <em>“No”</em> gets<br>a reaction', s: 'Say no twice and it becomes yes.<br>Nobody gets stuck.' },
     f8: { l: 'Start <em>free</em>.<br>Upgrade anytime.', s: 'Your first card needs no account.' },
     plan: {
-      free: { name: 'Free', items: ['1 card a month', 'No account to start', '1 saved person'] },
+      free: { name: 'Free', items: ['1 card to try', 'No account to start', '1 saved person'] },
       pro: { name: 'Occasio Pro', items: ['24 cards a year', '5 saved people', 'Cancel anytime'] },
       note: 'Need just one more? Buy a single card.',
     },

@@ -19,22 +19,56 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmTokens']);
     }
 
+    // A Vault person. Only known fields, with sane sizes, so a modified app cannot
+    // store arbitrary data here. How many people a plan allows is enforced by the
+    // `enforceVaultCap` Cloud Function, since rules cannot count documents.
+    function validPerson(d) {
+      return d.keys().hasOnly([
+          'userId', 'personName', 'relationshipType', 'dates', 'contactChannel',
+          'deliveryConsent', 'autoSendEnabled', 'preferredTemplateId',
+          'preferredTemplateType', 'photoRefs', 'defaultMessage', 'fromName',
+          'lastCreationId', 'createdAt', 'updatedAt'
+        ])
+        && d.personName is string && d.personName.size() >= 1 && d.personName.size() <= 80
+        && d.relationshipType is string && d.relationshipType.size() <= 32
+        && d.dates is map && d.dates.keys().hasOnly(['birthday', 'anniversary'])
+        && d.contactChannel is map
+        && d.contactChannel.keys().hasOnly(['whatsapp', 'email'])
+        && (!('whatsapp' in d.contactChannel)
+          || (d.contactChannel.whatsapp is string && d.contactChannel.whatsapp.size() <= 20))
+        && (!('email' in d.contactChannel)
+          || (d.contactChannel.email is string && d.contactChannel.email.size() <= 254))
+        && (!('deliveryConsent' in d)
+          || (d.deliveryConsent is map && d.deliveryConsent.keys().hasOnly(['email'])))
+        && d.autoSendEnabled is map
+        && d.autoSendEnabled.keys().hasOnly(['birthday', 'anniversary'])
+        && (!('photoRefs' in d) || (d.photoRefs is list && d.photoRefs.size() <= 5))
+        && (!('defaultMessage' in d)
+          || (d.defaultMessage is string && d.defaultMessage.size() <= 280))
+        && (!('fromName' in d)
+          || d.fromName == null
+          || (d.fromName is string && d.fromName.size() <= 80));
+    }
+
     match /relationships/{relationshipId} {
       allow create: if request.auth != null
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == request.resource.data.userId
+        && validPerson(request.resource.data);
       allow read, delete: if request.auth != null
         && request.auth.uid == resource.data.userId;
       allow update: if request.auth != null
         && request.auth.uid == resource.data.userId
-        && request.resource.data.userId == resource.data.userId;
+        && request.resource.data.userId == resource.data.userId
+        && validPerson(request.resource.data);
     }
 
     match /user_creations/{entryId} {
-      // The card must already exist (created server-side), so ownership of an
-      // arbitrary made-up id cannot be claimed.
+      // The card must exist AND belong to the signed-in user. Without the owner
+      // check anyone could claim a History row for somebody else's card.
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.userId
-        && exists(/databases/$(database)/documents/creations/$(entryId));
+        && request.resource.data.creationId == entryId
+        && get(/databases/$(database)/documents/creations/$(entryId)).data.userId == request.auth.uid;
       // Saving to History reads the entry first to decide create vs update. A
       // missing document has no `resource`, and checking a field on it makes
       // the rule error and the read is denied, so History never saved anything.

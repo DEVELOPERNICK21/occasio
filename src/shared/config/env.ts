@@ -72,10 +72,11 @@ export const env = {
   useMockBilling: false,
 
   /**
-   * Dev builds only (__DEV__): skip free-tier paywall and request 3-day link TTL.
-   * Stripped from production release builds — never set manually to true.
+   * Skip the free-tier paywall and request a 3-day link TTL. OFF — real quota and
+   * link lengths apply in every build. Set to `__DEV__` only for local testing,
+   * and never commit that. A test fails if this is true.
    */
-  devRelaxedQuota: __DEV__,
+  devRelaxedQuota: false,
 } as const;
 
 export function getApiBaseUrl(): string {

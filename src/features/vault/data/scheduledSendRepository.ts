@@ -19,6 +19,8 @@ export type ScheduledSend = {
   shareUrl: string | null;
   generatedCreationId: string | null;
   personName?: string;
+  /** True when the server will email this card itself; otherwise the owner shares the link. */
+  autoDeliver: boolean;
 };
 
 type ScheduledSendDoc = {
@@ -30,6 +32,7 @@ type ScheduledSendDoc = {
   reviewDeadline: FirebaseFirestoreTypes.Timestamp | null;
   shareUrl: string | null;
   generatedCreationId: string | null;
+  autoDeliver?: boolean;
 };
 
 const INBOX_STATUSES: ScheduledSendStatus[] = ['review', 'approved'];
@@ -92,6 +95,7 @@ function mapDoc(id: string, data: ScheduledSendDoc): ScheduledSend | null {
     shareUrl: data.shareUrl ?? null,
     generatedCreationId: data.generatedCreationId ?? null,
     personName: data.personName,
+    autoDeliver: data.autoDeliver === true,
   };
 }
 
@@ -118,6 +122,18 @@ function toScheduledSendError(error: unknown): ScheduledSendApiError {
     }
     if (error.status === 403) {
       return new ScheduledSendApiError('FORBIDDEN', 'You cannot modify this send.');
+    }
+    if (error.status === 402) {
+      return new ScheduledSendApiError(
+        'SUBSCRIPTION_REQUIRED',
+        'Prepared cards are part of Occasio Pro. Your plan has ended, so this card was cancelled.',
+      );
+    }
+    if (error.status === 503) {
+      return new ScheduledSendApiError(
+        'BILLING_UNAVAILABLE',
+        'Could not check your plan. Try again in a moment.',
+      );
     }
     if (error.status === 404) {
       return new ScheduledSendApiError('NOT_FOUND', 'Scheduled send not found.');

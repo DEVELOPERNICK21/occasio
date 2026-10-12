@@ -9,9 +9,12 @@ import {
   istCalendarDate,
   matchesMonthDay,
 } from './dates';
+import { loadDeliveryDestinations } from './dispatch';
 import { pruneFcmTokens, sendAutosendReview } from './fcm';
+import { deliveryProviders, hasDeliverableChannel } from './providers';
 import { sweepExpiredReviews } from './review';
 import {
+  isAutosendDispatchEnabled,
   isPaidAutosendTier,
   type AutoSendLastCreation,
   type OccasionType,
@@ -378,11 +381,20 @@ async function processOccasion(
     const reviewDeadline = admin.firestore.Timestamp.fromDate(
       new Date(now.getTime() + REVIEW_WINDOW_MS),
     );
+    // Tells the app the truth up front: will we send this ourselves (email), or
+    // is it the owner's job to share the link after approving?
+    const autoDeliver =
+      isAutosendDispatchEnabled() &&
+      hasDeliverableChannel(
+        deliveryProviders(db),
+        await loadDeliveryDestinations(db, rel.id),
+      );
     await sendRef.update({
       status: 'review',
       generatedCreationId: creation.creationId,
       shareUrl: creation.shareUrl,
       reviewDeadline,
+      autoDeliver,
       lastError: null,
       updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
     });

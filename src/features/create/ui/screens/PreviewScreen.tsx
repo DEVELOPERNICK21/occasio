@@ -5,9 +5,11 @@ import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events
 import { Text } from '../../../../shared/ui/Text';
 import { useAuth } from '../../../auth/application/useAuth';
 import { usePaywall } from '../../../billing/application/usePaywall';
-import { useHistory } from '../../../history/application/useHistory';
+import { useFreeCardsUsed } from '../../../billing/application/useFreeCardsUsed';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
+import { useTemplateCatalog } from '../../application/useTemplateCatalog';
+import { framePhotosMessage, framePhotosShort } from '../../domain/creationRules';
 import {
   isInteractiveExperience,
   resolveDraftExperienceMode,
@@ -27,8 +29,8 @@ type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
-  const { isSignedIn, requestAuth } = useAuth();
-  const { entries } = useHistory(isSignedIn);
+  const { isSignedIn, requestAuth, user } = useAuth();
+  const { getById } = useTemplateCatalog();
   const {
     open: openPaywall,
     isConfigured,
@@ -38,12 +40,21 @@ export function PreviewScreen({ navigation }: Props) {
     error: billingError,
     resolveExtraWish,
   } = usePaywall();
-  const cardsCreated = isSignedIn ? entries.length : 0;
+  // The server's count of free cards, not local History rows, which can lag or fail to sync.
+  const { used: freeCardsUsed, refresh: resolveFreeCardsUsed } = useFreeCardsUsed(
+    isSignedIn ? (user?.uid ?? null) : null,
+  );
+  const cardsCreated = freeCardsUsed ?? 0;
+  const frame = draft.templateId ? getById(draft.templateId) : null;
+  const photoSlots = frame?.photoSlots ?? null;
+  const photosShort = framePhotosShort(draft.photoUris.length, photoSlots);
   const { generate, isLoading, error, paywallRequired, reset } =
     useCreateShareLink({
       cardsCreated,
       tier,
       resolveExtraWish,
+      resolveFreeCardsUsed,
+      photoSlots,
     });
   const quotaNotice = isEditing
     ? null
@@ -220,7 +231,11 @@ export function PreviewScreen({ navigation }: Props) {
       {isLoading ? (
         <ActivityIndicator style={styles.loader} color={colors.accent} />
       ) : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {photosShort > 0 && photoSlots !== null ? (
+        <Text style={styles.error}>{framePhotosMessage(photosShort, photoSlots)}</Text>
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : null}
       {billingError && !isEditing ? (
         <Text style={styles.error}>{billingError}</Text>
       ) : null}
@@ -228,7 +243,7 @@ export function PreviewScreen({ navigation }: Props) {
       <ScreenActions>
         <Button
           label={primaryLabel}
-          disabled={isLoading}
+          disabled={isLoading || photosShort > 0}
           onPress={handleGenerate}
         />
       </ScreenActions>

@@ -21,7 +21,7 @@ import { useSavePerson } from '../../application/useSavePerson';
 import { parseBirthdayInput } from '../../domain/personRules';
 import { EMPTY_PERSON_DRAFT, type PersonDraft } from '../../domain/types';
 import { AddPersonAutoSendCard } from '../components/AddPersonAutoSendCard';
-import { AddPersonNameField } from '../components/AddPersonFormFields';
+import { AddPersonEmailField, AddPersonNameField } from '../components/AddPersonFormFields';
 import { AddPersonHero } from '../components/AddPersonHero';
 import { AddPersonDivider, AddPersonSection } from '../components/AddPersonSection';
 import { RelationshipChipGrid } from '../components/RelationshipChipGrid';
@@ -101,6 +101,7 @@ export function AddPersonScreen({ navigation, route }: Props) {
 
   const hasBirthday = Boolean(draft.birthdayMonth && draft.birthdayDay);
   const hasAnniversary = Boolean(draft.anniversaryMonth && draft.anniversaryDay);
+  const hasEmail = draft.email.trim().length > 0;
 
   const freeTierBody = canEnableAutoSend
     ? undefined
@@ -189,6 +190,26 @@ export function AddPersonScreen({ navigation, route }: Props) {
               maximumDate={new Date()}
             />
           </AddPersonSection>
+
+          <AddPersonSection label="Email">
+            <AddPersonEmailField
+              value={draft.email}
+              onChangeText={(email) =>
+                updateDraft({
+                  email,
+                  emailConsent: email.trim() ? draft.emailConsent : false,
+                })
+              }
+            />
+          </AddPersonSection>
+
+          <AddPersonAutoSendCard
+            title="They agreed to get cards by email"
+            enabled={hasEmail && draft.emailConsent}
+            disabled={!hasEmail}
+            onToggle={() => updateDraft({ emailConsent: !draft.emailConsent })}
+            body="Only with their email and their OK can we email a card for you after you approve it. Otherwise you share the link yourself."
+          />
 
           <AddPersonAutoSendCard
             title="Arm birthday auto-send"

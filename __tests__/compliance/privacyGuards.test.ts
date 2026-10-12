@@ -62,7 +62,9 @@ describe('no analytics, replay or tracking packages without a conscious decision
   // If this fails you added one. Register it with `registerAnalyticsSink` so it only
   // runs after opt-in (src/shared/analytics/consent.ts), keep session replay off, mask
   // every input, then update this list and the privacy policy (§3.2, §6).
-  const BANNED = /posthog|hotjar|fullstory|logrocket|clarity|mixpanel|amplitude|segment|heap|smartlook|appsflyer|adjust|branch|sentry|bugsnag|datadog|crashlytics|firebase\/analytics|google-analytics|gtag|@vercel\/analytics|plausible|facebook-sdk|react-native-fbsdk/i;
+  // Firebase Crashlytics and Analytics are allowed on the terms checked below:
+  // opt-in only, no advertising ID, each wired in one file.
+  const BANNED = /posthog|hotjar|fullstory|logrocket|clarity|mixpanel|amplitude|segment|heap|smartlook|appsflyer|adjust|branch|sentry|bugsnag|datadog|google-analytics|gtag|@vercel\/analytics|plausible|facebook-sdk|react-native-fbsdk/i;
 
   it.each(['package.json', 'docs-site/package.json', 'functions/package.json'])('%s', (file) => {
     const pkg = JSON.parse(read(path.join(ROOT, file))) as {
@@ -71,6 +73,47 @@ describe('no analytics, replay or tracking packages without a conscious decision
     };
     const names = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
     expect(names.filter((n) => BANNED.test(n))).toEqual([]);
+  });
+
+  const rnfbConfig = () =>
+    (JSON.parse(read(path.join(ROOT, 'firebase.json'))) as {
+      'react-native'?: Record<string, unknown>;
+    })['react-native'] ?? {};
+
+  it.each([
+    ['crashlytics', 'crashlytics_auto_collection_enabled'],
+    ['analytics', 'analytics_auto_collection_enabled'],
+  ])('keeps %s off until the person opts in', (module, flag) => {
+    expect(rnfbConfig()[flag]).toBe(false);
+
+    const users = walk(path.join(ROOT, 'src'))
+      .filter((f) => read(f).includes(`@react-native-firebase/${module}`))
+      .map(rel);
+    expect(users).toEqual([`src/shared/firebase/${module}.ts`]);
+
+    const wrapper = read(path.join(ROOT, `src/shared/firebase/${module}.ts`));
+    expect(wrapper).toMatch(/canCollectAnalytics\(\)/);
+    expect(wrapper).toMatch(/subscribeAnalyticsConsent\(/);
+  });
+
+  it('collects no advertising ID', () => {
+    const config = rnfbConfig();
+    expect(config.google_analytics_adid_collection_enabled).toBe(false);
+    expect(config.analytics_default_allow_ad_storage).toBe(false);
+    expect(config.analytics_default_allow_ad_user_data).toBe(false);
+    expect(config.analytics_default_allow_ad_personalization_signals).toBe(false);
+    expect(read(path.join(ROOT, 'ios/Podfile'))).toMatch(
+      /^\$RNFirebaseAnalyticsWithoutAdIdSupport = true/m,
+    );
+    expect(read(path.join(ROOT, 'android/app/src/main/AndroidManifest.xml'))).toMatch(
+      /permission\.AD_ID" tools:node="remove"/,
+    );
+  });
+
+  it('never sends the private share slug or free text to analytics', () => {
+    const wrapper = read(path.join(ROOT, 'src/shared/firebase/analytics.ts'));
+    const allowed = wrapper.match(/SAFE_PARAMS = new Set\(\[([\s\S]*?)\]\)/)?.[1] ?? '';
+    expect(allowed).not.toMatch(/shareSlug|message|email|name'/);
   });
 
   it('does not enable Firebase analytics or ad identifiers on iOS', () => {

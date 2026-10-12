@@ -71,14 +71,14 @@ You asked me to check Apple's guidelines against the app and make it approvable.
 4. **Prices are not in the project.** I recommend the PRD's ₹149/₹999 for India and about $19.99/year for the US as a *starting point*; they are my suggestion, not a fact.
 5. **Feature ranking** (what users would pay for) is my judgement; there is no purchase data.
 6. **Primary audience** is the PRD's personas (India-first 18–35 and "forgetful but caring" adult children), with a US launch.
-7. **"1 free card a month"** is the intended free limit and is what the app enforces on the client (the server does not enforce it).
+7. **Free limit is 1 card per account, ever** (not monthly); the server enforces it, and Pro is 24 cards per rolling year.
 8. **Competition levels** for keywords are my estimates; I had no ASO tool or search-volume data. `02-research.md` §5 says how to replace them with real numbers.
 9. **Play screenshots** use iOS-captured native screens inside an Android-style frame, and the recipient pages are web captures. Fine for review, not strictly Android.
 10. **Export compliance, age rating and category choices** in `04-listing.md` §A6/B5 are my best reading, to be confirmed in the consoles.
 
 ## Only you can confirm (blockers first)
 
-1. **Link lifetime.** Manual cards expire after **30 days** for everyone; the paywall says "365 days" and the privacy policy says "up to 365". Which is true at launch? Fix the server or the words. I kept 365 out of all store copy.
+1. ~~Link lifetime.~~ **Done:** the server now gives Pro cards 365 days and free cards and single wishes 30 days. Redeploy the website API to publish it.
 2. ~~Support email~~ **Done:** the website, policy pages and app now use `developernick1@gmail.com` (it was misspelled in the code). Redeploy the website to publish it.
 3. **Analytics and a rating prompt.** Production analytics is a stub and there is no review prompt. Without analytics no growth test can be read; see `05-growth-plan.md` §0.
 4. **Is auto-send live and verified in production?** (cron deployed, push working, a real approve-and-send done). Is `OCCASIO_AUTOSEND_DISPATCH` on? Which channels are real? Until you can say yes, the listing sells reminders plus a prepared-card review flow, not delivery.

@@ -30,6 +30,15 @@ export type AllowanceUserDoc = {
 /** `needs_billing`: the free card is used and RevenueCat has not been asked yet. */
 export type CreateAllowance = 'free' | 'pro' | 'credit' | 'none' | 'needs_billing';
 
+/** Free cards and single wishes stay live for 30 days; Pro cards for a full year. */
+export const FREE_LINK_TTL_DAYS = 30;
+export const PRO_LINK_TTL_DAYS = 365;
+
+/** Only a card made under the Pro allowance gets the year-long link. */
+export function linkTtlDaysFor(allowance: 'free' | 'pro' | 'credit'): number {
+  return allowance === 'pro' ? PRO_LINK_TTL_DAYS : FREE_LINK_TTL_DAYS;
+}
+
 function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? Math.floor(value)

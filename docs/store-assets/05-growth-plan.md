@@ -10,7 +10,7 @@ Written as a launch plan, not a wish list. Where a number would need real store 
 |---|---|---|---|
 | **No production analytics** | `trackEvent()` in `src/shared/analytics/events.ts` only logs in `__DEV__`; no Firebase Analytics dependency | Activation, share rate, Vault attach and paywall conversion (the PRD's own KPIs) cannot be measured, so no test result can be read past "installs" | Wire `AnalyticsEvents` (already defined) to Firebase Analytics before launch. Store consoles alone cannot tell you whether a winning variant also activates |
 | **No rating prompt** | no store-review library in `package.json` | Without one, reviews arrive only from angry users | Add `react-native-in-app-review` (or equivalent) and the triggers in §4 |
-| **Link expiry mismatch** | manual cards expire in 30 days; paywall and policy say 365 | Expired links are the likeliest source of 1-star reviews for a product whose promise is "a card they open" | Fix the server or the copy; see `01-app-brief.md` §9 |
+| **Link expiry** | ~~mismatch~~ Pro 365 days / free 30 days on the create API | Still a 1-star risk if the website API is not redeployed | Confirm production `linkTtlDaysFor` after deploy |
 
 *I did not change any code, per your instruction; these are prerequisites for you.*
 
@@ -104,8 +104,8 @@ Reply to **every** review within **48 hours**, in a calm voice; for praise, name
 
 | Situation | Reply |
 |---|---|
-| Paywall: “I wanted it free” | `Thanks for trying Occasio. Your first card is free with no account, and you get 1 free card a month after that. Paid plans and single cards help us keep the service running. If the paywall wording felt unclear, tell us at [SUPPORT EMAIL] and we will fix it.` (257/350) |
-| Link expired | `We are sorry the link stopped working. Card links currently stay open for 30 days after you create them. If a card matters to you, email [SUPPORT EMAIL] with the name on it and we will look into it.` (198/350) |
+| Paywall: “I wanted it free” | `Thanks for trying Occasio. Your first card is free, and after that a single card or Occasio Pro (24 cards a year) keeps going. Paid plans and single cards help us keep the service running. If the paywall wording felt unclear, tell us at [SUPPORT EMAIL] and we will fix it.` (257/350) |
+| Link expired | `We are sorry the link stopped working. Free card links stay open for 30 days after you create them, and Occasio Pro links stay open for 365 days. If a card matters to you, email [SUPPORT EMAIL] with the name on it and we will look into it.` (198/350) |
 | Crash or bug | `Thank you, and sorry about that. Could you email [SUPPORT EMAIL] with your phone model, the Occasio version (Account tab) and what you tapped just before it happened? We will reply here once it is fixed.` (203/350) |
 | Missed reminder or send | `We are sorry, that is exactly what Occasio should prevent. Please email [SUPPORT EMAIL] with the person’s name and date so we can check what happened, and make sure notifications are on for Occasio in your phone settings.` (221/350) |
 | Charged or cannot restore | `Sorry for the trouble. Purchases are handled by the App Store or Google Play. Try Account > Restore purchases. If you were charged by mistake, email [SUPPORT EMAIL] with the receipt. You can cancel any time in your store subscription settings.` (243/350) |
