@@ -53,18 +53,24 @@ export function useHistory(enabled: boolean) {
   return { entries, isLoading, error, reload };
 }
 
+/** How a delete ended: `error` when it failed, `linkStillActive` when only the row went. */
+export type DeleteHistoryOutcome = {
+  error: string | null;
+  linkStillActive: boolean;
+};
+
 /** Permanently delete a history entry (UI confirms in screens). */
 export function useDeleteHistory() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const remove = useCallback(async (entryId: string): Promise<string | null> => {
+  const remove = useCallback(async (entryId: string): Promise<DeleteHistoryOutcome> => {
     setIsDeleting(true);
     setError(null);
     try {
-      await deleteHistoryEntry(entryId);
+      const result = await deleteHistoryEntry(entryId);
       setIsDeleting(false);
-      return null;
+      return { error: null, linkStillActive: !result.linkTurnedOff };
     } catch (err) {
       const message =
         err instanceof HistoryError
@@ -72,7 +78,7 @@ export function useDeleteHistory() {
           : 'Could not delete this card. Try again.';
       setError(message);
       setIsDeleting(false);
-      return message;
+      return { error: message, linkStillActive: false };
     }
   }, []);
 

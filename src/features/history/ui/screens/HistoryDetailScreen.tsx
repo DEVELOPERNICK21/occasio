@@ -6,7 +6,9 @@ import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
 import { Text } from '../../../../shared/ui/Text';
+import { BusyOverlay } from '../../../../shared/ui/BusyOverlay';
 import { Button } from '../../../../shared/ui/Button';
+import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { PersonDetailSkeleton } from '../../../../shared/ui/SkeletonLayouts';
@@ -21,6 +23,7 @@ import { useCreateDraftContext } from '../../../create/application/CreateDraftCo
 import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useHistory, useDeleteHistory } from '../../application/useHistory';
+import { LINK_STILL_ACTIVE_NOTICE } from '../../domain/deleteOutcome';
 import { templateLabel } from '../../domain/display';
 import {
   formatHistoryDate,
@@ -66,7 +69,14 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   if (!entry) {
     return (
       <Screen title="Card" onBack={() => navigation.goBack()}>
-        <Text style={styles.muted}>This card could not be found. It may have been deleted.</Text>
+        <EmptyState
+          mascot="cardMissing"
+          title="This card could not be found"
+          body="It may have been deleted from another device."
+          actionLabel="Back to History"
+          actionVariant="secondary"
+          onAction={() => navigation.goBack()}
+        />
       </Screen>
     );
   }
@@ -132,9 +142,15 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            void remove(entry.id).then((err) => {
-              if (err) {
-                Alert.alert('Could not delete', err);
+            void remove(entry.id).then(({ error, linkStillActive }) => {
+              if (error) {
+                Alert.alert('Could not delete', error);
+                return;
+              }
+              if (linkStillActive) {
+                Alert.alert(LINK_STILL_ACTIVE_NOTICE.title, LINK_STILL_ACTIVE_NOTICE.body, [
+                  { text: 'OK', onPress: () => navigation.goBack() },
+                ]);
                 return;
               }
               navigation.goBack();
@@ -272,11 +288,10 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
           onPress={handleDelete}
           style={({ pressed }) => [styles.delete, (pressed || busy) && styles.deletePressed]}
         >
-          <Text style={styles.deleteLabel}>
-            {isDeleting ? 'Deleting…' : 'Delete from History'}
-          </Text>
+          <Text style={styles.deleteLabel}>Delete from History</Text>
         </Pressable>
       </ScreenActions>
+      <BusyOverlay visible={isDeleting} kind="deleteCard" />
     </Screen>
   );
 }

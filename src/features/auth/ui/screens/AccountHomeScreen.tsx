@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useScrollToTop } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FLOATING_TAB_BAR_HEIGHT } from '../../../../shared/navigation/tabBarConstants';
+import { BusyOverlay } from '../../../../shared/ui/BusyOverlay';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { SubscriptionTier } from '../../../vault/domain/types';
@@ -48,6 +49,7 @@ export function AccountHomeScreen({
 }: Props) {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const insets = useSafeAreaInsets();
   const storeName = Platform.OS === 'ios' ? 'the App Store' : 'Google Play';
@@ -88,12 +90,16 @@ export function AccountHomeScreen({
           text: 'Delete everything',
           style: 'destructive',
           onPress: () => {
-            onDeleteAccount().catch((e: unknown) => {
-              Alert.alert(
-                'Could not delete',
-                e instanceof Error ? e.message : 'Please try again.',
-              );
-            });
+            // Several server steps run here, so show Pip until it ends either way.
+            setIsDeletingAccount(true);
+            onDeleteAccount()
+              .catch((e: unknown) => {
+                Alert.alert(
+                  'Could not delete',
+                  e instanceof Error ? e.message : 'Please try again.',
+                );
+              })
+              .finally(() => setIsDeletingAccount(false));
           },
         },
       ],
@@ -136,6 +142,7 @@ export function AccountHomeScreen({
         <AccountSignOutButton onPress={onSignOut} />
         {onDeleteAccount ? <AccountDeleteButton onPress={confirmDelete} /> : null}
       </ScrollView>
+      <BusyOverlay visible={isDeletingAccount} kind="deleteAccount" />
     </View>
   );
 }

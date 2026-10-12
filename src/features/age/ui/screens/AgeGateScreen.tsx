@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../../../shared/ui/Button';
+import { PipFriend } from '../../../../shared/ui/PipFriend';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput } from '../../../../shared/ui/TextInput';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -37,6 +38,9 @@ export function AgeGateScreen({ error, isChecking, onSubmit }: Props) {
         ]}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.pip}>
+          <PipFriend spot="ageGate" size={120} />
+        </View>
         <View style={styles.heading}>
           <Text style={styles.title} accessibilityRole="header">
             {AGE_COPY.title}
@@ -124,6 +128,8 @@ export function AgeGateScreen({ error, isChecking, onSubmit }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   content: { flexGrow: 1, paddingHorizontal: spacing.lg, gap: spacing.lg },
+  // Room above Pip for the line he says when tapped.
+  pip: { alignItems: 'center', marginTop: spacing.xl },
   heading: { gap: spacing.sm },
   title: {
     fontSize: typography.sizeXl,

@@ -2,7 +2,9 @@ import type { ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Check } from 'lucide-react-native';
 import type { LucideProps } from 'lucide-react-native';
+import type { PipSpot } from '../mascot/pipSpots';
 import { Button } from './Button';
+import { PipFriend } from './PipFriend';
 import { Screen } from './Screen';
 import { Text } from './Text';
 import { colors, radius, spacing, typography } from '../theme/tokens';
@@ -13,21 +15,38 @@ type Props = {
   headline: string;
   /** What signing in unlocks — short, concrete, true. */
   benefits: readonly string[];
-  icon: ComponentType<LucideProps>;
+  /** Pip stands here instead of an icon, and says something when tapped. Prefer this. */
+  mascot?: PipSpot;
+  /** Used when there is no mascot. */
+  icon?: ComponentType<LucideProps>;
   onSignIn: () => void;
 };
 
 const BADGE_ICON_SIZE = 30;
+const PIP_SIZE = 148;
 const CHECK_SIZE = 14;
 
 /** Shared gate for tabs that require sign-in — no feature ui imports. */
-export function GuestGateScreen({ title, headline, benefits, icon: Icon, onSignIn }: Props) {
+export function GuestGateScreen({
+  title,
+  headline,
+  benefits,
+  mascot,
+  icon: Icon,
+  onSignIn,
+}: Props) {
   return (
     <Screen title={title}>
       <View style={styles.hero}>
-        <View style={styles.badge}>
-          <Icon size={BADGE_ICON_SIZE} color={colors.accent} strokeWidth={1.9} absoluteStrokeWidth />
-        </View>
+        {mascot ? (
+          <View style={styles.mascot}>
+            <PipFriend spot={mascot} size={PIP_SIZE} />
+          </View>
+        ) : Icon ? (
+          <View style={styles.badge}>
+            <Icon size={BADGE_ICON_SIZE} color={colors.accent} strokeWidth={1.9} absoluteStrokeWidth />
+          </View>
+        ) : null}
         <Text style={styles.headline}>{headline}</Text>
       </View>
 
@@ -56,6 +75,9 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: 'center',
     gap: spacing.md,
+    marginTop: spacing.lg,
+  },
+  mascot: {
     marginTop: spacing.lg,
   },
   badge: {

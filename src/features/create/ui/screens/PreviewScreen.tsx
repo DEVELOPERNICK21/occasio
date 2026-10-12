@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useMemo } from 'react';
-import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
 import { useAuth } from '../../../auth/application/useAuth';
@@ -20,6 +20,7 @@ import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
+import { PipLoader } from '../../../../shared/ui/PipLoader';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
@@ -229,7 +230,9 @@ export function PreviewScreen({ navigation }: Props) {
         fromName={draft.fromName}
       />
       {isLoading ? (
-        <ActivityIndicator style={styles.loader} color={colors.accent} />
+        <View style={styles.loader}>
+          <PipLoader kind={isEditing ? 'saving' : 'creating'} holdsGift={!isEditing} size={84} />
+        </View>
       ) : null}
       {photosShort > 0 && photoSlots !== null ? (
         <Text style={styles.error}>{framePhotosMessage(photosShort, photoSlots)}</Text>
@@ -266,6 +269,7 @@ export function PreviewScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   loader: {
     marginTop: spacing.lg,
+    alignItems: 'center',
   },
   error: {
     marginTop: spacing.md,

@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
+import { BusyOverlay } from '../../../../shared/ui/BusyOverlay';
 import { Button } from '../../../../shared/ui/Button';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
@@ -237,6 +238,7 @@ export function PersonDetailScreen({ navigation, route }: Props) {
         />
         <Button label="Back" variant="ghost" onPress={() => navigation.goBack()} />
       </ScreenActions>
+      <BusyOverlay visible={isDeleting} kind="deletePerson" />
     </Screen>
   );
 }

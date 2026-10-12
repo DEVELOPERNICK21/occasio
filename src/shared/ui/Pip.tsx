@@ -1,4 +1,4 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -20,7 +20,22 @@ type Props = {
   holdsGift?: boolean;
   /** A gentle bob. Finite on purpose, so it never keeps the accessibility tree busy. */
   bob?: boolean;
+  /**
+   * How many times Pip blinks while he waits. Finite, like the bob, and only
+   * the open-eyed hopeful face blinks. 0 (the default) leaves him still.
+   */
+  blinks?: number;
+  /**
+   * The soft shadow under his feet. On by default; a screen that moves him
+   * (the loader's hop) turns it off and keeps its own shadow on the ground.
+   */
+  groundShadow?: boolean;
 };
+
+/** First blink after this long, then one every so often. */
+const BLINK_FIRST_MS = 2400;
+const BLINK_EVERY_MS = 3200;
+const BLINK_LENGTH_MS = 150;
 
 /** Bobs a few times, then rests. */
 export const PIP_BOB_CYCLES = 4;
@@ -173,9 +188,30 @@ function Sparkles() {
  * Pip: Occasio's mascot, drawn natively from the same artwork the recipient
  * sees on the web. Five moods, one party hat. Pip is how the app talks.
  */
-export function Pip({ mood, size = 200, holdsGift = false, bob = true }: Props) {
+export function Pip({
+  mood,
+  size = 200,
+  holdsGift = false,
+  bob = true,
+  blinks = 0,
+  groundShadow = true,
+}: Props) {
   const uid = useId().replace(/:/g, '');
   const lift = useSharedValue(0);
+  const [blinking, setBlinking] = useState(false);
+
+  useEffect(() => {
+    if (blinks <= 0 || mood !== 'hopeful') {
+      return undefined;
+    }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    for (let i = 0; i < blinks; i += 1) {
+      const at = BLINK_FIRST_MS + i * BLINK_EVERY_MS;
+      timers.push(setTimeout(() => setBlinking(true), at));
+      timers.push(setTimeout(() => setBlinking(false), at + BLINK_LENGTH_MS));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, [blinks, mood]);
 
   useEffect(() => {
     if (!bob) {
@@ -210,7 +246,7 @@ export function Pip({ mood, size = 200, holdsGift = false, bob = true }: Props) 
           </RadialGradient>
         </Defs>
 
-        <Ellipse cx="120" cy="247" rx="80" ry="9" fill="#000" opacity={0.16} />
+        {groundShadow ? <Ellipse cx="120" cy="247" rx="80" ry="9" fill="#000" opacity={0.16} /> : null}
 
         <Ellipse cx="84" cy="236" rx="27" ry="12" fill={shade} />
         <Ellipse cx="156" cy="236" rx="27" ry="12" fill={shade} />
@@ -235,7 +271,8 @@ export function Pip({ mood, size = 200, holdsGift = false, bob = true }: Props) 
         <Ellipse cx="56" cy="152" rx="15" ry="9.5" fill={cheek} opacity={cheekOpacity} />
         <Ellipse cx="184" cy="152" rx="15" ry="9.5" fill={cheek} opacity={cheekOpacity} />
 
-        <Eyes mood={mood} />
+        {/* The happy squint stands in for a closed eye during a blink. */}
+        <Eyes mood={blinking ? 'joy' : mood} />
         <Mouth mood={mood} />
 
         {holdsGift && (mood === 'hopeful' || mood === 'wink') ? (

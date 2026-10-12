@@ -73,6 +73,11 @@ export const shadow = {
   },
 } as const;
 
+/** The dim behind a blocking dialog, such as the mascot's busy screen. */
+export const overlay = {
+  scrim: 'rgba(28, 25, 20, 0.45)',
+} as const;
+
 /**
  * Text and surfaces drawn over a photo (the login hero). They are overlays on
  * artwork, not UI palette colours, so they are not part of design-tokens.json.

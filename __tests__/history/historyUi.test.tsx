@@ -1,6 +1,13 @@
 import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { Send } from 'lucide-react-native';
+
+jest.mock('../../src/shared/platform/haptics', () => ({
+  triggerTabHaptic: jest.fn(),
+  triggerCardHaptic: jest.fn(),
+  triggerSuccessHaptic: jest.fn(),
+}));
+
 import { EmptyState } from '../../src/shared/ui/EmptyState';
 import { GuestGateScreen } from '../../src/shared/ui/GuestGateScreen';
 import { HistorySummaryCard } from '../../src/features/history/ui/components/HistorySummaryCard';
@@ -148,6 +155,15 @@ describe('EmptyState', () => {
     expect(withAction).toContain('Do it');
     expect(without).not.toContain('Do it');
   });
+
+  it('puts Pip in the icon slot when given a mascot spot', () => {
+    const output = textOf(
+      render(<EmptyState mascot="historyEmpty" title="Nothing here" body="Why" />),
+    );
+
+    expect(output).toContain('Tap to hear what Pip has to say');
+    expect(output).toContain('Nothing here');
+  });
 });
 
 describe('GuestGateScreen', () => {
@@ -167,6 +183,23 @@ describe('GuestGateScreen', () => {
     expect(output).toContain('Another thing');
     expect(output).toContain('Sign in or create account');
     expect(output.toLowerCase()).not.toContain('coming in the next');
+    expect(output.match(/Sign in or create account/g)).toHaveLength(1);
+  });
+
+  it('shows Pip instead of an icon when given a mascot spot', () => {
+    const output = textOf(
+      render(
+        <GuestGateScreen
+          title="Vault"
+          mascot="vaultGate"
+          headline="Keep everyone close."
+          benefits={['One thing']}
+          onSignIn={noop}
+        />,
+      ),
+    );
+
+    expect(output).toContain('Tap to hear what Pip has to say');
     expect(output.match(/Sign in or create account/g)).toHaveLength(1);
   });
 });

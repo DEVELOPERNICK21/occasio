@@ -25,6 +25,7 @@ import type {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
+import { PipFriend } from '../../../../shared/ui/PipFriend';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
@@ -174,6 +175,9 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
 
   return (
     <Screen title={screenTitle} subtitle={subtitle}>
+      <View style={styles.pip}>
+        <PipFriend spot="shareReady" variant="inline" size={92} name={draft.recipientName} />
+      </View>
       <View style={styles.previewStage}>
         <View style={styles.cardLayer}>
           {definition ? (
@@ -253,6 +257,9 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
+  pip: {
+    marginBottom: spacing.md,
+  },
   previewStage: {
     position: 'relative',
     alignItems: 'center',

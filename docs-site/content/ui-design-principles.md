@@ -99,8 +99,12 @@ Build in `src/shared/ui/`. Feature screens **compose** shared components.
 | `Button` | ✅ | primary / secondary / ghost actions |
 | `Input` | 🔜 | Text fields (replace raw TextInput) |
 | `Card` | 🔜 | Selectable template tiles, nudge panels |
-| `EmptyState` | ✅ | Zero data and recoverable errors: icon, one line of why, one action (Vault, History) |
-| `GuestGateScreen` | ✅ | A tab that needs sign-in: what it unlocks, one sign-in button, guests still welcome |
+| `EmptyState` | ✅ | Zero data and recoverable errors: Pip (`mascot`) or an icon, one line of why, one action (Vault, History) |
+| `GuestGateScreen` | ✅ | A tab that needs sign-in: Pip (`mascot`) or an icon, what it unlocks, one sign-in button, guests still welcome |
+| `PipFriend` | ✅ | The mascot as a character: blinks, reacts to a tap, says one calm line. Quiet moments only, never near money, a refusal or deletion. See `docs/mascot.md` |
+| `PipLoader` | ✅ | An in-page wait with a face: Pip hops, the line changes the longer it takes (creating or saving a card) |
+| `BusyOverlay` | ✅ | A slow action the person started (delete card, account or person): blocks the screen, calm Pip, cannot be dismissed. Appears after 250 ms |
+| `SkeletonBone` | ✅ | Shimmer block for list and detail loading. Build skeleton layouts from it in `SkeletonLayouts.tsx` |
 | `ErrorBanner` | 🔜 | Inline recoverable errors |
 | `PaywallModal` | 🔜 | Quota exceeded |
 

@@ -2,11 +2,16 @@ import type { ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { LucideProps } from 'lucide-react-native';
 import { colors, radius, spacing, typography } from '../theme/tokens';
+import type { PipSpot } from '../mascot/pipSpots';
 import { Button } from './Button';
+import { PipFriend } from './PipFriend';
 import { Text } from './Text';
 
 type Props = {
-  icon: ComponentType<LucideProps>;
+  /** Pip stands here instead of an icon, and says something when tapped. Prefer this. */
+  mascot?: PipSpot;
+  /** Used when there is no mascot. */
+  icon?: ComponentType<LucideProps>;
   title: string;
   body: string;
   /** One clear next step. Omit only when there is genuinely nothing to do. */
@@ -16,9 +21,11 @@ type Props = {
 };
 
 const ICON_SIZE = 28;
+const PIP_SIZE = 132;
 
 /** Zero-data and recoverable-error surface: icon, one line of why, one action. */
 export function EmptyState({
+  mascot,
   icon: Icon,
   title,
   body,
@@ -28,9 +35,16 @@ export function EmptyState({
 }: Props) {
   return (
     <View style={styles.root}>
-      <View style={styles.badge}>
-        <Icon size={ICON_SIZE} color={colors.accent} strokeWidth={1.9} absoluteStrokeWidth />
-      </View>
+      {mascot ? (
+        // Room above Pip for the line he says when tapped.
+        <View style={styles.mascot}>
+          <PipFriend spot={mascot} size={PIP_SIZE} />
+        </View>
+      ) : Icon ? (
+        <View style={styles.badge}>
+          <Icon size={ICON_SIZE} color={colors.accent} strokeWidth={1.9} absoluteStrokeWidth />
+        </View>
+      ) : null}
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.body}>{body}</Text>
@@ -50,6 +64,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.md,
     gap: spacing.md,
+  },
+  mascot: {
+    marginTop: spacing.xl,
   },
   badge: {
     width: 72,

@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
+import { Pip } from '../../../../shared/ui/Pip';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 import { BADGE_DESCRIPTIONS, type WishBadge } from '../../domain/wishJourney';
@@ -202,6 +203,9 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
                 ? PIECES.map((piece, i) => <ConfettiPiece key={i} piece={piece} burst={burst} />)
                 : null}
               <Animated.View style={[styles.glow, { backgroundColor: tone.soft }, glowStyle]} />
+              <Animated.View pointerEvents="none" style={[styles.pip, medalStyle]}>
+                <Pip mood="joy" size={PIP_CHEER} bob={false} />
+              </Animated.View>
               <Animated.View
                 style={[
                   styles.medal,
@@ -243,6 +247,7 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
 }
 
 const MEDAL = 96;
+const PIP_CHEER = 76;
 
 const styles = StyleSheet.create({
   scrim: {
@@ -308,6 +313,12 @@ const styles = StyleSheet.create({
   },
   piece: {
     position: 'absolute',
+  },
+  // Pip cheers from just behind the medal's lower right.
+  pip: {
+    position: 'absolute',
+    right: -spacing.sm,
+    bottom: -spacing.xs,
   },
   eyebrow: {
     fontSize: typography.sizeXs,

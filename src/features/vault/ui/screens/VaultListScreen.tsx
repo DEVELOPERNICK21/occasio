@@ -2,7 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useScrollToTop } from '@react-navigation/native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CloudOff, HeartPlus, UserPlus } from 'lucide-react-native';
+import { UserPlus } from 'lucide-react-native';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';
@@ -264,7 +264,7 @@ function VaultListContent({ navigation, route }: ListProps) {
         <VaultListSkeleton />
       ) : error ? (
         <EmptyState
-          icon={CloudOff}
+          mascot="loadError"
           title="Could not load your Vault"
           body="Check your connection, then try again."
           actionLabel="Try again"
@@ -273,14 +273,21 @@ function VaultListContent({ navigation, route }: ListProps) {
         />
       ) : people.length === 0 ? (
         <EmptyState
-          icon={UserPlus}
+          mascot="vaultEmpty"
           title="Add the people you celebrate"
           body="Save their birthdays and anniversaries once, and see what is coming up next."
           actionLabel="Add your first person"
           onAction={openAddPerson}
         />
       ) : filtered.length === 0 ? (
-        <Text style={styles.muted}>No one matches that search.</Text>
+        <EmptyState
+          mascot="noMatch"
+          title="No one matches that search"
+          body="Check the spelling, or add them as someone new."
+          actionLabel="Add a person"
+          actionVariant="secondary"
+          onAction={openAddPerson}
+        />
       ) : (
         sections.map((section) => (
           <View key={section.key} style={styles.section}>
@@ -391,7 +398,7 @@ export function VaultListScreen(props: ListProps) {
     return (
       <GuestGateScreen
         title="Vault"
-        icon={HeartPlus}
+        mascot="vaultGate"
         headline="Never miss a moment for the people you love."
         benefits={[
           'Save birthdays and anniversaries in one place',
@@ -422,12 +429,6 @@ const styles = StyleSheet.create({
   inbox: {
     marginTop: spacing.md,
     gap: spacing.sm,
-  },
-  muted: {
-    marginTop: spacing.lg,
-    fontSize: typography.sizeSm,
-    color: colors.muted,
-    textAlign: 'center',
   },
   linkHint: {
     marginTop: spacing.md,

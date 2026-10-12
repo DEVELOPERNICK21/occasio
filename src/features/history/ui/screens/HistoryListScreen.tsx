@@ -6,17 +6,16 @@ import { useScrollToTop } from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useMemo, useRef, useState } from 'react';
 import { Alert, ScrollView, Share, StyleSheet, View } from 'react-native';
-import { CloudOff, History, Send } from 'lucide-react-native';
 import { triggerCardHaptic, triggerSuccessHaptic } from '../../../../shared/platform/haptics';
+import { BusyOverlay } from '../../../../shared/ui/BusyOverlay';
 import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';
 import { SearchPill } from '../../../../shared/ui/SearchPill';
-import { Text } from '../../../../shared/ui/Text';
 import {
   HistoryListSkeleton,
   SessionBootSkeleton,
 } from '../../../../shared/ui/SkeletonLayouts';
-import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import { spacing } from '../../../../shared/theme/tokens';
 import type { HistoryStackParamList, MainTabParamList } from '../../../../shared/navigation/types';
 import { getTemplateTheme } from '../../../create/domain/templateTheme';
 import type { TemplateType } from '../../../create/domain/types';
@@ -30,6 +29,7 @@ import {
   sortHistoryEntries,
   summarizeHistory,
 } from '../../domain/historyList';
+import { LINK_STILL_ACTIVE_NOTICE } from '../../domain/deleteOutcome';
 import { isHistoryEntryExpired } from '../../domain/historyRules';
 import type { HistoryEntry } from '../../domain/types';
 import { HistorySummaryCard } from '../components/HistorySummaryCard';
@@ -103,9 +103,13 @@ function HistoryListContent({ navigation }: ListProps) {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            void remove(entry.id).then((err) => {
-              if (err) {
-                Alert.alert('Could not delete', err);
+            void remove(entry.id).then(({ error: failure, linkStillActive }) => {
+              if (failure) {
+                Alert.alert('Could not delete', failure);
+                return;
+              }
+              if (linkStillActive) {
+                Alert.alert(LINK_STILL_ACTIVE_NOTICE.title, LINK_STILL_ACTIVE_NOTICE.body);
               }
             });
           },
@@ -158,7 +162,7 @@ function HistoryListContent({ navigation }: ListProps) {
         <HistoryListSkeleton />
       ) : error ? (
         <EmptyState
-          icon={CloudOff}
+          mascot="loadError"
           title="Could not load your History"
           body="Check your connection, then try again."
           actionLabel="Try again"
@@ -167,7 +171,7 @@ function HistoryListContent({ navigation }: ListProps) {
         />
       ) : entries.length === 0 ? (
         <EmptyState
-          icon={Send}
+          mascot="historyEmpty"
           title="No cards shared yet"
           body="Cards you share while signed in show up here, so you can send the link again anytime."
           actionLabel="Create a card"
@@ -183,7 +187,11 @@ function HistoryListContent({ navigation }: ListProps) {
           <HistorySummaryCard summary={summary} />
 
           {filtered.length === 0 ? (
-            <Text style={styles.muted}>No wishes match that search.</Text>
+            <EmptyState
+              mascot="noMatch"
+              title="No cards match that search"
+              body="Try a name, an occasion, or part of the message."
+            />
           ) : (
             <View style={[styles.list, isDeleting ? styles.listBusy : null]}>
               {filtered.map((entry) => {
@@ -212,6 +220,7 @@ function HistoryListContent({ navigation }: ListProps) {
           )}
         </View>
       )}
+      <BusyOverlay visible={isDeleting} kind="deleteCard" />
     </Screen>
   );
 }
@@ -228,7 +237,7 @@ export function HistoryListScreen(props: ListProps) {
     return (
       <GuestGateScreen
         title="History"
-        icon={History}
+        mascot="historyGate"
         headline="Every card you share, saved."
         benefits={[
           'Send a link again or copy it in one tap',
@@ -252,11 +261,5 @@ const styles = StyleSheet.create({
   },
   listBusy: {
     opacity: 0.7,
-  },
-  muted: {
-    marginTop: spacing.lg,
-    fontSize: typography.sizeSm,
-    color: colors.muted,
-    textAlign: 'center',
   },
 });

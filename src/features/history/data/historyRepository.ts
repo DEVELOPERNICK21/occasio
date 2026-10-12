@@ -3,6 +3,7 @@ import firestore, { type FirebaseFirestoreTypes } from '@react-native-firebase/f
 import { HttpError } from '../../../shared/api/errors';
 import { httpClient } from '../../../shared/api/httpClient';
 import { env } from '../../../shared/config/env';
+import { DELETE_RETRY_MESSAGE, deleteFailureKind } from '../domain/deleteOutcome';
 import type { HistoryEntry, RecordHistoryInput } from '../domain/types';
 import { HistoryError } from './historyErrors';
 
@@ -145,22 +146,28 @@ export async function recordHistoryEntry(input: RecordHistoryInput): Promise<voi
   }
 }
 
+/** What a delete achieved, for the one case where it is less than the person asked for. */
+export type DeleteHistoryResult = {
+  /** False when the row was cleared but the share link could not be turned off. */
+  linkTurnedOff: boolean;
+};
+
 /** Permanently remove a history entry and kill the public share link. */
-export async function deleteHistoryEntry(entryId: string): Promise<void> {
+export async function deleteHistoryEntry(entryId: string): Promise<DeleteHistoryResult> {
   const uid = requireUid();
 
   if (env.useMockAuth) {
     mockStore = mockStore.filter(
       (entry) => !(entry.id === entryId && entry.userId === uid),
     );
-    return;
+    return { linkTurnedOff: true };
   }
 
   try {
     const ref = firestore().collection('user_creations').doc(entryId);
     const snap = await ref.get();
     if (!snap.exists) {
-      return;
+      return { linkTurnedOff: true };
     }
     const data = snap.data() as HistoryDoc | undefined;
     if (!data || data.userId !== uid) {
@@ -180,18 +187,28 @@ export async function deleteHistoryEntry(entryId: string): Promise<void> {
         { Authorization: `Bearer ${token}` },
       );
     } catch (error) {
+      const status = error instanceof HttpError ? error.status : null;
       // The card is already gone (expired and cleaned up): nothing left to turn off.
-      if (error instanceof HttpError && (error.status === 404 || error.status === 410)) {
+      if (status === 404 || status === 410) {
         await ref.delete();
-        return;
+        return { linkTurnedOff: true };
       }
-      // Keep the History row. Deleting it now would hide a link that still works,
-      // leaving the owner no way to turn it off.
+      const kind = deleteFailureKind(status);
+      // The server says this account does not own the link. Trying again cannot
+      // change that, and keeping the row would leave History stuck on it forever.
+      // Clear only this person's own row, and let them know the link stays on.
+      if (kind === 'not_owner') {
+        await ref.delete();
+        return { linkTurnedOff: false };
+      }
+      // Anything else may pass on a retry. Keep the row: deleting it now would
+      // hide a link that still works, leaving the owner no way to turn it off.
       throw new HistoryError(
-        'NETWORK',
-        'Could not turn off the share link. Check your connection and try again.',
+        kind === 'sign_in' ? 'NOT_AUTHENTICATED' : 'NETWORK',
+        DELETE_RETRY_MESSAGE[kind],
       );
     }
+    return { linkTurnedOff: true };
   } catch (error) {
     if (error instanceof HistoryError) {
       throw error;
