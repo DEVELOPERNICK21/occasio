@@ -4,7 +4,8 @@ export type GatedAction =
   | 'vault_view'
   | 'history_sync'
   | 'autosend_enable'
-  | 'subscription_manage';
+  | 'subscription_manage'
+  | 'create_link';
 
 export type AuthSignInMethod = 'google' | 'apple' | 'email';
 

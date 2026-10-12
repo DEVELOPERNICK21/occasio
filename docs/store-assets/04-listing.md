@@ -89,7 +89,7 @@ PRIVATE BY DESIGN
 START FREE
 - Make and share your first card with no account.
 - Free: 1 card a month and 1 saved person.
-- Occasio Pro: unlimited cards and up to 5 saved people. Need just one more card? Buy a single card instead.
+- Occasio Pro: 24 cards a year and up to 5 saved people. Need just one more card? Buy a single card instead.
 
 SUBSCRIPTION INFORMATION
 Occasio Pro is an auto-renewing subscription, billed monthly at [PRICE] or yearly at [PRICE]. Payment is charged to your Apple ID account at confirmation of purchase. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period, and your account is charged for renewal within 24 hours before the end of the current period. You can manage or cancel your subscription any time in your Apple ID account settings.
@@ -183,7 +183,7 @@ PRIVATE BY DESIGN
 START FREE
 - Make and share your first card without an account
 - Free plan: 1 card a month and 1 saved person
-- Occasio Pro (monthly or yearly subscription): unlimited cards and up to 5 saved people
+- Occasio Pro (monthly or yearly subscription): 24 cards a year and up to 5 saved people
 - Need just one more card? Buy a single card instead
 
 Subscriptions renew automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel any time in Google Play, under Payments and subscriptions.
@@ -240,7 +240,7 @@ Rules applied: one idea per frame; headline ≤6 words; benefit before feature; 
 | 5 | Five moments. Five looks. (4) | Birthday, anniversary, thank you, congrats, just because | Five recipient gates: `gate`, `anniversary-gate`, `thank_you-gate`, `congratulations-gate`, `just_because-gate` | Coral. Five phones in a 3+2 stack; each has its own Pip costume and colours. Pill: *What they open* | Breadth beyond birthdays; widens search relevance |
 | 6 | A letter that opens in 3D (6) | A wax seal, your words, your photo | `letter-sealed.jpg` + `letter-open.jpg` = **Letter3DScene** (`docs-site/src/components/story/Letter3DScene.tsx`) | Marigold. Two phones; an envelope peeks in. Pill: *What they open* | The premium, craft moment |
 | 7 | Even “No” gets a reaction (5) | Say no twice and it becomes yes. Nobody gets stuck. | `gate-no1.jpg` + `gate-no2.jpg` = **GateScene** after the first and second "No" | Rose. Two phones: Pip startled, Pip crying. Pill: *What they see* | Humour = shareability and word of mouth; also states the "no dark patterns" rule |
-| 8 | Start free. Upgrade anytime. (4) | Your first card needs no account. | Generated plan cards (*Free: 1 card a month · No account to start · 1 saved person* vs *Occasio Pro: Unlimited cards · 5 saved people · Cancel anytime*) + `home-scroll.jpg` showing "1 free card left this month." Line: *Need just one more? Buy a single card.* | Coral. Two white cards over the real Create screen. Pill: *Free to start* | States the paid plan *before* the paywall, which protects ratings (the PRD's top risk) and pre-qualifies buyers |
+| 8 | Start free. Upgrade anytime. (4) | Your first card is free. | Generated plan cards (*Free: 1 card to try · 1 saved person* vs *Occasio Pro: 24 cards a year · 5 saved people · Cancel anytime*) + `home-scroll.jpg` showing "Your first card is free." Line: *Need just one more? Buy a single card.* | Coral. Two white cards over the real Create screen. Pill: *Free to start* | States the paid plan *before* the paywall, which protects ratings (the PRD's top risk) and pre-qualifies buyers |
 
 **Prices are deliberately absent from images** (they vary by country and currency). If Play review objects to the word "free" in graphics, swap the pill on frames 1 and 8 to *No account needed* (one line in `tools/slides.mjs`).
 
@@ -300,13 +300,13 @@ All go in `tools/src/screens/` as `.jpg`, same names, then `node tools/build.mjs
 
 | Store | Product | Display name | Count | Description | Count |
 |---|---|---|---|---|---|
-| Apple (group "Occasio Pro") | `occasio_pro_monthly` | `Occasio Pro Monthly` | 19/30 | `Unlimited cards. Save up to 5 people.` | 37/45 |
-| Apple | `occasio_pro_yearly` | `Occasio Pro Yearly` | 18/30 | `Unlimited cards. Save up to 5 people.` | 37/45 |
+| Apple (group "Occasio Pro") | `occasio_pro_monthly` | `Occasio Pro Monthly` | 19/30 | `24 cards a year. Save up to 5 people.` | 37/45 |
+| Apple | `occasio_pro_yearly` | `Occasio Pro Yearly` | 18/30 | `24 cards a year. Save up to 5 people.` | 37/45 |
 | Apple (consumable) | `occasio_wish_single` | `One Extra Wish` | 14/30 | `One more card beyond your free monthly card.` | 44/45 |
-| Google Play | subscription `occasio_pro` (base plans: monthly, yearly) | `Occasio Pro` | ≤55 | Benefits: *Unlimited cards* · *Save up to 5 people* | n/a |
+| Google Play | subscription `occasio_pro` (base plans: monthly, yearly) | `Occasio Pro` | ≤55 | Benefits: *24 cards a year* · *Save up to 5 people* | n/a |
 | Google Play (one-time) | `occasio_wish_single` | `One Extra Wish` | ≤55 | `One more card beyond your free monthly card.` | n/a |
 
-**[ADD AFTER VERIFIED]** change both subscription descriptions to `Unlimited cards. Cards ready on their day.` (42/45) and add the benefit *Cards prepared on their day*.
+**[ADD AFTER VERIFIED]** change both subscription descriptions to `24 cards a year. Cards ready on their day.` (42/45) and add the benefit *Cards prepared on their day*.
 
 *Why plain names:* the in-app paywall and the store receipt must match, because mismatched names cause "what am I being charged for?" refunds. The yearly is not described as "best value": no price exists in the project to compare, and the claim would be unverifiable.
 

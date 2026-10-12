@@ -36,11 +36,11 @@ export function profileInitials(user: AuthUser): string {
 export function subscriptionStatusCopy(tier: SubscriptionTier): string {
   switch (tier) {
     case 'personal':
-      return 'You have Occasio Pro — unlimited cards and a Vault for up to 5 people.';
+      return 'You have Occasio Pro — 24 cards a year and a Vault for up to 5 people.';
     case 'family':
       return 'You have Family — Vault for up to 15 people.';
     default:
-      return 'Free tier: 1 card per month and 1 Vault person. Upgrade to Occasio Pro for more.';
+      return 'Free tier: your first card is free, and 1 Vault person. Upgrade to Occasio Pro for more.';
   }
 }
 

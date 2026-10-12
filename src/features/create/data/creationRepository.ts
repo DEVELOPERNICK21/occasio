@@ -90,10 +90,7 @@ function toCreationError(error: unknown): CreationApiError {
 async function requireAuthToken(): Promise<string> {
   const token = await auth().currentUser?.getIdToken();
   if (!token) {
-    throw new CreationApiError(
-      'UNAUTHORIZED',
-      'Sign in to edit this card.',
-    );
+    throw new CreationApiError('UNAUTHORIZED', 'Sign in to continue.');
   }
   return token;
 }
@@ -113,7 +110,8 @@ export async function createShareLink(
   }
 
   if (isSparkBackend()) {
-    return createShareLinkSpark(draft, photoRefs, mediaUrls);
+    const token = await requireAuthToken();
+    return createShareLinkSpark(draft, photoRefs, mediaUrls, token);
   }
 
   try {

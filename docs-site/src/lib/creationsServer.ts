@@ -1,6 +1,17 @@
 import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { defaultExperienceMode } from '@/lib/experience/resolveExperience';
 import { normalizeBalloonLine } from '@/lib/experience/splitRevealLine';
+import {
+  type AllowanceUserDoc,
+  type BillingState,
+  decideCreateAllowance,
+  fetchBillingState,
+  freeCardsUsed,
+  freeClaimId,
+  proCardTimesInWindow,
+  recipientEditAllowed,
+  wishCreditsUsed,
+} from '@/lib/cardAllowance';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
 import {
@@ -272,18 +283,29 @@ function passcodeFields(
   return {};
 }
 
+/**
+ * The allowance check and the card write share one transaction, so a double tap
+ * or two devices cannot both spend the same free card or credit.
+ */
 export async function createCreation(
   input: CreateCreationInput,
+  user: { uid: string; email?: string | null },
 ): Promise<CreateCreationResult> {
+  const { uid } = user;
   const db = getAdminFirestore();
   const createdAt = new Date();
+  const nowMs = createdAt.getTime();
+  const claimId = freeClaimId(user.email);
+  const claimRef = claimId ? db.collection('free_claims').doc(claimId) : null;
+  const relaxed = isDevRelaxedQuota(input.devMode === true);
   const expiresAt = computeExpiresAt(createdAt, input.devMode === true);
   const shareSlug = await uniqueShareSlug(db);
   const shareBase =
     process.env.OCCASIO_SHARE_BASE ?? 'https://occasio-greetings.vercel.app';
 
+  const userRef = db.collection('users').doc(uid);
   const ref = db.collection('creations').doc();
-  await ref.set({
+  const cardFields = {
     templateType: input.templateType,
     templateId: input.templateId ?? null,
     recipientName: input.recipientName,
@@ -307,8 +329,61 @@ export async function createCreation(
     reactionCount: 0,
     createdAt: Timestamp.fromDate(createdAt),
     expiresAt: Timestamp.fromDate(expiresAt),
-    userId: null,
-  });
+    userId: uid,
+  };
+
+  let billing: BillingState | null = null;
+  for (;;) {
+    const allowance = await db.runTransaction(async (tx) => {
+      const doc = ((await tx.get(userRef)).data() ?? {}) as AllowanceUserDoc;
+      const claim = claimRef ? await tx.get(claimRef) : null;
+      // The same inbox already had its free card under an earlier (deleted) account.
+      const claimedElsewhere =
+        claim?.exists === true && claim.data()?.uid !== uid;
+      const seen: AllowanceUserDoc = claimedElsewhere
+        ? { ...doc, freeCardsUsed: Math.max(1, freeCardsUsed(doc)) }
+        : doc;
+      const decided = relaxed ? 'pro' : decideCreateAllowance(seen, nowMs, billing);
+      if (decided === 'needs_billing' || decided === 'none') {
+        return decided;
+      }
+      if (!relaxed) {
+        if (decided === 'free') {
+          tx.set(userRef, { freeCardsUsed: freeCardsUsed(doc) + 1 }, { merge: true });
+          if (claimRef) {
+            tx.set(claimRef, { uid, at: Timestamp.fromDate(createdAt) });
+          }
+        } else if (decided === 'pro') {
+          tx.set(
+            userRef,
+            { proCardTimes: [...proCardTimesInWindow(doc.proCardTimes, nowMs), nowMs] },
+            { merge: true },
+          );
+        } else if (decided === 'credit') {
+          tx.set(userRef, { wishCreditsUsed: wishCreditsUsed(doc) + 1 }, { merge: true });
+        }
+      }
+      tx.set(ref, cardFields);
+      return decided;
+    });
+
+    if (allowance === 'none') {
+      throw new ApiRouteError(
+        402,
+        'QUOTA_EXCEEDED',
+        'No cards left on your plan. Buy one more wish to continue.',
+      );
+    }
+    if (allowance !== 'needs_billing') {
+      break;
+    }
+    try {
+      billing = await fetchBillingState(uid);
+    } catch (error) {
+      console.error('[createCreation] billing check failed', error);
+      throw new ApiRouteError(503, 'INTERNAL', 'Could not check your plan. Try again.');
+    }
+  }
 
   return {
     creationId: ref.id,
@@ -644,6 +719,18 @@ export async function updateCreation(
   const owned = await assertOwnedCreation(creationId, uid);
   if (owned.status !== 'ok') {
     return { status: owned.status };
+  }
+
+  const previousRecipient =
+    typeof owned.creationData.recipientName === 'string'
+      ? owned.creationData.recipientName
+      : '';
+  if (!recipientEditAllowed(previousRecipient, input.recipientName)) {
+    throw new ApiRouteError(
+      400,
+      'VALIDATION_ERROR',
+      'The name on a card stays the same after the link is made. Create a new card for someone else.',
+    );
   }
 
   const expiresAt = owned.creationData.expiresAt as Timestamp | undefined;

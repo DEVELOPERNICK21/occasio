@@ -8,13 +8,13 @@ import { usePaywall } from '../../../billing/application/usePaywall';
 import { useHistory } from '../../../history/application/useHistory';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
-import { countWishesThisMonth } from '../../domain/createHome';
 import {
   isInteractiveExperience,
   resolveDraftExperienceMode,
   storyBeatHint,
 } from '../../domain/experienceMode';
-import { freeQuotaNotice } from '../../domain/quota';
+import { freeQuotaNotice, PRO_YEARLY_CARD_LIMIT } from '../../domain/quota';
+import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
@@ -27,30 +27,27 @@ type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, requestAuth } = useAuth();
   const { entries } = useHistory(isSignedIn);
   const {
     open: openPaywall,
     isConfigured,
     tier,
+    plans,
+    purchase,
     error: billingError,
     resolveExtraWish,
-    consumeWishCredit,
   } = usePaywall();
-  const cardsCreatedThisMonth = useMemo(
-    () => (isSignedIn ? countWishesThisMonth(entries) : 0),
-    [entries, isSignedIn],
-  );
+  const cardsCreated = isSignedIn ? entries.length : 0;
   const { generate, isLoading, error, paywallRequired, reset } =
     useCreateShareLink({
-      cardsCreatedThisMonth,
+      cardsCreated,
       tier,
       resolveExtraWish,
-      consumeWishCredit,
     });
   const quotaNotice = isEditing
     ? null
-    : freeQuotaNotice(cardsCreatedThisMonth, tier);
+    : freeQuotaNotice(cardsCreated, tier);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.previewOpened, {
@@ -72,20 +69,56 @@ export function PreviewScreen({ navigation }: Props) {
       return;
     }
 
+    const openShare = () => {
+      void generate(draft).then((created) => {
+        if (!created) return;
+        trackEvent(AnalyticsEvents.cardShared, { shareSlug: created.shareSlug });
+        navigation.navigate('ShareSuccess', {
+          shareUrl: created.shareUrl,
+          expiresAt: created.expiresAt,
+          creationId: created.creationId,
+          shareSlug: created.shareSlug,
+          wasUpdated: false,
+        });
+      });
+    };
+
+    // A Pro member out of yearly cards already owns Pro; selling it again is a dead end.
+    if (tier !== 'free') {
+      const wish = plans.find((p) => p.id.toLowerCase().includes(PACKAGE_SINGLE_WISH));
+      if (!wish) {
+        Alert.alert(
+          'No cards left this year',
+          `Your plan includes ${PRO_YEARLY_CARD_LIMIT} cards a year, and they are used. One more wish is not available right now — try again soon.`,
+          [{ text: 'OK', onPress: reset }],
+          { cancelable: true, onDismiss: reset },
+        );
+        return;
+      }
+      Alert.alert(
+        'No cards left this year',
+        `Your plan includes ${PRO_YEARLY_CARD_LIMIT} cards a year, and they are used. Buy one more wish for ${wish.priceLabel}?`,
+        [
+          { text: 'Not now', style: 'cancel', onPress: reset },
+          {
+            text: 'Buy one wish',
+            onPress: () => {
+              reset();
+              void purchase(wish.id).then((bought) => {
+                if (bought) openShare();
+              });
+            },
+          },
+        ],
+        { cancelable: true, onDismiss: reset },
+      );
+      return;
+    }
+
     void openPaywall().then((result) => {
       reset();
       if (result === 'purchased' || result === 'restored') {
-        void generate(draft).then((created) => {
-          if (!created) return;
-          trackEvent(AnalyticsEvents.cardShared, { shareSlug: created.shareSlug });
-          navigation.navigate('ShareSuccess', {
-            shareUrl: created.shareUrl,
-            expiresAt: created.expiresAt,
-            creationId: created.creationId,
-            shareSlug: created.shareSlug,
-            wasUpdated: false,
-          });
-        });
+        openShare();
       }
     });
   }, [
@@ -93,6 +126,9 @@ export function PreviewScreen({ navigation }: Props) {
     isEditing,
     isConfigured,
     openPaywall,
+    tier,
+    plans,
+    purchase,
     reset,
     generate,
     draft,
@@ -118,7 +154,16 @@ export function PreviewScreen({ navigation }: Props) {
     });
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
+    // Free wishes are counted per account on the server; a guest has nothing to count against.
+    if (!isSignedIn && !isEditing) {
+      requestAuth('create_link', () => void createLink());
+      return;
+    }
+    void createLink();
+  };
+
+  const createLink = async () => {
     if (paywallRequired && !isEditing) {
       if (!isConfigured) {
         Alert.alert(
@@ -184,7 +229,7 @@ export function PreviewScreen({ navigation }: Props) {
         <Button
           label={primaryLabel}
           disabled={isLoading}
-          onPress={() => void handleGenerate()}
+          onPress={handleGenerate}
         />
       </ScreenActions>
 

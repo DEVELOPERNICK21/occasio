@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Feature: create
 
-**Goal:** Template → Photos → Details → Preview → Share link (&lt;3 min, guest OK).
+**Goal:** Template → Photos → Details → Preview → Share link (&lt;3 min; guest builds, sign-in at "Create the link").
 
 Full spec: `docs-site/content/create-blueprint.md`
 

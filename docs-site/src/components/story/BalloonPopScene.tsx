@@ -2,6 +2,7 @@
 
 import { useCallback, useId, useMemo, useState } from 'react';
 import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapCoach } from '@/components/story/fx/TapCoach';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { chunkRevealWords } from '@/lib/experience/chunkRevealWords';
 import { playBalloonPop } from '@/lib/experience/playBalloonPop';
@@ -131,6 +132,7 @@ export function BalloonPopScene({
   const [burstAt, setBurstAt] = useState<number | null>(null);
 
   const allPopped = useMemo(() => popped.every(Boolean), [popped]);
+  const nextBalloon = popped.indexOf(false);
   const revealed = useMemo(
     () => words.filter((_, i) => popped[i]),
     [words, popped],
@@ -190,6 +192,9 @@ export function BalloonPopScene({
                   <span className="story-balloon__burst" aria-hidden />
                   <ConfettiBurst />
                 </>
+              ) : null}
+              {i === nextBalloon ? (
+                <TapCoach active progress={revealed.length} y="38%" />
               ) : null}
             </button>
           );

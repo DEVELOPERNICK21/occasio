@@ -182,7 +182,7 @@ In the RevenueCat dashboard paywall for the current offering, make sure the temp
 | "Do you filter or let people report content?" | Cards are private, one-to-one links with no public feed; every card page has *Report this card*; reported cards are removed on request; Terms prohibit abuse |
 | "Why Sign in with Apple *and* email?" | Apple is first, so 4.8 is met; email is for people without Google or Apple |
 | "Can I delete my account?" | Yes, in the app; Apple tokens revoked |
-| "How do I test the subscription?" | Free plan allows 1 card per month; create a second card or open Account → See Occasio Pro |
+| "How do I test the subscription?" | Free plan includes one card in total; create a second card or open Account → See Occasio Pro |
 | "What does *auto-send* do?" | Notes describe it in specific terms (2.3.1). Keep the description identical to production behaviour |
 
 ---
@@ -200,8 +200,8 @@ Entered through the built-in browser after you signed in. **Nothing is submitted
 | App Privacy | 8 data types set up (name, email, phone, photos, other user content, user ID, device ID, purchase history): all *App Functionality*, *linked to user*, *no tracking*. **Not yet published** |
 | Pricing and Availability | App price **Free ($0.00)**, **175 countries or regions**. Mac App Store and Vision Pro boxes left ticked (your choice) |
 | Subscription group | **Occasio Pro**, display name set (uses the app name) |
-| `occasio_pro_monthly` | 1 month, **$2.99**, all countries, "Occasio Pro Monthly / Unlimited cards. Save up to 5 people." |
-| `occasio_pro_yearly` | 1 year, **$19.99**, all countries, "Occasio Pro Yearly / Unlimited cards. Save up to 5 people." |
+| `occasio_pro_monthly` | 1 month, **$2.99**, all countries, "Occasio Pro Monthly / 24 cards a year. Save up to 5 people." |
+| `occasio_pro_yearly` | 1 year, **$19.99**, all countries, "Occasio Pro Yearly / 24 cards a year. Save up to 5 people." |
 | `occasio_wish_single` | Consumable, **$0.99**, all countries, "One Extra Wish / One more card beyond your free monthly card." |
 
 Apple converts the US prices into local prices automatically (for example, $2.99 shows as $3.99 in Canada and Albania, so check India and your other markets under *Subscription Pricing → All Prices and Currencies* before launch).

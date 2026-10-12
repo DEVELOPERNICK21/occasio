@@ -33,7 +33,7 @@ Use `src/shared/theme/tokens.ts` (mirrors `design-tokens.json`). No hardcoded ra
 ## Scope
 
 - Minimize diff; match existing patterns in `src/features/create/`
-- Guest can create/share without auth (PRD)
+- Guest can build a card without auth; sign-in is required at "Create the link" (quota is per account, enforced server-side)
 - Phase 1 validates cards before auto-send engine
 
 ## Secrets & git

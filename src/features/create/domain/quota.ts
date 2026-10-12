@@ -1,15 +1,18 @@
 export type SubscriptionTier = 'free' | 'personal' | 'family';
 
-export const FREE_MONTHLY_CARD_LIMIT = 1;
+/** One free card per account, ever — it earns a first recipient, not a monthly habit. */
+export const FREE_CARD_LIMIT = 1;
+/** Pro includes this many cards per rolling year; the server counts, beyond it single wishes work. */
+export const PRO_YEARLY_CARD_LIMIT = 24;
 
 type QuotaOptions = {
   /** Dev builds only — unlimited generates for testing. */
   bypassQuota?: boolean;
 };
 
-/** Free tier: 1 manual card per calendar month. Paid tiers: unlimited. */
+/** Free tier: 1 card in total. Paid tiers: the yearly allowance is counted by the server. */
 export function canCreateManualCard(
-  cardsCreatedThisMonth: number,
+  cardsCreated: number,
   tier: SubscriptionTier = 'free',
   options: QuotaOptions = {},
 ): boolean {
@@ -19,26 +22,26 @@ export function canCreateManualCard(
   if (tier !== 'free') {
     return true;
   }
-  return cardsCreatedThisMonth < FREE_MONTHLY_CARD_LIMIT;
+  return cardsCreated < FREE_CARD_LIMIT;
 }
 
 export function shouldShowPaywall(
-  cardsCreatedThisMonth: number,
+  cardsCreated: number,
   tier: SubscriptionTier = 'free',
   options: QuotaOptions = {},
 ): boolean {
-  return !canCreateManualCard(cardsCreatedThisMonth, tier, options);
+  return !canCreateManualCard(cardsCreated, tier, options);
 }
 
-/** `null` when the tier is unlimited — nothing to count down. */
+/** `null` when the tier has a paid allowance — nothing to count down. */
 export function freeCardsRemaining(
-  cardsCreatedThisMonth: number,
+  cardsCreated: number,
   tier: SubscriptionTier = 'free',
 ): number | null {
   if (tier !== 'free') {
     return null;
   }
-  return Math.max(0, FREE_MONTHLY_CARD_LIMIT - cardsCreatedThisMonth);
+  return Math.max(0, FREE_CARD_LIMIT - cardsCreated);
 }
 
 /**
@@ -46,18 +49,18 @@ export function freeCardsRemaining(
  * as a trap even when the limit itself is fair.
  */
 export function freeQuotaNotice(
-  cardsCreatedThisMonth: number,
+  cardsCreated: number,
   tier: SubscriptionTier = 'free',
 ): string | null {
-  const remaining = freeCardsRemaining(cardsCreatedThisMonth, tier);
+  const remaining = freeCardsRemaining(cardsCreated, tier);
   if (remaining === null) {
     return null;
   }
   if (remaining === 0) {
-    return 'Free card used this month — buy one more wish or pick a plan when you are ready.';
+    return 'Your free card is used — buy one more wish or pick a plan when you are ready.';
   }
   if (remaining === 1) {
-    return '1 free card left this month.';
+    return 'Your first card is free.';
   }
-  return `${remaining} free cards left this month.`;
+  return `${remaining} free cards left.`;
 }

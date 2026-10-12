@@ -14,7 +14,7 @@ Thank you. Here is the information you asked for. The same details are in the No
 
 6) Regulated industry: none. [CONFIRM: The app bundles five short sound effects and five animations; we hold the rights to use them.]
 
-7) In-App Purchase: Occasio Pro auto-renewing subscription, Monthly $2.99 and Yearly $19.99 (unlimited cards, up to 5 saved people, auto-send); and one consumable, One Extra Wish, $0.99 (one more card in a month). The free plan includes 1 card per calendar month. To reach the purchase screens: create a second card in the same month, or Account tab > the subscription button, or the last step of the first-launch intro. Restore Purchases is on the Account tab.
+7) In-App Purchase: Occasio Pro auto-renewing subscription, Monthly $2.99 and Yearly $19.99 (24 cards a year, up to 5 saved people, auto-send); and one consumable, One Extra Wish, $0.99 (one more card, also available once the 24 yearly cards are used). The free plan includes one card per account, and creating a link needs a signed-in account (Sign in with Apple, Google or email). To reach the purchase screens: create a second card, or Account tab > the subscription button, or the last step of the first-launch intro. Restore Purchases is on the Account tab.
 
 User-generated content: cards are private one-to-one links, with no public feed, search, comments or messaging. Every card page has a Report this card link, and reported cards are reviewed and removed if they break our Terms. Account deletion: Account tab > Delete account and data.
 

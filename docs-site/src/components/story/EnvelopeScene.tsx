@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapCoach } from '@/components/story/fx/TapCoach';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
@@ -89,6 +90,7 @@ export function EnvelopeScene({
           />
         </svg>
         {!opened ? <span className="story-envelope__hint">Open me</span> : null}
+        <TapCoach active={!opened} progress={0} y="48%" />
       </button>
     </section>
   );

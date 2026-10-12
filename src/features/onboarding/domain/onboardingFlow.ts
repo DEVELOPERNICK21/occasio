@@ -1,6 +1,7 @@
 import type { Audience, Occasion } from '../../create/domain/templateSchema';
 import { daysUntilPersonDate } from '../../vault/domain/personRules';
 import type { PersonDate } from '../../vault/domain/types';
+import { PRO_YEARLY_CARD_LIMIT } from '../../create/domain/quota';
 
 /**
  * First-run funnel. It follows the order people actually decide in:
@@ -283,7 +284,7 @@ export type CompareRow = { id: string; label: string; free: string; pro: string 
 
 /** Only what the app really enforces today (see `quota.ts`, `tierLimits.ts`). */
 export const COMPARE_ROWS: readonly CompareRow[] = [
-  { id: 'cards', label: 'Cards each month', free: '1', pro: 'Unlimited' },
+  { id: 'cards', label: 'Cards included', free: '1 to try', pro: `${PRO_YEARLY_CARD_LIMIT} a year` },
   { id: 'people', label: 'People saved in Vault', free: '1', pro: 'Up to 5' },
   { id: 'auto', label: 'Auto-send, with your approval', free: 'Not included', pro: 'Included' },
 ] as const;
@@ -308,7 +309,7 @@ export function trustLine(step: OnboardingStepId): string {
 
 export const PLAN_PAID_TITLE = 'Occasio Pro is on';
 export const PLAN_PAID_BODY =
-  'Unlimited cards and up to 5 saved people are included. Your first card is next.';
+  `${PRO_YEARLY_CARD_LIMIT} cards a year and up to 5 saved people are included. Your first card is next.`;
 export const PLANS_UNAVAILABLE = 'Plans appear here when you are online. You can keep using Occasio free.';
 export const PLANS_LOADING = 'Loading plans…';
 export const RESTORE_LABEL = 'Restore purchases';

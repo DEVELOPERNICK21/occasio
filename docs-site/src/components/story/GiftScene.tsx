@@ -5,6 +5,7 @@ import { Gift3DStage, type GiftStageHandle } from '@/components/story/gift3d/Gif
 import { momentThemeFor } from '@/lib/experience/momentTheme';
 import { playShimmer } from '@/lib/experience/sfx';
 import { useJoy } from '@/components/story/fx/JoyProvider';
+import { TapCoach } from '@/components/story/fx/TapCoach';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { useShake, type ShakeState } from '@/components/story/fx/useShake';
 import { playGiftRattle, playGiftUnwrap } from '@/lib/experience/playBalloonPop';
@@ -343,6 +344,7 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
             </g>
           </svg>
         </span>
+        <TapCoach active={phase === 'wrapped'} progress={shakes} y="62%" />
       </button>
 
       <div className="story-hint-row" aria-live="polite">
@@ -456,7 +458,9 @@ function GiftScene3D({
         }}
         onOpened={() => setPhase('open')}
         onFail={onFail}
-      />
+      >
+        <TapCoach active={phase === 'wrapped'} progress={shakes} y="58%" />
+      </Gift3DStage>
 
       <div className="story-hint-row" aria-live="polite">
         {phase === 'wrapped' ? (

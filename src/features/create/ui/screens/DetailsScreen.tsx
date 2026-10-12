@@ -35,6 +35,7 @@ export function DetailsScreen({ navigation }: Props) {
   const { user } = useAuth();
   const {
     draft,
+    isEditing,
     setRecipientName,
     setFromName,
     setMessage,
@@ -83,7 +84,14 @@ export function DetailsScreen({ navigation }: Props) {
     >
       <CreateNudge stage="details" />
       <View style={styles.form}>
-        <Field label="To">
+        <Field
+          label="To"
+          hint={
+            isEditing
+              ? 'A link is for one person — spelling fixes only'
+              : undefined
+          }
+        >
           <TextInput
             placeholder="Recipient name"
             placeholderTextColor={colors.muted}

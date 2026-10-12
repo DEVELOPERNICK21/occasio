@@ -12,6 +12,7 @@ import { CakeStage, type CakeStageHandle } from '@/components/story/gift3d/CakeS
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { useMicBlow } from '@/components/story/fx/useMicBlow';
 import { momentThemeFor } from '@/lib/experience/momentTheme';
+import { TapCoach } from '@/components/story/fx/TapCoach';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { playCakeSlice, playCandleBlow } from '@/lib/experience/playBalloonPop';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
@@ -450,6 +451,7 @@ function CandleSceneSvg({
             />
           ) : null}
         </svg>
+        <TapCoach active={phase !== 'done'} progress={litCount} y="58%" />
       </button>
 
       <div className="story-hint-row" aria-live="polite">
@@ -618,7 +620,9 @@ function CandleScene3D({
         }
         onTap={tap}
         onFail={onFail}
-      />
+      >
+        <TapCoach active={phase !== 'done'} progress={litCount} y="52%" />
+      </CakeStage>
 
       <div className="story-hint-row" aria-live="polite">
         {phase === 'candles' ? (

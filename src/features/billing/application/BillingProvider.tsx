@@ -29,7 +29,7 @@ import {
 } from '../data/revenueCatUi';
 import { isBillingError, isPurchaseCancelled } from '../data/billingErrors';
 import { syncSubscriptionTier } from '../data/userTierMirror';
-import { incrementWishCreditsUsed, readWishCreditsUsed } from '../data/wishCreditStore';
+import { readWishCreditsUsed } from '../data/wishCreditStore';
 import { availableWishCredits } from '../domain/wishCredits';
 import type { BillingPlan, ExtraWishAccess, PaywallPresentResult } from '../domain/types';
 
@@ -50,8 +50,6 @@ type BillingContextValue = {
   clearError: () => void;
   /** Fresh check (not cached state) for a wish beyond the free monthly allowance. */
   resolveExtraWish: () => Promise<ExtraWishAccess>;
-  /** Call once after a wish created with a purchased credit is saved. */
-  consumeWishCredit: () => Promise<void>;
 };
 
 const BillingContext = createContext<BillingContextValue | null>(null);
@@ -251,14 +249,6 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     }
   }, [userId]);
 
-  const consumeWishCredit = useCallback(async () => {
-    if (!userId) {
-      return;
-    }
-    await incrementWishCreditsUsed(userId);
-    trackEvent(AnalyticsEvents.wishCreditUsed);
-  }, [userId]);
-
   const value = useMemo(
     () => ({
       tier,
@@ -275,7 +265,6 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       refresh,
       clearError,
       resolveExtraWish,
-      consumeWishCredit,
     }),
     [
       tier,
@@ -292,7 +281,6 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       refresh,
       clearError,
       resolveExtraWish,
-      consumeWishCredit,
     ],
   );
 

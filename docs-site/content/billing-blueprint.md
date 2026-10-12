@@ -16,8 +16,8 @@ Ship **real in-app purchases** through RevenueCat so Occasio qualifies for [Ship
 
 | Tier | Entitlement ID (suggested) | Store products | Unlocks |
 |---|---|---|---|
-| **Free** | *(none)* | — | 1 card/month, 1 Vault person, 30-day links, no auto-send |
-| **Personal** | `personal` | `occasio_personal_monthly`, `occasio_personal_yearly` | Unlimited cards, 5 people, 365-day links, auto-send toggle |
+| **Free** | *(none)* | — | 1 card per account (lifetime), 1 Vault person, 30-day links, no auto-send |
+| **Personal** | `personal` | `occasio_personal_monthly`, `occasio_personal_yearly` | 24 cards per rolling year (then single wishes), 5 people, 365-day links, auto-send toggle |
 | **Family** | `family` | `occasio_family_monthly`, `occasio_family_yearly` | Same + 15 people, priority templates (later) |
 | **One-off unlock** *(optional v1)* | `single_card` | consumable | 1 premium card without subscription |
 
@@ -106,7 +106,7 @@ Public SDK keys only in client — webhook secret in Functions only (`env-strate
 - [ ] At least **one** purchasable product works on **Android** (Shipaton minimum)
 - [ ] PaywallModal → real purchase or plan picker (not dismiss-only)
 - [ ] `useSubscription().tier` drives Vault person cap + auto-send gate
-- [ ] Create quota respects paid tier (unlimited vs 1/month)
+- [ ] Create quota respects paid tier (1 lifetime free vs 24/year), enforced server-side
 - [ ] Restore purchases on Account screen
 - [ ] Guest create still works without billing
 - [ ] Domain tests: entitlement → tier mapping

@@ -20,6 +20,5 @@ export function useSubscription() {
     refresh: billing.refresh,
     clearError: billing.clearError,
     resolveExtraWish: billing.resolveExtraWish,
-    consumeWishCredit: billing.consumeWishCredit,
   };
 }

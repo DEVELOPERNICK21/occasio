@@ -83,7 +83,8 @@ function creationBody(
 export async function createShareLinkSpark(
   draft: CreationDraft,
   photoRefs: string[],
-  mediaUrls: string[] = [],
+  mediaUrls: string[],
+  token: string,
 ): Promise<CreateCreationResponse> {
   if (!draft.templateType) {
     throw new CreationApiError('VALIDATION_ERROR', 'Template is required');
@@ -94,6 +95,7 @@ export async function createShareLinkSpark(
       env.sparkApiBaseUrl,
       '/api/v1/creations',
       creationBody(draft, photoRefs, mediaUrls),
+      authHeaders(token),
     );
   } catch (error) {
     throw toCreationError(error);

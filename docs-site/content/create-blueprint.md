@@ -39,7 +39,7 @@ Guest or signed-in user completes **Home occasion → Who → Layout → Photos 
 | `data` | `photoRefs.ts`, `sparkCreationRepository.ts` | base64 inline (Spark) or Storage (Blaze) |
 | `data` | `uploadService.ts` | presign when on Blaze + Functions |
 | `application` | `usePhotoPicker.ts` | gallery + camera orchestration |
-| `domain` | `quota.ts` | free tier 1 card/month |
+| `domain` | `quota.ts` | free tier 1 card per account; Pro 24 per rolling year (server-enforced) |
 
 ## Analytics
 

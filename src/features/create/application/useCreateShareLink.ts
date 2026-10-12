@@ -31,20 +31,18 @@ const initialState: State = {
 };
 
 type Options = {
-  cardsCreatedThisMonth?: number;
+  cardsCreated?: number;
   tier?: SubscriptionTier;
-  /** Checked live when the free allowance is used — cached tier can lag a fresh purchase. */
+  /**
+   * Checked live when the free allowance is used — cached tier can lag a fresh
+   * purchase. Only decides whether to show the paywall early; the server checks
+   * again and spends the credit itself.
+   */
   resolveExtraWish?: () => Promise<ExtraWishAccess>;
-  consumeWishCredit?: () => Promise<void>;
 };
 
 export function useCreateShareLink(options: Options = {}) {
-  const {
-    cardsCreatedThisMonth = 0,
-    tier = 'free',
-    resolveExtraWish,
-    consumeWishCredit,
-  } = options;
+  const { cardsCreated = 0, tier = 'free', resolveExtraWish } = options;
   const [state, setState] = useState<State>(initialState);
 
   const generate = useCallback(
@@ -61,10 +59,9 @@ export function useCreateShareLink(options: Options = {}) {
       const editingId = draft.editingCreationId?.trim() || null;
       const isEdit = Boolean(editingId);
 
-      let usesWishCredit = false;
       if (
         !isEdit &&
-        shouldShowPaywall(cardsCreatedThisMonth, tier, {
+        shouldShowPaywall(cardsCreated, tier, {
           bypassQuota: env.devRelaxedQuota,
         })
       ) {
@@ -78,7 +75,6 @@ export function useCreateShareLink(options: Options = {}) {
           }));
           return null;
         }
-        usesWishCredit = access === 'credit';
       }
 
       setState({
@@ -96,13 +92,6 @@ export function useCreateShareLink(options: Options = {}) {
         const result = isEdit
           ? await updateShareLink(editingId!, draft, photoRefs, mediaUrls)
           : await createShareLink(draft, photoRefs, mediaUrls);
-        if (usesWishCredit && consumeWishCredit) {
-          await consumeWishCredit().catch((e) => {
-            if (__DEV__) {
-              console.warn('[Occasio] Could not record wish credit', e);
-            }
-          });
-        }
         setState({
           isLoading: false,
           error: null,
@@ -134,7 +123,7 @@ export function useCreateShareLink(options: Options = {}) {
         return null;
       }
     },
-    [cardsCreatedThisMonth, tier, resolveExtraWish, consumeWishCredit],
+    [cardsCreated, tier, resolveExtraWish],
   );
 
   const reset = useCallback(() => {

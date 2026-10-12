@@ -157,7 +157,9 @@ export function SoftAuthModal() {
           <Text style={styles.title}>{titleFor(step, isSignUp, gatedActionLabel(action))}</Text>
           {step === 'choose' ? (
             <Text style={styles.body}>
-              Creating and sharing cards stays free. Signing in saves your Vault and History.
+              {action === 'create_link'
+                ? 'Your card stays exactly as you made it. Sign in and your link is ready — your first card is free.'
+                : 'Signing in saves your Vault and History.'}
             </Text>
           ) : null}
 

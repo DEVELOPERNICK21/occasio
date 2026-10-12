@@ -30,7 +30,7 @@ export const COPY = {
     f8: { l: 'Start <em>free</em>.<br>Upgrade anytime.', s: 'Your first card needs no account.' },
     plan: {
       free: { name: 'Free', items: ['1 card a month', 'No account to start', '1 saved person'] },
-      pro: { name: 'Occasio Pro', items: ['Unlimited cards', '5 saved people', 'Cancel anytime'] },
+      pro: { name: 'Occasio Pro', items: ['24 cards a year', '5 saved people', 'Cancel anytime'] },
       note: 'Need just one more? Buy a single card.',
     },
   },

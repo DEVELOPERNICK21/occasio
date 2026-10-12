@@ -85,7 +85,7 @@ describe('audience and occasion', () => {
 });
 
 describe('quota', () => {
-  it('free tier allows 1 card per month', () => {
+  it('free tier allows 1 card in total', () => {
     expect(canCreateManualCard(0, 'free')).toBe(true);
     expect(canCreateManualCard(1, 'free')).toBe(false);
     expect(shouldShowPaywall(1, 'free')).toBe(true);
@@ -96,15 +96,15 @@ describe('quota', () => {
     expect(shouldShowPaywall(99, 'free', { bypassQuota: true })).toBe(false);
   });
 
-  it('paid tiers are unlimited', () => {
+  it('paid tiers are not capped by the app (the server counts the yearly allowance)', () => {
     expect(canCreateManualCard(99, 'personal')).toBe(true);
     expect(canCreateManualCard(99, 'family')).toBe(true);
   });
 
   it('tells remaining free cards before the user starts work', () => {
-    expect(freeQuotaNotice(0, 'free')).toBe('1 free card left this month.');
+    expect(freeQuotaNotice(0, 'free')).toBe('Your first card is free.');
     expect(freeQuotaNotice(1, 'free')).toBe(
-      'Free card used this month — buy one more wish or pick a plan when you are ready.',
+      'Your free card is used — buy one more wish or pick a plan when you are ready.',
     );
     expect(freeQuotaNotice(0, 'personal')).toBeNull();
   });

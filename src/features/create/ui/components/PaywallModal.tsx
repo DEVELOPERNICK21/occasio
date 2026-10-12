@@ -21,7 +21,7 @@ type Props = {
 };
 
 const PERKS = [
-  'Unlimited cards each month',
+  '24 cards a year, and single wishes beyond that',
   'Links active for 365 days',
   'Save up to 5 people in Vault',
   'Priority support for Pro',
@@ -59,10 +59,10 @@ export function PaywallModal({
             <ModalCloseButton onPress={onClose} accessibilityLabel="Close paywall" />
           </View>
           <Text style={styles.eyebrow}>Free plan</Text>
-          <Text style={styles.title}>One wish per month</Text>
+          <Text style={styles.title}>Your free card is used</Text>
           <Text style={styles.body}>
-            You&apos;ve used your free card for this month. Upgrade for unlimited cards and
-            links that last a full year.
+            Your first card was free. Upgrade for 24 cards a year and links that last a full
+            year, or buy one more wish.
           </Text>
           <View style={styles.perks}>
             {PERKS.map((perk) => (

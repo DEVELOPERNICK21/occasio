@@ -8,6 +8,7 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
 import type { GiftController } from './buildGift';
@@ -26,6 +27,8 @@ type Props = {
   onTap: (at: { x: number; y: number }) => void;
   onOpened: () => void;
   onFail: () => void;
+  /** Overlays drawn over the canvas, e.g. the idle tap coach. */
+  children?: ReactNode;
 };
 
 const DRAG_THRESHOLD_PX = 7;
@@ -45,7 +48,7 @@ function webglAvailable(): boolean {
  * falls back to the flat SVG gift.
  */
 export const Gift3DStage = forwardRef<GiftStageHandle, Props>(function Gift3DStage(
-  { theme, name, line, disabled, ariaLabel, onTap, onOpened, onFail },
+  { theme, name, line, disabled, ariaLabel, onTap, onOpened, onFail, children },
   ref,
 ) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -168,6 +171,7 @@ export const Gift3DStage = forwardRef<GiftStageHandle, Props>(function Gift3DSta
       onKeyDown={key}
     >
       {!ready ? <span className="gift3d__loading">Wrapping your gift…</span> : null}
+      {children}
     </div>
   );
 });

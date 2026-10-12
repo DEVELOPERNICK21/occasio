@@ -21,6 +21,11 @@ describe('gatedActions', () => {
     expect(requiresAuth('subscription_manage')).toBe(true);
   });
 
+  it('requires auth before a share link is created', () => {
+    expect(requiresAuth('create_link')).toBe(true);
+    expect(gatedActionLabel('create_link')).toBe('create your link');
+  });
+
   it('labels actions for soft-auth copy', () => {
     expect(gatedActionLabel('vault_save')).toContain('Vault');
   });

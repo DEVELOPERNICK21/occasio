@@ -6,6 +6,7 @@ import {
 } from '@/lib/creationsServer';
 import { isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import { clientIp, rateLimit } from '@/lib/rateLimit';
+import { verifyBearerToken } from '@/lib/verifyBearerToken';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,14 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { code: 'INTERNAL', message: 'Server is not configured' },
       { status: 503 },
+    );
+  }
+
+  const user = await verifyBearerToken(request);
+  if (!user || user.anonymous) {
+    return NextResponse.json(
+      { code: 'UNAUTHORIZED', message: 'Sign in to create your link.' },
+      { status: 401 },
     );
   }
 
@@ -46,7 +55,7 @@ export async function POST(request: Request) {
 
   try {
     const input = validateCreateInput(body);
-    const result = await createCreation(input);
+    const result = await createCreation(input, user);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof ApiRouteError) {

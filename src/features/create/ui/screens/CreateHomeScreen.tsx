@@ -73,7 +73,7 @@ export function CreateHomeScreen({ navigation }: Props) {
     journey.badges,
     isFocused && isSignedIn && !historyLoading && !vaultLoading,
   );
-  const quotaNotice = freeQuotaNotice(wishCount, tier);
+  const quotaNotice = freeQuotaNotice(isSignedIn && !historyLoading ? entries.length : 0, tier);
 
   const hero = useMemo(
     () => getCreateHomeHero(isSignedIn, upcoming),

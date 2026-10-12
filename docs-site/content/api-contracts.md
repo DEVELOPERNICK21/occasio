@@ -29,9 +29,16 @@ Public greeting links are **unlisted** (anyone with the URL can view) but **time
 
 **Slug security:** production slugs are cryptographically random (e.g. `x7k2m9`), not predictable `demo-name-*` strings.
 
-## `POST /v1/creations`
+## `POST /v1/creations` (auth)
 
-Create a shareable card (guest or authed).
+Create a shareable card. Requires `Authorization: Bearer <Firebase ID token>` (anonymous accounts refused). The guest can build the card; the app asks for sign-in at "Create the link".
+
+**Allowance (server-enforced, one Firestore transaction with the card write):**
+
+1. The first card per person is free, once, ever — `users/{uid}.freeCardsUsed`, plus a hashed-email claim in `free_claims` so deleting the account and signing up again with the same inbox does not refill it (clients cannot write either).
+2. After that, RevenueCat is checked server-side (`REVENUECAT_SECRET_KEY` on Vercel): active `occasio_pro` → allowed while fewer than 24 cards were made in the last 365 days (`users/{uid}.proCardTimes`).
+3. Otherwise one purchased single-wish credit is spent (`wishCreditsUsed + 1`) if `purchased − used > 0` — this also covers a Pro member past 24.
+4. Else `402 QUOTA_EXCEEDED`. Without the RevenueCat key, only the free card works.
 
 **Request**
 ```json
@@ -67,7 +74,8 @@ Server also persists on the creation document (not echoed in the response body t
 | Code | HTTP | Meaning |
 |---|---|---|
 | `VALIDATION_ERROR` | 400 | Missing name/photos/template |
-| `QUOTA_EXCEEDED` | 402 | Free monthly limit — paywall |
+| `UNAUTHORIZED` | 401 | No valid sign-in token |
+| `QUOTA_EXCEEDED` | 402 | Free card used, no Pro, no credits — paywall |
 | `UPLOAD_MISSING` | 400 | photoRefs not found in storage |
 | `INTERNAL` | 500 | Retry |
 
@@ -81,7 +89,7 @@ Load an owned card for edit-after-create. Requires `Authorization: Bearer <Fireb
 
 ## `PATCH /v1/creations/:creationId` (auth)
 
-Update card content **in place**. Same `shareSlug` / `shareUrl`. **No quota charge.** Body matches `POST /v1/creations`.
+Update card content **in place**. Same `shareSlug` / `shareUrl`. **No quota charge.** Body matches `POST /v1/creations`. The recipient name is locked to the original (case, spacing and small typo fixes allowed) so one link cannot be rewritten for someone else; otherwise `400 VALIDATION_ERROR`.
 
 **Response 200** — same shape as create (`creationId`, `shareSlug`, `shareUrl`, `expiresAt`, `watermarked`).
 

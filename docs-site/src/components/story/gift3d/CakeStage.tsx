@@ -8,6 +8,7 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
 import type { CakeController } from './buildCake';
@@ -25,6 +26,8 @@ type Props = {
   ariaLabel: string;
   onTap: (at: { x: number; y: number }) => void;
   onFail: () => void;
+  /** Overlays drawn over the canvas, e.g. the idle tap coach. */
+  children?: ReactNode;
 };
 
 const DRAG_THRESHOLD_PX = 7;
@@ -40,7 +43,7 @@ function webglAvailable(): boolean {
 
 /** Real-time 3D cake. Drag to turn it, tap to act; the parent falls back to the flat cake on failure. */
 export const CakeStage = forwardRef<CakeStageHandle, Props>(function CakeStage(
-  { theme, candles, disabled, ariaLabel, onTap, onFail },
+  { theme, candles, disabled, ariaLabel, onTap, onFail, children },
   ref,
 ) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -161,6 +164,7 @@ export const CakeStage = forwardRef<CakeStageHandle, Props>(function CakeStage(
       onKeyDown={key}
     >
       {!ready ? <span className="gift3d__loading">Baking something sweet…</span> : null}
+      {children}
     </div>
   );
 });

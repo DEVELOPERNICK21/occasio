@@ -1,4 +1,4 @@
-import { FREE_MONTHLY_CARD_LIMIT } from '../../src/features/create/domain/quota';
+import { FREE_CARD_LIMIT, PRO_YEARLY_CARD_LIMIT } from '../../src/features/create/domain/quota';
 import type { Audience, Occasion } from '../../src/features/create/domain/templateSchema';
 import {
   allCopyFor,
@@ -138,8 +138,9 @@ describe('onboarding funnel — their date, their countdown', () => {
 describe('onboarding funnel — claims match what the app enforces', () => {
   const row = (id: string) => COMPARE_ROWS.find((r) => r.id === id)!;
 
-  it('free cards per month is the real quota', () => {
-    expect(row('cards').free).toBe(String(FREE_MONTHLY_CARD_LIMIT));
+  it('card allowances are the real quotas', () => {
+    expect(row('cards').free).toMatch(new RegExp(`^${FREE_CARD_LIMIT} `));
+    expect(row('cards').pro).toBe(`${PRO_YEARLY_CARD_LIMIT} a year`);
   });
 
   it('people saved matches the tier caps', () => {
@@ -185,7 +186,12 @@ describe('onboarding funnel — tone guard (emotional, never manipulative)', () 
     /\b\d[\d,]*\+? (people|users|families|moms|dads|cards)\b|join \d|\brated\b|#1|millions?|thousands?/i;
   const SHAMING = /\bbad (son|daughter|partner|friend)\b|you forgot again|selfish|heartless|disappoint(ed|ing) them/i;
   /** The only digits allowed: their own countdown, the 2-hour window and the real tier caps. */
-  const DIGITS_OK = /^\d+$|in 23 days\.$|2 hours|[Uu]p to 5/;
+  const DIGITS_OK = new RegExp(
+    `^\\d+$|in 23 days\\.$|2 hours|[Uu]p to 5|^1 to try$|^${PRO_YEARLY_CARD_LIMIT} a year$|${PRO_YEARLY_CARD_LIMIT} cards a year`,
+  );
+  /** The real Pro allowance is a fact about the product, not an invented figure. */
+  const withoutRealCap = (text: string) =>
+    text.replace(`${PRO_YEARLY_CARD_LIMIT} cards a year`, 'cards a year');
 
   const texts = [
     ...new Set(
@@ -204,7 +210,7 @@ describe('onboarding funnel — tone guard (emotional, never manipulative)', () 
         text.includes('!') ||
         EMOJI.test(text) ||
         PRESSURE.test(text) ||
-        INVENTED.test(text) ||
+        INVENTED.test(withoutRealCap(text)) ||
         SHAMING.test(text),
     );
     expect(violations).toEqual([]);

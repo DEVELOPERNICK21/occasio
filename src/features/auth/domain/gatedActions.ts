@@ -6,6 +6,7 @@ const GATED_ACTIONS: ReadonlySet<GatedAction> = new Set([
   'history_sync',
   'autosend_enable',
   'subscription_manage',
+  'create_link',
 ]);
 
 /** Whether this action requires sign-in (all vault/history/billing gates do). */
@@ -25,6 +26,8 @@ export function gatedActionLabel(action: GatedAction): string {
       return 'enable auto-send';
     case 'subscription_manage':
       return 'manage your plan';
+    case 'create_link':
+      return 'create your link';
     default:
       return 'continue';
   }
