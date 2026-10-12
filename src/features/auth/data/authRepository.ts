@@ -9,6 +9,7 @@ import {
   AccountAgeError,
   enforceAgeForNewAccount,
 } from '../../age/data/ageRepository';
+import { deleteAccountFailureMessage } from '../domain/deleteAccountError';
 import { AuthError, mapFirebaseAuthError, mapGoogleSignInError } from './authErrors';
 import { configureGoogleSignIn } from './googleSignIn';
 
@@ -440,11 +441,11 @@ export async function deleteAccount(): Promise<void> {
     await httpClient.delete(env.sparkApiBaseUrl, '/api/v1/account', {
       Authorization: `Bearer ${token}`,
     });
-  } catch {
-    throw new AuthError(
-      'UNKNOWN',
-      'Could not delete your account right now. Check your connection and try again.',
-    );
+  } catch (error) {
+    if (__DEV__) {
+      console.warn('[auth] Account deletion failed:', error);
+    }
+    throw new AuthError('UNKNOWN', deleteAccountFailureMessage(error));
   }
 
   await GoogleSignin.signOut().catch(() => undefined);

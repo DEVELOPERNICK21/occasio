@@ -3,6 +3,7 @@ import type { Firestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { getAdminApp, getAdminFirestore } from '@/lib/firebaseAdmin';
 import { storageBucketName } from '@/lib/storagePaths';
+import { deleteUserPhotos } from '@/lib/age/photoCleanup';
 
 const BATCH = 400;
 
@@ -30,19 +31,6 @@ function storagePathsOf(values: unknown[]): string[] {
 }
 
 /**
- * Deletes the user's photos. Everything they upload lives under `uploads/<uid>/`,
- * and photos from before that change are found through the cards that name them.
- * Throws if Storage fails, so the account is not erased while photos remain.
- */
-async function deleteUserPhotos(uid: string, legacyPaths: string[]): Promise<void> {
-  const bucket = getStorage(getAdminApp()).bucket(storageBucketName());
-  await bucket.deleteFiles({ prefix: `uploads/${uid}/`, force: true });
-  await Promise.all(
-    legacyPaths.map((path) => bucket.file(path).delete({ ignoreNotFound: true })),
-  );
-}
-
-/**
  * Erases an account and everything tied to it. Used for in-app account deletion
  * and when a person turns out to be under 13. Mirrors `deleteAccountData` in
  * `functions/src/account.ts` (that one is deployed separately).
@@ -59,6 +47,7 @@ export async function purgeUser(uid: string): Promise<void> {
   // Only cards this user owns are deleted. A History row is just a pointer, so
   // it can never be used to delete somebody else's card.
   await deleteUserPhotos(
+    getStorage(getAdminApp()).bucket(storageBucketName()),
     uid,
     storagePathsOf([
       ...owned.docs.map((d) => d.get('photoRefs')),
