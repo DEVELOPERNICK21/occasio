@@ -1,6 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  BackHandler,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,412 +12,235 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
-import { triggerCardHaptic } from '../../../../shared/platform/haptics';
-import { Button } from '../../../../shared/ui/Button';
-import { Field } from '../../../../shared/ui/Field';
+import { PipFriend } from '../../../../shared/ui/PipFriend';
 import { Text } from '../../../../shared/ui/Text';
-import { TextInput } from '../../../../shared/ui/TextInput';
-import { colors, onPhoto, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import { isAuthError, useAuthContext } from '../../application/AuthProvider';
+import { colors, spacing, typography } from '../../../../shared/theme/tokens';
+import { useAuthFlow, type AuthMode } from '../../application/useAuthFlow';
 import { usePasswordReset } from '../../application/usePasswordReset';
-import {
-  isValidEmail,
-  isValidPassword,
-  MIN_PASSWORD_LENGTH,
-  normalizeEmail,
-} from '../../domain/email';
+import { AuthBackdrop } from '../components/AuthBackdrop';
+import { AuthErrorBanner } from '../components/AuthErrorBanner';
 import { AuthLegalFooter } from '../components/AuthLegalFooter';
-import { LoginAuthButton } from '../components/LoginAuthButton';
-import { LoginBrandMark } from '../components/LoginBrandMark';
-import { LoginHeroBackground } from '../components/LoginHeroBackground';
+import { EmailAuthForm } from '../components/EmailAuthForm';
 import { ForgotPasswordForm } from '../components/ForgotPasswordForm';
+import { LoginAuthButton } from '../components/LoginAuthButton';
 
 type Step = 'welcome' | 'email' | 'forgot';
 
 type Props = {
-  /** Return to guest browsing — shown as top-left back on welcome step. */
+  /** Return to guest browsing: shown as a back control on the first step. */
   onDismiss?: () => void;
 };
 
-/** Light status icons over the photo, only while this tab is showing (tabs stay mounted). */
+const PIP_HERO = 176;
+const PIP_STEP = 76;
+
+/** Dark status icons on the light page, only while this tab is showing (tabs stay mounted). */
 function LoginStatusBar() {
   const focused = useIsFocused();
-  return focused ? <StatusBar barStyle="light-content" /> : null;
+  return focused ? <StatusBar barStyle="dark-content" /> : null;
 }
 
-function LoginBackButton({
-  label,
-  onPress,
-  topInset,
-}: {
-  label: string;
-  onPress: () => void;
-  topInset: number;
-}) {
+function BackControl({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <View style={[styles.backBar, topInset > 0 && { paddingTop: topInset + spacing.sm }]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={onPress}
-        hitSlop={8}
-        style={styles.backButton}
-      >
-        <ArrowLeft size={20} color={colors.white} strokeWidth={2.2} absoluteStrokeWidth />
-        <Text style={styles.back}>{label}</Text>
-      </Pressable>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={8}
+      style={styles.back}
+    >
+      <ArrowLeft size={20} color={colors.ink} strokeWidth={2.2} absoluteStrokeWidth />
+      <Text style={styles.backLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function OrDivider() {
+  return (
+    <View style={styles.divider} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.dividerLine} />
+      <Text style={styles.dividerText}>or</Text>
+      <View style={styles.dividerLine} />
     </View>
   );
 }
 
+/**
+ * Sign in: Pip says hello, then Apple, Google or email. No photo behind it, so it
+ * looks like the rest of the app. The email step has what people expect of a
+ * password form (an eye to show it, the keyboard moving on, mistakes named).
+ */
 export function LoginScreen({ onDismiss }: Props) {
   const insets = useSafeAreaInsets();
-  const { signInGoogle, canSignInWithApple, signInApple, signInEmail, createEmailAccount } =
-    useAuthContext();
+  const focused = useIsFocused();
+  const flow = useAuthFlow();
   const passwordReset = usePasswordReset();
 
   const [step, setStep] = useState<Step>('welcome');
-  const [emailInput, setEmailInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [pendingProvider, setPendingProvider] = useState<'google' | 'apple' | null>(null);
+  const [mode, setMode] = useState<AuthMode>('sign_in');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    setPendingProvider('google');
-    setError(null);
-    triggerCardHaptic();
-    trackEvent(AnalyticsEvents.googleSignInStarted);
-    try {
-      await signInGoogle();
-    } catch (e) {
-      if (isAuthError(e) && e.code === 'CANCELLED') {
-        return;
-      }
-      const message = isAuthError(e) ? e.message : 'Google sign-in failed. Try again.';
-      setError(message);
-      trackEvent(AnalyticsEvents.googleSignInFailed, {
-        code: isAuthError(e) ? e.code : 'unknown',
-      });
-    } finally {
-      setIsLoading(false);
-      setPendingProvider(null);
-    }
+  const goTo = (next: Step, nextMode: AuthMode = mode) => {
+    setStep(next);
+    setMode(nextMode);
+    flow.clearError();
+    passwordReset.clearResetState();
   };
 
-  const handleAppleSignIn = async () => {
-    setIsLoading(true);
-    setPendingProvider('apple');
-    setError(null);
-    triggerCardHaptic();
-    trackEvent(AnalyticsEvents.appleSignInStarted);
-    try {
-      await signInApple();
-    } catch (e) {
-      if (isAuthError(e) && e.code === 'CANCELLED') {
-        return;
-      }
-      setError(isAuthError(e) ? e.message : 'Apple sign-in failed. Try again.');
-      trackEvent(AnalyticsEvents.appleSignInFailed, {
-        code: isAuthError(e) ? e.code : 'unknown',
-      });
-    } finally {
-      setIsLoading(false);
-      setPendingProvider(null);
-    }
+  const goBack = () => {
+    if (step === 'forgot') goTo('email', 'sign_in');
+    else goTo('welcome', 'sign_in');
   };
 
-  const handleEmailSubmit = async () => {
-    const email = normalizeEmail(emailInput);
-    if (!isValidEmail(email)) {
-      setError('Enter a valid email address.');
-      return;
-    }
-    if (!isValidPassword(passwordInput)) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
-      return;
-    }
+  // The phone's own back button steps back through this flow instead of leaving it.
+  useEffect(() => {
+    if (!focused || step === 'welcome') return undefined;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (step === 'forgot') goTo('email', 'sign_in');
+      else goTo('welcome', 'sign_in');
+      return true;
+    });
+    return () => subscription.remove();
+    // `goTo` only reads state through setters, so the step is the only thing that matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focused, step]);
 
-    setIsLoading(true);
-    setError(null);
-    triggerCardHaptic();
-    trackEvent(AnalyticsEvents.emailSignInStarted, { mode: isSignUp ? 'sign_up' : 'sign_in' });
+  const isSignUp = mode === 'sign_up';
+  const topPad = insets.top + spacing.sm;
 
-    try {
-      if (isSignUp) {
-        await createEmailAccount(email, passwordInput);
-      } else {
-        await signInEmail(email, passwordInput);
-      }
-    } catch (e) {
-      setError(isAuthError(e) ? e.message : 'Sign-in failed. Try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (step === 'forgot') {
-    return (
-      <View style={styles.root}>
-        <LoginStatusBar />
-        <LoginHeroBackground framing="sky" />
-        <View style={[styles.backOverlay, { paddingTop: insets.top + spacing.sm }]}>
-          <LoginBackButton
-            label="Back"
-            topInset={0}
-            onPress={() => {
-              setStep('email');
-              setIsSignUp(false);
-              passwordReset.clearResetState();
-            }}
-          />
-        </View>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  return (
+    <View style={styles.root}>
+      <LoginStatusBar />
+      <AuthBackdrop />
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingTop: topPad, paddingBottom: insets.bottom + spacing.lg }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView
-            contentContainerStyle={[
-              styles.emailContent,
-              {
-                paddingTop: insets.top + spacing['2xl'] + spacing.md,
-                paddingBottom: insets.bottom + spacing.xl,
-              },
-            ]}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text style={styles.emailTitle}>Reset password</Text>
-            <Text style={styles.emailBody}>
-              Enter the email for your account. We will send a link to choose a new password.
-            </Text>
+          {step === 'welcome' ? (
+            <>
+              {onDismiss ? <BackControl label="Back" onPress={onDismiss} /> : <View style={styles.backSpacer} />}
 
-            <View style={styles.formPanel}>
+              <View style={styles.hero}>
+                <PipFriend spot="loginWelcome" size={PIP_HERO} />
+                <Text style={styles.brand}>Occasio</Text>
+                <Text style={styles.tagline}>Cards they’ll want to open.</Text>
+              </View>
+
+              <View style={styles.actions}>
+                {flow.error ? <AuthErrorBanner message={flow.error} /> : null}
+                {flow.canSignInWithApple ? (
+                  <LoginAuthButton
+                    provider="apple"
+                    label="Continue with Apple"
+                    onPress={() => void flow.continueWithApple()}
+                    loading={flow.pendingProvider === 'apple'}
+                    disabled={flow.isLoading}
+                  />
+                ) : null}
+                <LoginAuthButton
+                  provider="google"
+                  label="Continue with Google"
+                  onPress={() => void flow.continueWithGoogle()}
+                  loading={flow.pendingProvider === 'google'}
+                  disabled={flow.isLoading}
+                />
+                <OrDivider />
+                <LoginAuthButton
+                  provider="email"
+                  label="Continue with email"
+                  onPress={() => goTo('email', 'sign_in')}
+                  disabled={flow.isLoading}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Create an account"
+                  disabled={flow.isLoading}
+                  onPress={() => goTo('email', 'sign_up')}
+                  hitSlop={8}
+                  style={styles.createWrap}
+                >
+                  <Text style={styles.createText}>
+                    New here? <Text style={styles.createLink}>Create an account</Text>
+                  </Text>
+                </Pressable>
+              </View>
+
+              <View style={styles.footer}>
+                <AuthLegalFooter />
+              </View>
+            </>
+          ) : step === 'email' ? (
+            <>
+              <BackControl label="Back" onPress={goBack} />
+              <View style={styles.stepHeader}>
+                <PipFriend
+                  spot={isSignUp ? 'loginSignUp' : 'loginSignIn'}
+                  variant="inline"
+                  size={PIP_STEP}
+                />
+                <Text style={styles.title}>{isSignUp ? 'Create your account' : 'Sign in with email'}</Text>
+                <Text style={styles.body}>
+                  {isSignUp
+                    ? 'Your Vault and History stay with you on every device.'
+                    : 'Use the email and password you signed up with.'}
+                </Text>
+              </View>
+              <EmailAuthForm
+                mode={mode}
+                email={email}
+                onEmailChange={(value) => {
+                  setEmail(value);
+                  flow.clearError();
+                }}
+                password={password}
+                onPasswordChange={(value) => {
+                  setPassword(value);
+                  flow.clearError();
+                }}
+                isLoading={flow.isLoading}
+                formError={flow.error}
+                onSubmit={() => void flow.submitEmail(mode, email, password)}
+                onForgotPassword={() => goTo('forgot', 'sign_in')}
+                onSwitchMode={() => goTo('email', isSignUp ? 'sign_in' : 'sign_up')}
+              />
+              <View style={styles.footer}>
+                <AuthLegalFooter />
+              </View>
+            </>
+          ) : (
+            <>
+              <BackControl label="Back" onPress={goBack} />
+              <View style={styles.stepHeader}>
+                <PipFriend spot="loginForgot" variant="inline" size={PIP_STEP} />
+                <Text style={styles.title}>Reset your password</Text>
+                <Text style={styles.body}>
+                  Enter the email for your account. We will send a link to choose a new password.
+                </Text>
+              </View>
               <ForgotPasswordForm
-                tone="onDark"
-                emailInput={emailInput}
-                onEmailChange={setEmailInput}
+                emailInput={email}
+                onEmailChange={setEmail}
                 resetSent={passwordReset.resetSent}
                 successCopy={passwordReset.successCopy}
                 error={passwordReset.error}
                 isLoading={passwordReset.isLoading}
                 canResend={passwordReset.canResend}
                 resendLabel={passwordReset.resendLabel}
-                onSend={() => void passwordReset.sendReset(emailInput)}
-                onResend={() => void passwordReset.sendReset(emailInput)}
-                onBackToSignIn={() => {
-                  setStep('email');
-                  setIsSignUp(false);
-                  passwordReset.clearResetState();
-                }}
+                onSend={() => void passwordReset.sendReset(email)}
+                onResend={() => void passwordReset.sendReset(email)}
+                onBackToSignIn={() => goTo('email', 'sign_in')}
                 onUseDifferentEmail={passwordReset.clearResetState}
               />
-            </View>
-
-            <AuthLegalFooter onDark />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
-    );
-  }
-
-  if (step === 'email') {
-    return (
-      <View style={styles.root}>
-        <LoginStatusBar />
-        <LoginHeroBackground framing="sky" />
-        <View style={[styles.backOverlay, { paddingTop: insets.top + spacing.sm }]}>
-          <LoginBackButton
-            label="Back"
-            topInset={0}
-            onPress={() => {
-              setStep('welcome');
-              setError(null);
-              passwordReset.clearResetState();
-            }}
-          />
-        </View>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <ScrollView
-            contentContainerStyle={[
-              styles.emailContent,
-              {
-                paddingTop: insets.top + spacing['2xl'] + spacing.md,
-                paddingBottom: insets.bottom + spacing.xl,
-              },
-            ]}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text style={styles.emailTitle}>
-              {isSignUp ? 'Create your account' : 'Continue with email'}
-            </Text>
-            <Text style={styles.emailBody}>
-              {isSignUp
-                ? 'Choose an email and password. You can create and share cards either way.'
-                : 'Sign in with your email and password, or create a new account below.'}
-            </Text>
-
-            <View style={styles.formPanel}>
-              <View style={styles.form}>
-              <Field label="Email" tone="onDark">
-                <TextInput
-                  value={emailInput}
-                  onChangeText={setEmailInput}
-                  placeholder="you@example.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  style={styles.input}
-                />
-              </Field>
-              <Field
-                label="Password"
-                hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
-                tone="onDark"
-              >
-                <TextInput
-                  value={passwordInput}
-                  onChangeText={setPasswordInput}
-                  placeholder="Your password"
-                  secureTextEntry
-                  autoComplete={isSignUp ? 'new-password' : 'password'}
-                  style={styles.input}
-                />
-              </Field>
-              {!isSignUp ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Forgot password"
-                  onPress={() => {
-                    setStep('forgot');
-                    setError(null);
-                    passwordReset.clearResetState();
-                  }}
-                  hitSlop={8}
-                  style={styles.forgotLinkWrap}
-                >
-                  <Text style={styles.forgotLink}>Forgot password?</Text>
-                </Pressable>
-              ) : null}
-              {error ? <Text style={styles.error}>{error}</Text> : null}
-              <Button
-                label={isSignUp ? 'Create account' : 'Sign in'}
-                onPress={handleEmailSubmit}
-                loading={isLoading}
-                disabled={isLoading}
-              />
-              <Pressable
-                accessibilityRole="button"
-                disabled={isLoading}
-                onPress={() => {
-                  setIsSignUp((value) => !value);
-                  setError(null);
-                }}
-                hitSlop={8}
-                style={styles.switchModeWrap}
-              >
-                <Text style={styles.switchMode}>
-                  {isSignUp ? 'Already have an account? Sign in' : 'New here? Create account'}
-                </Text>
-              </Pressable>
+              <View style={styles.footer}>
+                <AuthLegalFooter />
               </View>
-            </View>
-
-            <AuthLegalFooter onDark />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.root}>
-      <LoginStatusBar />
-      <LoginHeroBackground />
-
-      <View
-        style={[
-          styles.content,
-          {
-            paddingTop: insets.top + spacing.md,
-            paddingBottom: insets.bottom + spacing.lg,
-          },
-        ]}
-      >
-        {onDismiss ? (
-          <LoginBackButton
-            label="Back"
-            topInset={0}
-            onPress={onDismiss}
-          />
-        ) : null}
-
-        <View style={styles.main}>
-          <View style={styles.brandBlock}>
-            <LoginBrandMark />
-            <Text style={styles.brandName}>Occasio</Text>
-            <Text style={styles.tagline}>
-              Celebrate every moment.{'\n'}With the people who matter most.
-            </Text>
-          </View>
-
-          <View style={styles.actions}>
-            {error ? <Text style={styles.errorCentered}>{error}</Text> : null}
-            {canSignInWithApple ? (
-              <LoginAuthButton
-                provider="apple"
-                surface="dark"
-                label="Continue with Apple"
-                onPress={handleAppleSignIn}
-                loading={pendingProvider === 'apple'}
-                disabled={isLoading}
-              />
-            ) : null}
-            <LoginAuthButton
-              provider="google"
-              surface="dark"
-              label="Continue with Google"
-              onPress={handleGoogleSignIn}
-              loading={pendingProvider === 'google'}
-              disabled={isLoading}
-            />
-            <LoginAuthButton
-              provider="email"
-              surface="dark"
-              label="Continue with email"
-              onPress={() => {
-                setIsSignUp(false);
-                setStep('email');
-                setError(null);
-              }}
-              disabled={isLoading}
-            />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Create account"
-              disabled={isLoading}
-              onPress={() => {
-                setIsSignUp(true);
-                setStep('email');
-                setError(null);
-              }}
-              hitSlop={8}
-              style={styles.createAccountWrap}
-            >
-              <Text style={styles.createAccount}>New here? Create an account</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <AuthLegalFooter onDark />
-        </View>
-      </View>
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -424,146 +248,103 @@ export function LoginScreen({ onDismiss }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: colors.bg,
   },
   flex: {
     flex: 1,
   },
   content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-  main: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    gap: spacing.xl,
-    paddingBottom: spacing.sm,
-  },
-  brandBlock: {
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  brandName: {
-    fontSize: typography.size2xl,
-    lineHeight: typography.size2xl * 1.08,
-    fontWeight: typography.weightSemibold,
-    color: colors.white,
-    letterSpacing: -0.5,
-  },
-  tagline: {
-    marginTop: spacing.xs,
-    fontSize: typography.sizeMd,
-    lineHeight: typography.sizeMd * 1.5,
-    color: onPhoto.text,
-    textAlign: 'center',
-    maxWidth: 320,
-  },
-  actions: {
-    gap: spacing.md,
-    width: '100%',
-    maxWidth: 360,
-    alignSelf: 'center',
-  },
-  createAccountWrap: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  createAccount: {
-    fontSize: typography.sizeMd,
-    fontWeight: typography.weightSemibold,
-    color: onPhoto.text,
-    textDecorationLine: 'underline',
-  },
-  footer: {
-    paddingTop: spacing.md,
-  },
-  switchModeWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  switchMode: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: onPhoto.text,
-    textDecorationLine: 'underline',
-  },
-  errorCentered: {
-    fontSize: typography.sizeSm,
-    color: onPhoto.error,
-    textAlign: 'center',
-  },
-  emailContent: {
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
-  backBar: {
-    alignSelf: 'flex-start',
-    zIndex: 2,
-  },
-  backOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 2,
-    paddingHorizontal: spacing.lg,
-  },
-  backButton: {
+  back: {
     alignSelf: 'flex-start',
     minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
   },
-  back: {
+  backSpacer: {
+    height: spacing.sm,
+  },
+  backLabel: {
     fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
-    color: colors.white,
+    color: colors.ink,
   },
-  emailTitle: {
-    fontSize: typography.sizeXl,
-    fontWeight: typography.weightSemibold,
-    color: colors.white,
-    letterSpacing: -0.3,
+  hero: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    // Room above Pip for the line he says when tapped.
+    paddingTop: spacing.xl,
   },
-  emailBody: {
-    fontSize: typography.sizeSm,
-    lineHeight: typography.sizeSm * 1.45,
-    color: onPhoto.text,
-  },
-  formPanel: {
+  brand: {
     marginTop: spacing.sm,
-    padding: spacing.lg,
-    borderRadius: radius.lg,
-    backgroundColor: onPhoto.panel,
-    borderWidth: 1,
-    borderColor: onPhoto.hairline,
+    fontSize: typography.size2xl,
+    lineHeight: typography.size2xl * 1.1,
+    fontWeight: typography.weightSemibold,
+    color: colors.ink,
+    letterSpacing: -0.6,
   },
-  form: {
+  tagline: {
+    fontSize: typography.sizeMd,
+    lineHeight: typography.sizeMd * 1.45,
+    color: colors.inkSoft,
+    textAlign: 'center',
+  },
+  actions: {
+    width: '100%',
+    maxWidth: 380,
+    alignSelf: 'center',
     gap: spacing.md,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: typography.sizeMd,
-    color: colors.ink,
-    backgroundColor: colors.surface,
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
-  error: {
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
     fontSize: typography.sizeSm,
-    color: onPhoto.error,
+    color: colors.muted,
   },
-  forgotLinkWrap: {
-    alignSelf: 'flex-end',
-    marginTop: -spacing.xs,
+  createWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
-  forgotLink: {
+  createText: {
     fontSize: typography.sizeSm,
+    color: colors.inkSoft,
+  },
+  createLink: {
     fontWeight: typography.weightSemibold,
-    color: colors.accentSoft,
+    color: colors.accentHover,
+  },
+  stepHeader: {
+    gap: spacing.sm,
+  },
+  title: {
+    fontSize: typography.sizeXl,
+    lineHeight: typography.sizeXl * 1.15,
+    fontWeight: typography.weightSemibold,
+    color: colors.ink,
+    letterSpacing: -0.4,
+  },
+  body: {
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.5,
+    color: colors.inkSoft,
+  },
+  footer: {
+    marginTop: 'auto',
+    paddingTop: spacing.md,
   },
 });

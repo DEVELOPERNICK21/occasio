@@ -1,11 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { CircleCheck, Mail } from 'lucide-react-native';
 import { Button } from '../../../../shared/ui/Button';
-import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
-import { TextInput } from '../../../../shared/ui/TextInput';
-import { colors, onPhoto, radius, spacing, typography } from '../../../../shared/theme/tokens';
-
-type Tone = 'default' | 'onDark';
+import { TextField } from '../../../../shared/ui/TextField';
+import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = {
   emailInput: string;
@@ -20,7 +18,6 @@ type Props = {
   onResend: () => void;
   onBackToSignIn: () => void;
   onUseDifferentEmail?: () => void;
-  tone?: Tone;
 };
 
 export function ForgotPasswordForm({
@@ -36,27 +33,34 @@ export function ForgotPasswordForm({
   onResend,
   onBackToSignIn,
   onUseDifferentEmail,
-  tone = 'default',
 }: Props) {
-  const onDark = tone === 'onDark';
-
   return (
     <View style={styles.form}>
-      <Field label="Email" tone={tone}>
-        <TextInput
-          value={emailInput}
-          onChangeText={onEmailChange}
-          placeholder="you@example.com"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          style={styles.input}
-          editable={!resetSent}
-        />
-      </Field>
+      <TextField
+        label="Email"
+        value={emailInput}
+        onChangeText={onEmailChange}
+        error={resetSent ? null : error}
+        leftIcon={Mail}
+        placeholder="you@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="send"
+        onSubmitEditing={resetSent ? undefined : onSend}
+        editable={!resetSent && !isLoading}
+        clearable
+      />
 
-      {resetSent ? <Text style={[styles.success, onDark && styles.successOnDark]}>{successCopy}</Text> : null}
-      {error ? <Text style={[styles.error, onDark && styles.errorOnDark]}>{error}</Text> : null}
+      {resetSent ? (
+        <View style={styles.success} accessibilityLiveRegion="polite">
+          <CircleCheck size={20} color={colors.success} strokeWidth={2.2} absoluteStrokeWidth />
+          <Text style={styles.successText}>{successCopy}</Text>
+        </View>
+      ) : null}
+      {resetSent && error ? <Text style={styles.error}>{error}</Text> : null}
 
       {resetSent ? (
         <>
@@ -74,7 +78,7 @@ export function ForgotPasswordForm({
               hitSlop={8}
               style={styles.linkWrap}
             >
-              <Text style={[styles.link, onDark && styles.linkOnDark]}>Use a different email</Text>
+              <Text style={styles.link}>Use a different email</Text>
             </Pressable>
           ) : null}
           <Button label="Back to sign in" onPress={onBackToSignIn} />
@@ -95,40 +99,32 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.md,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: typography.sizeMd,
-    color: colors.ink,
-    backgroundColor: colors.surface,
-  },
   success: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.sageSoft,
+  },
+  successText: {
+    flex: 1,
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.45,
     color: colors.success,
-  },
-  successOnDark: {
-    color: onPhoto.success,
   },
   error: {
     fontSize: typography.sizeSm,
     color: colors.error,
   },
-  errorOnDark: {
-    color: onPhoto.error,
-  },
   linkWrap: {
     alignSelf: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
   },
   link: {
     fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    color: colors.accent,
-  },
-  linkOnDark: {
-    color: colors.accentSoft,
+    color: colors.accentHover,
   },
 });

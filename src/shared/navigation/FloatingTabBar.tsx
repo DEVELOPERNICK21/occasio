@@ -2,16 +2,16 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
-  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { triggerTabHaptic } from '../platform/haptics';
+import { useReduceMotion } from '../platform/useReduceMotion';
 import { Text } from '../ui/Text';
 import {
   AccountTabIcon,
@@ -20,10 +20,9 @@ import {
   TAB_ICON_INACTIVE,
   VaultTabIcon,
 } from '../ui/icons/TabIcons';
-import { colors, shadow, spacing, typography } from '../theme/tokens';
+import { colors, radius, shadow, typography } from '../theme/tokens';
 import { FLOATING_TAB_BAR_HEIGHT, TAB_BAR_LAYOUT } from './tabBarConstants';
-
-const AnimatedPath = Animated.createAnimatedComponent(Path);
+import { pillSlot, tabSlot } from './tabBarGeometry';
 
 /** Height of the soft fade where scrolling content meets the tab bar zone. */
 const CONTENT_FADE_HEIGHT = 36;
@@ -50,194 +49,136 @@ function ContentFade() {
 
 const {
   barHeight: BAR_HEIGHT,
-  bubbleRise: BUBBLE_RISE,
-  bubbleBarGap: BUBBLE_BAR_GAP,
   bottomGap: BAR_BOTTOM_GAP,
-  bubbleSize: BUBBLE_SIZE,
   horizontalMargin: BAR_HORIZONTAL_MARGIN,
+  trackPadding: TRACK_PADDING,
+  pillHeight: PILL_HEIGHT,
   iconSize: ICON_SIZE,
-  notchDepth: NOTCH_DEPTH,
-  notchHalfWidth: NOTCH_HALF_WIDTH,
-  notchShoulderEase: NOTCH_SHOULDER_EASE,
-  barCornerRadius: BAR_CORNER_RADIUS,
+  pillPadding: PILL_PADDING,
+  iconNameGap: ICON_NAME_GAP,
 } = TAB_BAR_LAYOUT;
 
 type TabRouteName = 'CreateTab' | 'VaultTab' | 'HistoryTab' | 'AccountTab';
 
-const TAB_CONFIG: Record<
-  TabRouteName,
-  { label: string; Icon: typeof CreateTabIcon }
-> = {
+const TAB_CONFIG: Record<TabRouteName, { label: string; Icon: typeof CreateTabIcon }> = {
   CreateTab: { label: 'Create', Icon: CreateTabIcon },
   VaultTab: { label: 'Vault', Icon: VaultTabIcon },
   HistoryTab: { label: 'History', Icon: HistoryTabIcon },
   AccountTab: { label: 'Account', Icon: AccountTabIcon },
 };
 
-const SPRING = {
-  damping: 19,
-  stiffness: 220,
-  mass: 0.8,
-};
+const SPRING = { damping: 17, stiffness: 230, mass: 0.8 };
+const PRESS_SPRING = { damping: 14, stiffness: 420, mass: 0.6 };
+/** The icon is this far down the bar's height so it sits level with the name. */
+const ICON_TOP = (BAR_HEIGHT - 2 - ICON_SIZE) / 2;
 
-const PRESS_SPRING = {
-  damping: 14,
-  stiffness: 420,
-  mass: 0.6,
-};
-
-/** Smooth U-notch — cubic shoulders; shape drawn entirely in SVG (no View borderRadius). */
-function buildTabBarPath(width: number, height: number, centerX: number): string {
-  'worklet';
-  const corner = BAR_CORNER_RADIUS;
-  const edgePad = 4;
-  const idealHalfSpan = NOTCH_HALF_WIDTH + NOTCH_SHOULDER_EASE;
-  const depth = NOTCH_DEPTH;
-
-  const maxLeft = centerX - corner - edgePad;
-  const maxRight = width - corner - edgePad - centerX;
-  let halfSpan = Math.min(idealHalfSpan, maxLeft, maxRight);
-  halfSpan = Math.max(halfSpan, 14);
-
-  let leftShoulder = centerX - halfSpan;
-  let rightShoulder = centerX + halfSpan;
-
-  if (leftShoulder < corner + 2) {
-    halfSpan = Math.min(maxRight, centerX - (corner + 2));
-    halfSpan = Math.max(halfSpan, 14);
-    leftShoulder = centerX - halfSpan;
-    rightShoulder = centerX + halfSpan;
-  }
-
-  if (rightShoulder > width - corner - 2) {
-    halfSpan = Math.min(centerX - (corner + 2), width - corner - 2 - centerX);
-    halfSpan = Math.max(halfSpan, 14);
-    leftShoulder = centerX - halfSpan;
-    rightShoulder = centerX + halfSpan;
-  }
-
-  const span = rightShoulder - leftShoulder;
-  const shoulderCp = span * 0.24;
-  const centerCp = span * 0.2;
-
-  const leftCp1X = leftShoulder + shoulderCp;
-  const leftCp2X = centerX - centerCp;
-  const rightCp1X = centerX + centerCp;
-  const rightCp2X = rightShoulder - shoulderCp;
-
-  return [
-    `M ${corner} 0`,
-    `H ${leftShoulder}`,
-    `C ${leftCp1X} 0 ${leftCp2X} ${depth} ${centerX} ${depth}`,
-    `C ${rightCp1X} ${depth} ${rightCp2X} 0 ${rightShoulder} 0`,
-    `H ${width - corner}`,
-    `Q ${width} 0 ${width} ${corner}`,
-    `V ${height - corner}`,
-    `Q ${width} ${height} ${width - corner} ${height}`,
-    `H ${corner}`,
-    `Q 0 ${height} 0 ${height - corner}`,
-    `V ${corner}`,
-    `Q 0 0 ${corner} 0`,
-    'Z',
-  ].join(' ');
-}
-
-type BubbleIconLayerProps = {
+type TabItemProps = {
   index: number;
-  activeIndex: number;
-  Icon: typeof CreateTabIcon;
-};
-
-function BubbleIconLayer({ index, activeIndex, Icon }: BubbleIconLayerProps) {
-  const opacity = useSharedValue(activeIndex === index ? 1 : 0);
-  const scale = useSharedValue(activeIndex === index ? 1 : 0.86);
-
-  useEffect(() => {
-    const active = activeIndex === index;
-    opacity.value = withTiming(active ? 1 : 0, { duration: 200 });
-    scale.value = withSpring(active ? 1 : 0.86, SPRING);
-  }, [activeIndex, index, opacity, scale]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ scale: scale.value }],
-  }));
-
-  return (
-    <Animated.View style={[styles.bubbleIconLayer, style]} pointerEvents="none">
-      <Icon size={ICON_SIZE} color={colors.white} active />
-    </Animated.View>
-  );
-}
-
-type TabBarLabelProps = {
-  focused: boolean;
-  label: string;
-};
-
-/** Full-strength colour (never dimmed) so inactive labels keep 4.5:1 contrast. */
-function TabBarLabel({ focused, label }: TabBarLabelProps) {
-  return (
-    <Text
-      numberOfLines={1}
-      style={[styles.label, focused ? styles.labelActive : styles.labelInactive]}
-    >
-      {label}
-    </Text>
-  );
-}
-
-type TabPressableProps = {
+  count: number;
+  pos: SharedValue<number>;
+  inner: SharedValue<number>;
   focused: boolean;
   label: string;
   Icon: typeof CreateTabIcon;
+  badge?: number;
+  accessibilityLabel: string;
   onPress: () => void;
   onLongPress: () => void;
 };
 
-function TabPressable({
+/**
+ * One tab. Its width, its icon and the fade of its name all come from where the
+ * pill is (`pos`), so the tab opens up as the pill arrives and closes as it leaves.
+ */
+function TabItem({
+  index,
+  count,
+  pos,
+  inner,
   focused,
   label,
   Icon,
+  badge,
+  accessibilityLabel,
   onPress,
   onLongPress,
-}: TabPressableProps) {
-  const scale = useSharedValue(1);
+}: TabItemProps) {
+  const press = useSharedValue(1);
+  const pop = useSharedValue(focused ? 1 : 0.75);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+  useEffect(() => {
+    pop.value = focused ? withSpring(1, SPRING) : 0.75;
+  }, [focused, pop]);
+
+  const slotStyle = useAnimatedStyle(() => {
+    if (inner.value <= 0) return { opacity: 0 };
+    const slot = tabSlot(pos.value, index, inner.value, count);
+    return { opacity: 1, left: slot.left, width: slot.width, transform: [{ scale: press.value }] };
+  });
+  // The icon rests in the middle of a narrow tab and moves to the pill's left edge as it widens.
+  const iconStyle = useAnimatedStyle(() => {
+    if (inner.value <= 0) return {};
+    const slot = tabSlot(pos.value, index, inner.value, count);
+    const resting = (slot.width - ICON_SIZE) / 2;
+    return { left: resting + (PILL_PADDING - resting) * slot.activeness };
+  });
+  const dimStyle = useAnimatedStyle(() => ({
+    opacity: inner.value <= 0 ? 1 : 1 - tabSlot(pos.value, index, inner.value, count).activeness,
   }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.88, PRESS_SPRING);
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, SPRING);
-  };
+  const litStyle = useAnimatedStyle(() => ({
+    opacity: inner.value <= 0 ? 0 : tabSlot(pos.value, index, inner.value, count).activeness,
+    transform: [{ scale: pop.value }],
+  }));
+  // The name fades in only once the pill is mostly there, so it never squeezes into a narrow tab.
+  const nameStyle = useAnimatedStyle(() => {
+    const activeness = inner.value <= 0 ? 0 : tabSlot(pos.value, index, inner.value, count).activeness;
+    return { opacity: Math.max(0, (activeness - 0.55) / 0.45) };
+  });
 
   return (
-    <Pressable
-      accessibilityRole="tab"
-      accessibilityState={{ selected: focused }}
-      accessibilityLabel={label}
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onLongPress={onLongPress}
-      android_ripple={{ color: colors.accentSoft, borderless: true }}
-      style={styles.tab}
-    >
-      <Animated.View style={[styles.iconSlot, animatedStyle]}>
-        {!focused ? (
-          <Icon size={ICON_SIZE} color={TAB_ICON_INACTIVE} />
-        ) : (
-          <View style={styles.iconSpacer} />
-        )}
-      </Animated.View>
-      <TabBarLabel focused={focused} label={label} />
-    </Pressable>
+    <Animated.View style={[styles.slot, slotStyle]}>
+      <Pressable
+        accessibilityRole="tab"
+        accessibilityState={{ selected: focused }}
+        accessibilityLabel={accessibilityLabel}
+        onPress={onPress}
+        onPressIn={() => {
+          press.value = withSpring(0.94, PRESS_SPRING);
+        }}
+        onPressOut={() => {
+          press.value = withSpring(1, SPRING);
+        }}
+        onLongPress={onLongPress}
+        android_ripple={{ color: colors.accentSoft }}
+        style={StyleSheet.absoluteFill}
+      >
+        <Animated.View style={[styles.icon, iconStyle]} pointerEvents="none">
+          <Animated.View style={[styles.iconLayer, dimStyle]}>
+            <Icon size={ICON_SIZE} color={TAB_ICON_INACTIVE} />
+          </Animated.View>
+          <Animated.View style={[styles.iconLayer, litStyle]}>
+            <Icon size={ICON_SIZE} color={colors.white} active />
+          </Animated.View>
+          {badge ? (
+            <Animated.View style={[styles.badge, dimStyle]}>
+              <Text style={styles.badgeText}>{badge > 9 ? '9+' : String(badge)}</Text>
+            </Animated.View>
+          ) : null}
+        </Animated.View>
+        <Animated.View style={[styles.nameWrap, nameStyle]} pointerEvents="none">
+          <Text numberOfLines={1} style={styles.name}>
+            {label}
+          </Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
+}
+
+/** What a screen reader says for a tab, with the badge spelled out. */
+function tabLabel(label: string, badge?: number): string {
+  if (!badge) return label;
+  return `${label}, ${badge} coming up this week`;
 }
 
 export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarProps) {
@@ -246,35 +187,22 @@ export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarP
   const isHidden = StyleSheet.flatten(tabBarStyle)?.display === 'none';
 
   const insets = useSafeAreaInsets();
-  const [barWidth, setBarWidth] = useState(0);
-  const barWidthShared = useSharedValue(0);
-  const tabCount = state.routes.length;
-  const tabWidth = barWidth > 0 ? barWidth / tabCount : 0;
-  const centerX = useSharedValue(0);
-  const bubbleScale = useSharedValue(1);
-
-  const pulseBubble = () => {
-    bubbleScale.value = withSequence(
-      withSpring(0.9, PRESS_SPRING),
-      withSpring(1, SPRING),
-    );
-  };
+  const reduceMotion = useReduceMotion();
+  const count = state.routes.length;
+  // Where the pill is, as a number between tab indexes. It starts on the current tab, not sliding in.
+  const pos = useSharedValue(state.index);
+  const inner = useSharedValue(0);
+  const [, setMeasured] = useState(false);
 
   useEffect(() => {
-    if (tabWidth <= 0) return;
-    centerX.value = withSpring(state.index * tabWidth + tabWidth / 2, SPRING);
-  }, [centerX, state.index, tabWidth]);
+    pos.value = reduceMotion ? withTiming(state.index, { duration: 140 }) : withSpring(state.index, SPRING);
+  }, [pos, reduceMotion, state.index]);
 
-  const animatedBarProps = useAnimatedProps(() => ({
-    d: buildTabBarPath(barWidthShared.value, BAR_HEIGHT, centerX.value),
-  }));
-
-  const bubbleStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: centerX.value - BUBBLE_SIZE / 2 },
-      { scale: bubbleScale.value },
-    ],
-  }));
+  const pillStyle = useAnimatedStyle(() => {
+    if (inner.value <= 0) return { opacity: 0 };
+    const pill = pillSlot(pos.value, inner.value, count);
+    return { opacity: 1, left: pill.left, width: pill.width };
+  });
 
   if (isHidden) {
     return null;
@@ -286,79 +214,54 @@ export function FloatingTabBar({ state, navigation, descriptors }: BottomTabBarP
       style={[styles.root, { paddingBottom: insets.bottom + BAR_BOTTOM_GAP }]}
     >
       <ContentFade />
-      <View
-        style={styles.barShell}
-        onLayout={(event) => {
-          const width = event.nativeEvent.layout.width;
-          setBarWidth(width);
-          barWidthShared.value = width;
-          const nextTabWidth = width / tabCount;
-          centerX.value = state.index * nextTabWidth + nextTabWidth / 2;
-        }}
-      >
-        <View style={styles.barShadow} pointerEvents="none">
-          <Svg width={barWidth || 1} height={BAR_HEIGHT}>
-            {barWidth > 0 ? (
-              <AnimatedPath
-                animatedProps={animatedBarProps}
-                fill={colors.surface}
-                stroke={colors.border}
-                strokeWidth={1}
-              />
-            ) : null}
-          </Svg>
-        </View>
+      <View style={styles.bar}>
+        <View
+          style={styles.track}
+          onLayout={(event) => {
+            inner.value = event.nativeEvent.layout.width;
+            setMeasured(true);
+          }}
+        >
+          <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />
+          <View accessibilityRole="tablist" style={StyleSheet.absoluteFill}>
+            {state.routes.map((route, index) => {
+              const focused = state.index === index;
+              const config = TAB_CONFIG[route.name as TabRouteName];
+              const rawBadge = descriptors[route.key]?.options.tabBarBadge;
+              const badge = typeof rawBadge === 'number' && rawBadge > 0 ? rawBadge : undefined;
 
-        <Animated.View style={[styles.bubble, bubbleStyle]} pointerEvents="none">
-          <View style={styles.bubbleRing} />
-          {state.routes.map((route, index) => {
-            const config = TAB_CONFIG[route.name as TabRouteName];
-            return (
-              <BubbleIconLayer
-                key={route.key}
-                index={index}
-                activeIndex={state.index}
-                Icon={config.Icon}
-              />
-            );
-          })}
-        </Animated.View>
+              const onPress = () => {
+                triggerTabHaptic();
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
+              };
 
-        <View accessibilityRole="tablist" style={styles.tabsRow}>
-          {state.routes.map((route, index) => {
-            const focused = state.index === index;
-            const config = TAB_CONFIG[route.name as TabRouteName];
-
-            const onPress = () => {
-              triggerTabHaptic();
-              pulseBubble();
-
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!focused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
-              }
-            };
-
-            return (
-              <TabPressable
-                key={route.key}
-                focused={focused}
-                label={config.label}
-                Icon={config.Icon}
-                onPress={onPress}
-                onLongPress={() => {
-                  navigation.emit({
-                    type: 'tabLongPress',
-                    target: route.key,
-                  });
-                }}
-              />
-            );
-          })}
+              return (
+                <TabItem
+                  key={route.key}
+                  index={index}
+                  count={count}
+                  pos={pos}
+                  inner={inner}
+                  focused={focused}
+                  label={config.label}
+                  Icon={config.Icon}
+                  badge={badge}
+                  accessibilityLabel={tabLabel(config.label, badge)}
+                  onPress={onPress}
+                  onLongPress={() => {
+                    navigation.emit({ type: 'tabLongPress', target: route.key });
+                  }}
+                />
+              );
+            })}
+          </View>
         </View>
       </View>
     </View>
@@ -380,83 +283,81 @@ const styles = StyleSheet.create({
     bottom: FLOATING_TAB_BAR_HEIGHT,
     height: CONTENT_FADE_HEIGHT,
   },
-  barShell: {
-    minHeight: BAR_HEIGHT + BUBBLE_RISE,
-    justifyContent: 'flex-end',
-  },
-  barShadow: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+  bar: {
     height: BAR_HEIGHT,
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: TRACK_PADDING,
     ...shadow.card,
     shadowOpacity: 0.14,
     shadowRadius: 20,
     elevation: 10,
   },
-  bubble: {
+  track: {
+    flex: 1,
+  },
+  pill: {
     position: 'absolute',
-    bottom: BAR_HEIGHT + BUBBLE_BAR_GAP,
-    width: BUBBLE_SIZE,
-    height: BUBBLE_SIZE,
-    borderRadius: BUBBLE_SIZE / 2,
+    top: (BAR_HEIGHT - 2 - PILL_HEIGHT) / 2,
+    height: PILL_HEIGHT,
+    borderRadius: PILL_HEIGHT / 2,
     backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 3,
-    ...shadow.card,
     shadowColor: colors.accent,
     shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
   },
-  bubbleRing: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: BUBBLE_SIZE / 2,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.22)',
+  // Each tab fills the whole bar height, so a tap anywhere on it counts, not just on the icon.
+  slot: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    overflow: 'hidden',
+    borderRadius: radius.full,
   },
-  bubbleIconLayer: {
+  icon: {
+    position: 'absolute',
+    top: ICON_TOP,
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+  },
+  iconLayer: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabsRow: {
-    flexDirection: 'row',
-    height: BAR_HEIGHT,
-    alignItems: 'flex-end',
-    paddingBottom: spacing.sm,
-    zIndex: 4,
-    elevation: 14,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    minHeight: 48,
-    gap: spacing.xs,
-  },
-  iconSlot: {
-    height: 28,
-    alignItems: 'center',
+  nameWrap: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: PILL_PADDING + ICON_SIZE + ICON_NAME_GAP,
     justifyContent: 'center',
   },
-  iconSpacer: {
-    width: 1,
-    height: 1,
-  },
-  label: {
-    fontSize: typography.sizeXs,
-    lineHeight: typography.sizeXs * 1.25,
-  },
-  labelActive: {
-    color: colors.accent,
+  name: {
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
+    color: colors.white,
   },
-  labelInactive: {
-    color: TAB_ICON_INACTIVE,
-    fontWeight: typography.weightMedium,
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: colors.accentHover,
+    borderWidth: 1.5,
+    borderColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 10,
+    lineHeight: 12,
+    fontWeight: typography.weightSemibold,
+    color: colors.white,
   },
 });

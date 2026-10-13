@@ -9,6 +9,8 @@ export type GiftOptions = {
   style: GiftStyle;
   name: string;
   line: string;
+  /** Who the gift is from, printed on the tag. */
+  from?: string;
   reducedMotion: boolean;
   onOpened: () => void;
 };
@@ -230,9 +232,14 @@ export function createGift(canvas: HTMLCanvasElement, opts: GiftOptions): GiftCo
   bow.add(knot);
 
   // Gift tag that rises when opened
-  const tagTex = makeTagTexture(opts.name, opts.line, style.motif2 === '#FFFFFF' ? style.ribbon : style.motif2);
+  const tagTex = makeTagTexture(
+    opts.name,
+    opts.line,
+    style.motif2 === '#FFFFFF' ? style.ribbon : style.motif2,
+    opts.from,
+  );
   const tag = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.7, 1.12),
+    new THREE.PlaneGeometry(2.1, 1.34),
     new THREE.MeshBasicMaterial({ map: tagTex, transparent: true, side: THREE.DoubleSide, toneMapped: false }),
   );
   tag.visible = false;
@@ -356,7 +363,7 @@ export function createGift(canvas: HTMLCanvasElement, opts: GiftOptions): GiftCo
 
         const p = clamp((k - 0.08) / 1.1, 0, 1);
         tag.visible = true;
-        tag.position.y = BODY.h - 0.1 + easeOutBack(p) * 1.15;
+        tag.position.y = BODY.h - 0.1 + easeOutBack(p) * 0.84;
         tag.position.x = 0;
         tag.position.z = 0.4 + p * 0.4;
         tag.scale.setScalar(0.35 + easeOutCubic(p) * 0.65);

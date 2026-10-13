@@ -1,14 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  createShakeDetector,
-  requestShakePermission,
-  shakeSupport,
-  type ShakeSupport,
-} from '@/lib/experience/shake';
+import { useEffect, useRef, useState } from 'react';
+import { createShakeDetector, shakeSupport, type ShakeSupport } from '@/lib/experience/shake';
 
-export type ShakeState = ShakeSupport | 'denied';
+export type ShakeState = ShakeSupport;
 
 function buzz(ms: number): void {
   try {
@@ -19,8 +14,9 @@ function buzz(ms: number): void {
 }
 
 /**
- * Calls `onShake` each time the phone is shaken, while `enabled`. iPhones need
- * `enable()` called from a tap first; everything else is ready straight away.
+ * Calls `onShake` each time the phone is shaken, while `enabled`. It never asks for
+ * a permission (see `shakeSupport`): where shaking needs one, the state is
+ * 'unsupported' and nothing is listened for.
  */
 export function useShake(onShake: () => void, enabled: boolean) {
   const [state, setState] = useState<ShakeState>('unsupported');
@@ -32,12 +28,6 @@ export function useShake(onShake: () => void, enabled: boolean) {
 
   useEffect(() => {
     setState(shakeSupport());
-  }, []);
-
-  const enable = useCallback(async () => {
-    const granted = await requestShakePermission();
-    setState(granted ? 'ready' : 'denied');
-    return granted;
   }, []);
 
   useEffect(() => {
@@ -55,5 +45,5 @@ export function useShake(onShake: () => void, enabled: boolean) {
     return () => window.removeEventListener('devicemotion', onMotion);
   }, [enabled, state]);
 
-  return { state, enable };
+  return { state };
 }

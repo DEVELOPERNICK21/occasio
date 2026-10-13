@@ -184,3 +184,22 @@ export function filterVaultPeople(
     person.personName.toLowerCase().includes(needle),
   );
 }
+
+/** How soon counts as "coming up" for the Vault tab's badge. */
+export const COMING_UP_DAYS = 7;
+
+/**
+ * How many saved people have a birthday or anniversary today or within the next
+ * `withinDays` days. One person counts once, even when both dates are close.
+ */
+export function countComingUp(
+  people: readonly Pick<VaultPerson, 'birthday' | 'anniversary'>[],
+  now = new Date(),
+  withinDays = COMING_UP_DAYS,
+): number {
+  return people.filter((person) =>
+    [person.birthday, person.anniversary].some(
+      (date) => date !== null && date !== undefined && daysUntilPersonDate(date, now) <= withinDays,
+    ),
+  ).length;
+}

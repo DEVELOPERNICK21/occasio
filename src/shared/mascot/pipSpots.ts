@@ -15,6 +15,12 @@ export type PipSpot =
   | 'vaultGate'
   | 'historyGate'
   | 'shareReady'
+  | 'loginWelcome'
+  | 'loginSignIn'
+  | 'loginSignUp'
+  | 'loginForgot'
+  | 'photosPick'
+  | 'photosReplace'
   | 'ageGate'
   | 'cardMissing';
 
@@ -91,6 +97,55 @@ export const PIP_SPOTS: Record<PipSpot, PipSpotConfig> = {
       'It is ready. Send it to {name}.',
       'The link opens in any browser.',
       '{name} does not need the app.',
+    ],
+  },
+  loginWelcome: {
+    mood: 'wink',
+    tapMood: 'joy',
+    lines: [
+      'Hi, I am Pip.',
+      'I keep the dates you care about.',
+      'Sign in and I will remember them.',
+      'You can still make cards without an account.',
+    ],
+  },
+  loginSignIn: {
+    mood: 'hopeful',
+    tapMood: 'joy',
+    lines: ['Welcome back.', 'Your cards and dates are waiting.', 'Take your time.'],
+  },
+  loginSignUp: {
+    mood: 'hopeful',
+    tapMood: 'joy',
+    lines: [
+      'Nice to meet you.',
+      'It takes a few seconds.',
+      'Use the eye to check your password.',
+    ],
+  },
+  loginForgot: {
+    mood: 'hopeful',
+    tapMood: 'wink',
+    lines: ['It happens to everyone.', 'I will send you a link.', 'Check your spam folder too.'],
+  },
+  photosPick: {
+    mood: 'hopeful',
+    tapMood: 'joy',
+    holdsGift: true,
+    lines: [
+      'Pick the ones that feel like them.',
+      'A few good photos beat many.',
+      'Faces look best near the middle.',
+    ],
+  },
+  photosReplace: {
+    mood: 'hopeful',
+    tapMood: 'joy',
+    holdsGift: true,
+    lines: [
+      'Pick one that feels like them.',
+      'You can crop it to fit.',
+      'Faces look best near the middle.',
     ],
   },
   ageGate: {

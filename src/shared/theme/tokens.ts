@@ -79,21 +79,6 @@ export const overlay = {
 } as const;
 
 /**
- * Text and surfaces drawn over a photo (the login hero). They are overlays on
- * artwork, not UI palette colours, so they are not part of design-tokens.json.
- */
-export const onPhoto = {
-  scrim: '#1A1412',
-  text: 'rgba(255, 255, 255, 0.92)',
-  textMuted: 'rgba(255, 255, 255, 0.72)',
-  textFaint: 'rgba(255, 255, 255, 0.62)',
-  hairline: 'rgba(255, 255, 255, 0.18)',
-  panel: 'rgba(26, 20, 18, 0.62)',
-  error: '#FCA5A5',
-  success: '#B8F5D4',
-} as const;
-
-/**
  * Materials the card frames imitate: film stock, notebook paper, grease pencil.
  * Artwork colours rather than UI palette colours, so they are not part of
  * design-tokens.json.

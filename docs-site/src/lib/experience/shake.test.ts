@@ -1,4 +1,5 @@
-import { createShakeDetector, SHAKE_COOLDOWN_MS } from './shake';
+import * as shake from './shake';
+import { createShakeDetector, SHAKE_COOLDOWN_MS, shakeSupport } from './shake';
 
 const still = { x: 0.1, y: 0.2, z: 9.8 };
 const jolt = (n: number) => ({ x: n * 14, y: -n * 11, z: 9.8 + n * 9 });
@@ -59,5 +60,48 @@ describe('createShakeDetector', () => {
     const nudge = { x: 3, y: 3, z: 11 };
     expect(easy(nudge, 16)).toBe(true);
     expect(hard(nudge, 16)).toBe(false);
+  });
+});
+
+describe('shakeSupport', () => {
+  const globals = globalThis as unknown as Record<string, unknown>;
+  const before = { window: globals.window, navigator: globals.navigator };
+
+  function device(options: { motion?: unknown; touchPoints?: number }) {
+    globals.window = { DeviceMotionEvent: options.motion };
+    if (options.motion === undefined) globals.window = {};
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { maxTouchPoints: options.touchPoints ?? 5 },
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    globals.window = before.window;
+    Object.defineProperty(globalThis, 'navigator', { value: before.navigator, configurable: true });
+  });
+
+  it('is ready on a phone that sends motion events without asking, like Android', () => {
+    device({ motion: class DeviceMotionEvent {} });
+    expect(shakeSupport()).toBe('ready');
+  });
+
+  it('never offers shake where it would need a permission prompt, like iPhone', () => {
+    device({ motion: class DeviceMotionEvent { static requestPermission = jest.fn(); } });
+    expect(shakeSupport()).toBe('unsupported');
+  });
+
+  it('is unsupported on a laptop or desktop with no touch screen', () => {
+    device({ motion: class DeviceMotionEvent {}, touchPoints: 0 });
+    expect(shakeSupport()).toBe('unsupported');
+  });
+
+  it('is unsupported where the browser has no motion events at all', () => {
+    device({});
+    expect(shakeSupport()).toBe('unsupported');
+  });
+
+  it('can no longer ask for the iPhone motion permission, so nothing can pop up mid-gift', () => {
+    expect('requestShakePermission' in shake).toBe(false);
   });
 });

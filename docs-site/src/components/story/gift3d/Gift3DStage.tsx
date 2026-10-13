@@ -22,6 +22,8 @@ type Props = {
   theme: MomentTheme;
   name: string;
   line: string;
+  /** Who the gift is from, printed on the tag. */
+  from?: string;
   disabled: boolean;
   ariaLabel: string;
   onTap: (at: { x: number; y: number }) => void;
@@ -48,7 +50,7 @@ function webglAvailable(): boolean {
  * falls back to the flat SVG gift.
  */
 export const Gift3DStage = forwardRef<GiftStageHandle, Props>(function Gift3DStage(
-  { theme, name, line, disabled, ariaLabel, onTap, onOpened, onFail, children },
+  { theme, name, line, from, disabled, ariaLabel, onTap, onOpened, onFail, children },
   ref,
 ) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,7 @@ export const Gift3DStage = forwardRef<GiftStageHandle, Props>(function Gift3DSta
             style: theme.gift,
             name,
             line,
+            from,
             reducedMotion: reduced,
             onOpened: () => cb.current.onOpened(),
           });
@@ -116,7 +119,7 @@ export const Gift3DStage = forwardRef<GiftStageHandle, Props>(function Gift3DSta
       canvas.remove();
       setReady(false);
     };
-  }, [theme.gift, name, line]);
+  }, [theme.gift, name, line, from]);
 
   const down = (e: PointerEvent<HTMLDivElement>) => {
     if (disabled) return;

@@ -46,34 +46,22 @@ export function createShakeDetector(
   };
 }
 
-export type ShakeSupport = 'unsupported' | 'needs-permission' | 'ready';
+export type ShakeSupport = 'unsupported' | 'ready';
 
 type MotionEventConstructor = {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 };
 
 /**
- * What this device can do. iPhones need a tap-triggered permission request
- * before they send motion events; Android sends them freely; a laptop or desktop
- * has no motion sensor worth offering.
+ * Whether shaking works here without asking anything. Android sends motion events
+ * freely. iPhones only send them after a permission prompt, and that prompt would
+ * pop up in the middle of opening the gift, so we never ask: an iPhone opens the gift
+ * with taps. A laptop or desktop has no motion sensor worth offering.
  */
 export function shakeSupport(): ShakeSupport {
   if (typeof window === 'undefined') return 'unsupported';
   if (!('DeviceMotionEvent' in window)) return 'unsupported';
   if (typeof navigator !== 'undefined' && navigator.maxTouchPoints < 1) return 'unsupported';
   const ctor = window.DeviceMotionEvent as unknown as MotionEventConstructor;
-  return typeof ctor.requestPermission === 'function' ? 'needs-permission' : 'ready';
-}
-
-/** Must be called from a tap. Resolves true when motion events are allowed. */
-export async function requestShakePermission(): Promise<boolean> {
-  const ctor = (typeof window !== 'undefined'
-    ? (window.DeviceMotionEvent as unknown as MotionEventConstructor | undefined)
-    : undefined);
-  if (!ctor || typeof ctor.requestPermission !== 'function') return true;
-  try {
-    return (await ctor.requestPermission()) === 'granted';
-  } catch {
-    return false;
-  }
+  return typeof ctor.requestPermission === 'function' ? 'unsupported' : 'ready';
 }

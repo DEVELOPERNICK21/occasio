@@ -40,8 +40,9 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
     candleTitle: (name) => `Blow the candles, ${name}`,
     candleSubLit: 'Make a wish, then tap the cake',
     candleSubOut: 'Wish made — beautifully',
+    // The banner already spells the wish, so the title is the surprise itself.
     giftTitle: (name, open) =>
-      open ? `Happy birthday, ${name}` : `A gift for ${name}`,
+      open ? `Surprise, ${name}` : `A gift for ${name}`,
     giftSub: (open) =>
       open ? 'Something small, from the heart' : 'Tap to unwrap',
     reasonsTitle: 'Reasons you are loved',
@@ -65,7 +66,7 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
   thank_you: {
     balloonsTitle: 'A little thank-you',
     giftTitle: (name, open) =>
-      open ? `Thank you, ${name}` : `For ${name}`,
+      open ? `Because of you, ${name}` : `For ${name}`,
     giftSub: (open) =>
       open ? 'It mattered — truly' : 'Tap to open',
     reasonsTitle: 'Reasons I am grateful',

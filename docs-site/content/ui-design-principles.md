@@ -97,7 +97,8 @@ Build in `src/shared/ui/`. Feature screens **compose** shared components.
 |---|---|---|
 | `Screen` | ✅ | Every full screen (title, subtitle, footer) |
 | `Button` | ✅ | primary / secondary / ghost actions |
-| `Input` | 🔜 | Text fields (replace raw TextInput) |
+| `TextField` | ✅ | Text input for forms: label, icon, focus and error states, clear button, and an eye on passwords. Used by sign-in; new forms should use it instead of `Field` + a raw `TextInput` (Details and Add person still use the older style) |
+| `ActionSheet` | ✅ | A choice or a next step that would otherwise be a stock `Alert` (photo source, a card's menu). Own bottom sheet, optional Pip, Cancel |
 | `Card` | 🔜 | Selectable template tiles, nudge panels |
 | `EmptyState` | ✅ | Zero data and recoverable errors: Pip (`mascot`) or an icon, one line of why, one action (Vault, History) |
 | `GuestGateScreen` | ✅ | A tab that needs sign-in: Pip (`mascot`) or an icon, what it unlocks, one sign-in button, guests still welcome |

@@ -19,6 +19,7 @@ import {
   formatPackSummary,
   getPersonNextOccasion,
   groupVaultPeople,
+  countComingUp,
 } from '../../src/features/vault/domain/vaultOccasion';
 import type { AutoSendPack } from '../../src/features/vault/domain/types';
 
@@ -325,5 +326,39 @@ describe('armed occasions copy', () => {
     expect(formatPackSummary({ ...emptyPack, defaultMessage: 'Hi' }, null)).toBe(
       'Hi · Photos from last card or Create',
     );
+  });
+});
+
+describe('countComingUp', () => {
+  const now = new Date('2026-09-01T10:00:00');
+  const person = (birthday: { month: number; day: number } | null, anniversary: { month: number; day: number } | null = null) => ({
+    birthday,
+    anniversary,
+  });
+
+  it('counts today and the next seven days, not the eighth', () => {
+    expect(countComingUp([person({ month: 9, day: 1 })], now)).toBe(1);
+    expect(countComingUp([person({ month: 9, day: 8 })], now)).toBe(1);
+    expect(countComingUp([person({ month: 9, day: 9 })], now)).toBe(0);
+  });
+
+  it('does not count a date that has just passed as one nearly a year away', () => {
+    expect(countComingUp([person({ month: 8, day: 31 })], now)).toBe(0);
+  });
+
+  it('counts a person once even when both dates are close', () => {
+    expect(countComingUp([person({ month: 9, day: 3 }, { month: 9, day: 4 })], now)).toBe(1);
+  });
+
+  it('looks at the anniversary when there is no birthday, and ignores people with no dates', () => {
+    expect(countComingUp([person(null, { month: 9, day: 5 })], now)).toBe(1);
+    expect(countComingUp([person(null, null)], now)).toBe(0);
+    expect(countComingUp([], now)).toBe(0);
+  });
+
+  it('counts several people separately', () => {
+    expect(
+      countComingUp([person({ month: 9, day: 2 }), person({ month: 9, day: 6 }), person({ month: 12, day: 1 })], now),
+    ).toBe(2);
   });
 });

@@ -67,7 +67,7 @@ You need traffic before tests mean anything; don't test in week 1.
 |---|---|---|---|---|
 | 1 | Play *Store listing experiments* / Apple *Product Page Optimization* | Screenshot **1** (hero) — Pip gate vs. cake scene | The cake is more instantly "birthday" than the mascot | Listing → install CVR |
 | 2 | same | Screenshot **order** — put Vault (3) first vs. third | Utility-minded users (reminders) convert on retention, not play | CVR; check D7 retention doesn't drop |
-| 3 | same | **Icon** — current 3D heart vs. the flat heart-and-envelope (`assets/brand/app-icon-1024.png`) | One of them wins on search-result tap-through | Tap-through (Apple) / CVR (Play) |
+| 3 | same | **Icon** — Pip + date badge (what ships) vs. a heart-led challenger from `docs/store-assets/images/icons/v2/` | One of them wins on search-result tap-through | Tap-through (Apple) / CVR (Play) |
 | 4 | Play only | **Short description** variants | Reminder-led vs. card-led | CVR |
 
 Run one test at a time, ≥ 7 days and a full weekly cycle, and only call a winner at the tool's confidence threshold. Always read **install → first card created** and **D1/D7 retention** next to CVR: a variant that wins installs but loses activation is a loss.

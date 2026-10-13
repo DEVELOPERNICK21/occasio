@@ -1,22 +1,22 @@
 import { Linking, StyleSheet, View } from 'react-native';
 import { env } from '../../../../shared/config/env';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, onPhoto, typography } from '../../../../shared/theme/tokens';
+import { colors, typography } from '../../../../shared/theme/tokens';
 
 const TERMS_URL = `${env.shareBaseUrl}/terms`;
 const PRIVACY_URL = `${env.shareBaseUrl}/privacy`;
 
-export function AuthLegalFooter({ onDark = false }: { onDark?: boolean }) {
+export function AuthLegalFooter() {
   const openUrl = (url: string) => {
     void Linking.openURL(url);
   };
 
   return (
     <View style={styles.root}>
-      <Text style={[styles.copy, onDark && styles.copyOnDark]}>
+      <Text style={styles.copy}>
         By continuing, you agree to our{' '}
         <Text
-          style={[styles.link, onDark && styles.linkOnDark]}
+          style={styles.link}
           onPress={() => openUrl(TERMS_URL)}
           accessibilityRole="link"
         >
@@ -24,7 +24,7 @@ export function AuthLegalFooter({ onDark = false }: { onDark?: boolean }) {
         </Text>{' '}
         and{' '}
         <Text
-          style={[styles.link, onDark && styles.linkOnDark]}
+          style={styles.link}
           onPress={() => openUrl(PRIVACY_URL)}
           accessibilityRole="link"
         >
@@ -50,11 +50,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     color: colors.ink,
     fontWeight: typography.weightMedium,
-  },
-  copyOnDark: {
-    color: onPhoto.textMuted,
-  },
-  linkOnDark: {
-    color: colors.white,
   },
 });

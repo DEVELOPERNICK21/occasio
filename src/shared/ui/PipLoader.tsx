@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Ellipse } from 'react-native-svg';
 import { busyLine, isCalmBusy, lastBusyStageMs, type BusyKind } from '../mascot/busyLines';
+import { useReduceMotion } from '../platform/useReduceMotion';
 import { colors, spacing, typography } from '../theme/tokens';
 import { Pip } from './Pip';
 import { Text } from './Text';
@@ -58,20 +59,6 @@ function useElapsedMs(stopAtMs: number): number {
     return () => clearInterval(timer);
   }, [stopAtMs]);
   return elapsed;
-}
-
-function useReduceMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (mounted) setReduce(enabled);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-  return reduce;
 }
 
 /**

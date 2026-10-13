@@ -1,7 +1,11 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useMemo } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CreateDraftProvider } from '../../features/create/application/CreateDraftContext';
+import { useAuth } from '../../features/auth/application/useAuth';
 import { AccountScreen } from '../../features/auth/ui/screens/AccountScreen';
+import { useVaultPeople } from '../../features/vault/application/useVaultPeople';
+import { countComingUp } from '../../features/vault/domain/vaultOccasion';
 import { OnboardingHandoff } from '../../features/onboarding/ui/components/OnboardingHandoff';
 import { WidgetHost } from '../../features/widgets/ui/WidgetHost';
 import { CreateNavigator } from './CreateNavigator';
@@ -18,6 +22,11 @@ function renderFloatingTabBar(props: BottomTabBarProps) {
 }
 
 export function MainTabNavigator() {
+  const { isSignedIn } = useAuth();
+  const { people } = useVaultPeople(isSignedIn);
+  // A small badge on Vault while someone's day is within the week.
+  const comingUp = useMemo(() => countComingUp(people), [people]);
+
   return (
     <CreateDraftProvider>
       <WidgetHost />
@@ -49,7 +58,11 @@ export function MainTabNavigator() {
             },
           })}
         />
-        <Tab.Screen name="VaultTab" component={VaultNavigator} />
+        <Tab.Screen
+          name="VaultTab"
+          component={VaultNavigator}
+          options={{ tabBarBadge: comingUp > 0 ? comingUp : undefined }}
+        />
         <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
         <Tab.Screen name="AccountTab" component={AccountScreen} />
       </Tab.Navigator>

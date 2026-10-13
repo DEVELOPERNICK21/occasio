@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { PIP_SPOTS, pipLine, type PipSpot } from '../mascot/pipSpots';
 import { triggerTabHaptic } from '../platform/haptics';
+import { useReduceMotion } from '../platform/useReduceMotion';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import { Pip } from './Pip';
 import { Text } from './Text';
@@ -32,20 +33,6 @@ const LINE_MS = 3600;
 const PIP_BLINKS = 3;
 const SQUASH_MS = 110;
 const SQUASH_SPRING = { damping: 7, stiffness: 240, mass: 0.7 };
-
-function useReduceMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (mounted) setReduce(enabled);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-  return reduce;
-}
 
 /**
  * Pip as a character rather than a picture: he blinks while he waits, and when

@@ -195,6 +195,7 @@ function StoryStage({ card, slug }: Props) {
           <GiftScene
             templateType={card.templateType}
             recipientName={card.recipientName}
+            fromName={card.fromName}
             onComplete={advance}
           />
         ) : null}

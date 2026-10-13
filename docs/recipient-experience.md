@@ -37,9 +37,25 @@ the cake's side; the cut slice slides out far enough to show both cut faces, and
 ## Opening the gift: tap or shake
 
 Three taps open the gift, and so do three shakes of the phone; they count the same and can be mixed.
-`lib/experience/shake.ts` detects a shake from accelerometer readings (pure and tested). Android needs nothing.
-iPhones only send motion after a permission request that must come from a tap, so the first tap on the gift asks
-for it and an "allow motion" link is shown under the hint. Desktops show the tap-only hint.
+`lib/experience/shake.ts` detects a shake from accelerometer readings (pure and tested). Android sends motion
+events freely, so shake works there with nothing asked.
+
+**The page never asks for a permission.** iPhones only send motion after a prompt, and that prompt popped up in
+the middle of the gift and blocked it, so it was removed: on an iPhone the gift opens by tap (or drag to turn it)
+and the hint says so. `shakeSupport()` reports iPhones as unsupported on purpose; a test holds it there. Do not
+add `DeviceMotionEvent.requestPermission` back.
+
+## What comes out of the gift
+
+When the box opens, the wish springs out as bunting: bold white capitals on coloured flags, a flag at a time
+(`GiftWishBanner`, with the words and layout in `lib/experience/giftWish.ts`: "HAPPY BIRTHDAY", "THANK YOU",
+"CONGRATS", "JUST BECAUSE", "HAPPY ANNIVERSARY"). It is real text laid over the 3D scene, so it stays crisp, large
+and readable, and works the same on the flat fallback gift. Flag colours per moment keep white letters at 3:1 or
+better (tested). Reduce Motion turns the pop and sway into a fade.
+
+The gift tag that rises shows the name big, with "from {sender}" under it (the wish itself when the sender is not
+known). The scene title above becomes a bold, non-repeating line ("Surprise, Maya"), so the wish is only said once
+in words. Screen readers hear the wish from a hidden live region, and the flags are hidden from them.
 
 ## Music under the message and the finale
 

@@ -1,7 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -27,6 +26,8 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenHeaderAction } from '../../../../shared/ui/ScreenHeaderAction';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { CreateNudge, CreateProgress } from '../components/CreateProgress';
+import { PhotoProblemSheet } from '../components/PhotoProblemSheet';
+import { PhotoSourceSheet } from '../components/PhotoSourceSheet';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'AddPhotos'>;
 
@@ -38,7 +39,7 @@ const TILES_PER_ROW = 3;
 
 export function AddPhotosScreen({ navigation, route }: Props) {
   const { draft, setPhotoUris } = useCreateDraftContext();
-  const { pickPhoto, pickPhotos, picking } = usePhotoPicker();
+  const { pickPhoto, pickPhotos, picking, sheet, problemSheet } = usePhotoPicker();
   const [validationError, setValidationError] = useState<string | null>(null);
   const { templates, getById } = useTemplateCatalog();
   const { width } = useWindowDimensions();
@@ -75,15 +76,14 @@ export function AddPhotosScreen({ navigation, route }: Props) {
       }
     }
 
-    if (firstError) {
-      setValidationError(firstError);
-      Alert.alert(
-        added.length > 0 ? 'Some photos not added' : 'Photo not added',
-        firstError,
-      );
-    } else {
-      setValidationError(null);
-    }
+    // The reason shows under the photos (no pop-up), so it stays put while they fix it.
+    setValidationError(
+      firstError
+        ? added.length > 0
+          ? `Some photos were not added. ${firstError}`
+          : firstError
+        : null,
+    );
 
     if (added.length > 0) {
       const next = [...existing, ...added].slice(0, maxPhotos);
@@ -112,7 +112,6 @@ export function AddPhotosScreen({ navigation, route }: Props) {
 
     if (!validation.valid) {
       setValidationError(validation.message);
-      Alert.alert('Photo not added', validation.message);
       return;
     }
 
@@ -228,6 +227,8 @@ export function AddPhotosScreen({ navigation, route }: Props) {
           ? 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Extra photos show in the story deck.'
           : 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Photos upload when you share.'}
       </Text>
+      <PhotoSourceSheet {...sheet} />
+      <PhotoProblemSheet {...problemSheet} />
     </Screen>
   );
 }

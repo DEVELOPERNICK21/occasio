@@ -168,9 +168,14 @@ export function makeGrainTexture(): THREE.CanvasTexture {
 }
 
 /** Hand-written gift tag that rises out of the box. */
-export function makeTagTexture(name: string, line: string, accent: string): THREE.CanvasTexture {
-  const w = 640;
-  const h = 420;
+export function makeTagTexture(
+  name: string,
+  line: string,
+  accent: string,
+  from?: string,
+): THREE.CanvasTexture {
+  const w = 720;
+  const h = 460;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -178,37 +183,58 @@ export function makeTagTexture(name: string, line: string, accent: string): THRE
 
   ctx.fillStyle = '#FFF9EC';
   ctx.beginPath();
-  ctx.roundRect(20, 20, w - 40, h - 40, 26);
+  ctx.roundRect(20, 20, w - 40, h - 40, 30);
   ctx.fill();
   ctx.strokeStyle = accent;
-  ctx.lineWidth = 6;
-  ctx.setLineDash([16, 12]);
+  ctx.lineWidth = 7;
+  ctx.setLineDash([18, 13]);
   ctx.beginPath();
-  ctx.roundRect(40, 40, w - 80, h - 80, 18);
+  ctx.roundRect(42, 42, w - 84, h - 84, 20);
   ctx.stroke();
   ctx.setLineDash([]);
 
+  // The hole the string goes through.
   ctx.fillStyle = '#EDE0C8';
   ctx.beginPath();
-  ctx.arc(w / 2, 62, 13, 0, TAU);
+  ctx.arc(w / 2, 70, 14, 0, TAU);
   ctx.fill();
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#7A6A58';
-  ctx.font = '600 30px system-ui, sans-serif';
-  ctx.fillText('FOR', w / 2, 140);
+  ctx.font = '800 32px system-ui, sans-serif';
+  ctx.letterSpacing = '8px';
+  ctx.fillText('FOR', w / 2 + 4, 148);
+  ctx.letterSpacing = '0px';
 
-  let size = 96;
+  // The name is the biggest thing on the tag; it shrinks only as far as it must.
+  let size = 150;
   ctx.fillStyle = '#2B1B2E';
   do {
-    ctx.font = `italic 700 ${size}px Georgia, serif`;
+    ctx.font = `italic 800 ${size}px Georgia, serif`;
     size -= 4;
-  } while (ctx.measureText(name).width > w - 130 && size > 36);
-  ctx.fillText(name, w / 2, 240);
+  } while (ctx.measureText(name).width > w - 120 && size > 44);
+  ctx.fillText(name, w / 2, 276);
 
+  // A small heart between the name and who it is from.
   ctx.fillStyle = accent;
-  ctx.font = 'italic 500 34px Georgia, serif';
-  ctx.fillText(line, w / 2, 316);
+  ctx.beginPath();
+  ctx.moveTo(w / 2, 330);
+  ctx.bezierCurveTo(w / 2 - 22, 312, w / 2 - 12, 296, w / 2, 308);
+  ctx.bezierCurveTo(w / 2 + 12, 296, w / 2 + 22, 312, w / 2, 330);
+  ctx.fill();
+  ctx.fillRect(w / 2 - 120, 316, 78, 3);
+  ctx.fillRect(w / 2 + 42, 316, 78, 3);
+
+  // Who made it, or, when that is not known, the wish itself in heavy capitals.
+  ctx.fillStyle = accent;
+  if (from) {
+    const shown = from.length > 22 ? `${from.slice(0, 21)}…` : from;
+    ctx.font = 'italic 700 48px Georgia, serif';
+    ctx.fillText(`from ${shown}`, w / 2, 392);
+  } else {
+    ctx.font = '800 44px system-ui, sans-serif';
+    ctx.fillText(line.toUpperCase(), w / 2, 392);
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;

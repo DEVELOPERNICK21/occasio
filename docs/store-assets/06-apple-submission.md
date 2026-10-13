@@ -120,7 +120,7 @@ Written on **8 Oct 2026** after reading your App Store Connect screens, Apple's 
 | Routing App Coverage File | Leave empty | Only for routing apps |
 | App Clip · iMessage App | None | |
 | **Build** | Select the build you uploaded (shows version 1.0 and build number) | Export compliance will not ask again |
-| Included Assets → App Icon | Comes from the build (the 1024×1024 icon in the asset catalog; `images/app-store/app-icon-1024.png` is the same artwork, opaque) | Game Center: leave off |
+| Included Assets → App Icon | Comes from the build (the 1024×1024 icon in the asset catalog; `images/app-store/app-icon-1024.png` is the same artwork). Both are opaque with no alpha channel, which App Store Connect requires; `scripts/generate-app-icons.py` writes them flat, so re-run it rather than exporting by hand | Game Center: leave off |
 
 ### App Review Information
 

@@ -296,6 +296,10 @@ All go in `tools/src/screens/` as `.jpg`, same names, then `node tools/build.mjs
 
 **Recommendation:** ship v1.0 with the icon already in the build (zero risk, no new binary), and run **Concept A as the challenger** (Play Store listing experiments test icons directly; on iOS, Product Page Optimization needs the alternate icon bundled in the app). *Why A:* it is the only concept that says "card" and "love" at 29 px without relying on detail.
 
+**Decision (13 Oct 2026): ship concept C3, "Pip + date badge".** Date Heart was picked, then rebuilt with the mascot in a Duolingo-inspired style: Pip large and front-facing on a flat amber field, chunky shapes with a darker lip underneath, and the calendar-and-heart as a badge on his side. Three layouts of it are in `images/icons/v3/` (C1 holds the date, C2 peeks over the calendar, **C3 hero + badge**); seven more directions are in `images/icons/v2/`. C3 won on small-size legibility: Pip's eyes and hat still read at 29 px.
+
+*Why not the earlier plan (ship the 3D heart, test A):* the shipped 3D icon had an alpha channel (an App Store Connect rejection) and its ring ran into Android's circular mask. Replacing it before v1.0 costs nothing, because no store build has gone out yet. The 3D heart and the Sealed Heart concept stay in this folder as challengers for a later listing experiment.
+
 ## C5. In-app purchases and subscription names
 
 | Store | Product | Display name | Count | Description | Count |

@@ -1,12 +1,18 @@
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Linking } from 'react-native';
 import ImageCropPicker, { type Image } from 'react-native-image-crop-picker';
 import { env } from '../../../shared/config/env';
 import {
   CARD_PHOTO_CROP_HEIGHT,
   CARD_PHOTO_CROP_WIDTH,
 } from '../../../shared/config/media';
+import type { SheetCloseReason } from '../../../shared/ui/ActionSheet';
 import { colors } from '../../../shared/theme/tokens';
+import {
+  canFixInSettings,
+  describePickerError,
+  type PhotoProblem,
+} from '../domain/photoPickerProblem';
 
 type PickSource = 'library' | 'camera';
 
@@ -14,15 +20,6 @@ export type PickedPhoto = {
   uri: string;
   fileSizeBytes?: number | null;
 };
-
-function isPickerCancelled(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    String((error as { code: unknown }).code) === 'E_PICKER_CANCELLED'
-  );
-}
 
 function cropOptions() {
   const compact = env.useBase64Media;
@@ -35,12 +32,19 @@ function cropOptions() {
     compressImageQuality: compact ? 0.45 : 0.8,
     includeBase64: compact,
     forceJpg: true,
+    // The crop screen is a native one, so give it the app's colours: a light bar with
+    // dark icons (and matching status and navigation bars), coral where it is active.
     cropperToolbarTitle: 'Crop photo',
     cropperChooseText: 'Use photo',
     cropperCancelText: 'Cancel',
     cropperActiveWidgetColor: colors.accent,
-    cropperToolbarColor: colors.ink,
-    cropperToolbarWidgetColor: colors.surface,
+    cropperToolbarColor: colors.surface,
+    cropperToolbarWidgetColor: colors.ink,
+    cropperStatusBarLight: true,
+    cropperNavigationBarLight: true,
+    cropperTintColor: colors.accent,
+    cropperChooseColor: colors.accent,
+    cropperCancelColor: colors.muted,
   };
 }
 
@@ -58,7 +62,10 @@ function photoFromCropResult(image: Image): PickedPhoto {
   };
 }
 
-async function pickFromSource(source: PickSource): Promise<PickedPhoto | null> {
+async function pickFromSource(
+  source: PickSource,
+  report: (problem: PhotoProblem) => void,
+): Promise<PickedPhoto | null> {
   const options = cropOptions();
 
   try {
@@ -68,16 +75,17 @@ async function pickFromSource(source: PickSource): Promise<PickedPhoto | null> {
         : await ImageCropPicker.openPicker(options);
     return photoFromCropResult(image);
   } catch (error) {
-    if (isPickerCancelled(error)) return null;
-
-    const message = error instanceof Error ? error.message : 'Something went wrong.';
-    Alert.alert('Could not get photo', message);
+    const problem = describePickerError(error);
+    if (problem) report(problem);
     return null;
   }
 }
 
 /** Multi-select from the library (no crop — the native picker can't crop several at once). */
-async function pickManyFromLibrary(maxFiles: number): Promise<PickedPhoto[]> {
+async function pickManyFromLibrary(
+  maxFiles: number,
+  report: (problem: PhotoProblem) => void,
+): Promise<PickedPhoto[]> {
   const compact = env.useBase64Media;
 
   try {
@@ -93,77 +101,120 @@ async function pickManyFromLibrary(maxFiles: number): Promise<PickedPhoto[]> {
     });
     return images.slice(0, maxFiles).map(photoFromCropResult);
   } catch (error) {
-    if (isPickerCancelled(error)) return [];
-
-    const message = error instanceof Error ? error.message : 'Something went wrong.';
-    Alert.alert('Could not get photos', message);
+    const problem = describePickerError(error);
+    if (problem) report(problem);
     return [];
   }
 }
 
-/** Gallery or camera with fixed 5:4 crop for the card hero. */
+type Ask = { mode: 'one' | 'many'; maxCount: number };
+type Pending = Ask & { resolve: (photos: PickedPhoto[]) => void };
+
+/** What the screen needs to draw the source choice: pass it to `PhotoSourceSheet`. */
+export type PhotoSourceSheetState = {
+  visible: boolean;
+  mode: Ask['mode'];
+  /** How many more photos can be added. */
+  remaining: number;
+  onLibrary: () => void;
+  onCamera: () => void;
+  onClose: (reason: SheetCloseReason) => void;
+};
+
+/** What the screen needs to say something went wrong: pass it to `PhotoProblemSheet`. */
+export type PhotoProblemSheetState = {
+  visible: boolean;
+  title: string;
+  message: string;
+  /** True when a switched-off permission is the cause, so Settings can fix it. */
+  canOpenSettings: boolean;
+  onOpenSettings: () => void;
+  onClose: () => void;
+};
+
+/**
+ * Gallery or camera, with a fixed 5:4 crop for the card hero. Asking where a photo
+ * should come from is our own sheet (see `PhotoSourceSheet`), not the stock dialog;
+ * the gallery and the crop screen after it are Android's and iOS's own.
+ */
 export function usePhotoPicker() {
   const [picking, setPicking] = useState(false);
+  const [ask, setAsk] = useState<(Ask & { open: boolean }) | null>(null);
+  const [problem, setProblem] = useState<PhotoProblem | null>(null);
+  const pending = useRef<Pending | null>(null);
 
-  /** Library allows several photos at once (up to `maxCount`); camera adds one. */
-  const pickPhotos = useCallback(
-    (maxCount: number): Promise<PickedPhoto[]> => {
-      if (picking || maxCount < 1) return Promise.resolve([]);
-
-      return new Promise((resolve) => {
-        Alert.alert('Add photos', 'Choose a source', [
-          {
-            text: 'Photo library',
-            onPress: () => {
-              setPicking(true);
-              pickManyFromLibrary(maxCount)
-                .then(resolve)
-                .finally(() => setPicking(false));
-            },
-          },
-          {
-            text: 'Camera',
-            onPress: () => {
-              setPicking(true);
-              pickFromSource('camera')
-                .then((photo) => resolve(photo ? [photo] : []))
-                .finally(() => setPicking(false));
-            },
-          },
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve([]) },
-        ]);
-      });
-    },
+  const open = useCallback(
+    (mode: Ask['mode'], maxCount: number) =>
+      new Promise<PickedPhoto[]>((resolve) => {
+        if (picking || pending.current || maxCount < 1) {
+          resolve([]);
+          return;
+        }
+        pending.current = { mode, maxCount, resolve };
+        setAsk({ mode, maxCount, open: true });
+      }),
     [picking],
   );
 
-  const pickPhoto = useCallback((): Promise<PickedPhoto | null> => {
-    if (picking) return Promise.resolve(null);
+  const settle = useCallback((photos: PickedPhoto[]) => {
+    const current = pending.current;
+    pending.current = null;
+    current?.resolve(photos);
+  }, []);
 
-    return new Promise((resolve) => {
-      Alert.alert('Add photo', 'Choose a source', [
-        {
-          text: 'Photo library',
-          onPress: () => {
-            setPicking(true);
-            pickFromSource('library')
-              .then(resolve)
-              .finally(() => setPicking(false));
-          },
-        },
-        {
-          text: 'Camera',
-          onPress: () => {
-            setPicking(true);
-            pickFromSource('camera')
-              .then(resolve)
-              .finally(() => setPicking(false));
-          },
-        },
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
-      ]);
-    });
-  }, [picking]);
+  const run = useCallback(
+    async (source: PickSource) => {
+      const current = pending.current;
+      if (!current) return;
+      setPicking(true);
+      try {
+        if (current.mode === 'many' && source === 'library') {
+          settle(await pickManyFromLibrary(current.maxCount, setProblem));
+        } else {
+          const photo = await pickFromSource(source, setProblem);
+          settle(photo ? [photo] : []);
+        }
+      } finally {
+        setPicking(false);
+      }
+    },
+    [settle],
+  );
 
-  return { pickPhoto, pickPhotos, picking };
+  const onClose = useCallback(
+    (reason: SheetCloseReason) => {
+      setAsk((current) => (current ? { ...current, open: false } : current));
+      // A choice keeps the request alive: the picker opens a moment after the sheet is gone.
+      if (reason === 'dismiss') settle([]);
+    },
+    [settle],
+  );
+
+  const sheet: PhotoSourceSheetState = {
+    visible: ask?.open ?? false,
+    mode: ask?.mode ?? 'many',
+    remaining: ask?.maxCount ?? 0,
+    onLibrary: () => void run('library'),
+    onCamera: () => void run('camera'),
+    onClose,
+  };
+
+  const problemSheet: PhotoProblemSheetState = {
+    visible: problem !== null,
+    title: problem?.title ?? '',
+    message: problem?.message ?? '',
+    canOpenSettings: problem ? canFixInSettings(problem) : false,
+    onOpenSettings: () => void Linking.openSettings(),
+    onClose: () => setProblem(null),
+  };
+
+  /** Library allows several photos at once (up to `maxCount`); camera adds one. */
+  const pickPhotos = useCallback((maxCount: number) => open('many', maxCount), [open]);
+
+  const pickPhoto = useCallback(
+    async (): Promise<PickedPhoto | null> => (await open('one', 1))[0] ?? null,
+    [open],
+  );
+
+  return { pickPhoto, pickPhotos, picking, sheet, problemSheet };
 }

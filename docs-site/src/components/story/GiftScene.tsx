@@ -8,12 +8,16 @@ import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapCoach } from '@/components/story/fx/TapCoach';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { useShake, type ShakeState } from '@/components/story/fx/useShake';
+import { GiftWishBanner } from '@/components/story/GiftWishBanner';
 import { playGiftRattle, playGiftUnwrap } from '@/lib/experience/playBalloonPop';
+import { wishText } from '@/lib/experience/giftWish';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
   templateType: string;
   recipientName: string;
+  /** Who made it, printed on the gift tag. */
+  fromName?: string | null;
   onComplete: () => void;
 };
 
@@ -21,40 +25,33 @@ type Phase = 'wrapped' | 'opening' | 'open';
 
 const SHAKES_TO_OPEN = 3;
 
-/** Hint line under the gift: says what works on this device, and offers the iPhone permission. */
-function GiftHint({
-  shakes,
-  shakeState,
-  onEnableShake,
-}: {
-  shakes: number;
-  shakeState: ShakeState;
-  onEnableShake: () => void;
-}) {
-  const canShake = shakeState === 'ready';
+/** Hint line under the gift: says what works on this device. It never asks for a permission. */
+function GiftHint({ shakes, shakeState }: { shakes: number; shakeState: ShakeState }) {
   const label =
     shakes > 0
       ? 'Again!'
-      : canShake
+      : shakeState === 'ready'
         ? 'Tap or shake your phone'
         : 'Tap to shake it · drag to turn it';
 
   return (
-    <>
-      <span className="story-hint-chip">
-        {label}
-        <span className="story-hint-dots" aria-hidden>
-          {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
-            <span key={i} className={i < shakes ? 'is-on' : undefined} />
-          ))}
-        </span>
+    <span className="story-hint-chip">
+      {label}
+      <span className="story-hint-dots" aria-hidden>
+        {Array.from({ length: SHAKES_TO_OPEN }, (_, i) => (
+          <span key={i} className={i < shakes ? 'is-on' : undefined} />
+        ))}
       </span>
-      {shakeState === 'needs-permission' && shakes === 0 ? (
-        <button type="button" className="story-hint-link" onClick={onEnableShake}>
-          Or shake your phone: allow motion
-        </button>
-      ) : null}
-    </>
+    </span>
+  );
+}
+
+/** Said aloud (not shown) when the gift opens, since the flags themselves are hidden from screen readers. */
+function WishAnnouncement({ templateType, show }: { templateType: string; show: boolean }) {
+  return (
+    <span className="sr-only" aria-live="polite">
+      {show ? wishText(templateType) : ''}
+    </span>
   );
 }
 
@@ -160,7 +157,7 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
   }, [phase, shakes, award]);
 
   const remaining = SHAKES_TO_OPEN - shakes;
-  const { state: shakeState, enable: enableShake } = useShake(shake, phase === 'wrapped');
+  const { state: shakeState } = useShake(shake, phase === 'wrapped');
 
   return (
     <section
@@ -169,15 +166,14 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
     >
       <h2 className="story-scene-title">{copy.giftTitle(name, open)}</h2>
       <p className="story-scene-sub">{copy.giftSub(open)}</p>
+      <WishAnnouncement templateType={templateType} show={open} />
 
+      <div className={`story-gift-stage${open ? ' is-open' : ''}`}>
+        {open ? <GiftWishBanner templateType={templateType} /> : null}
       <button
         type="button"
         className={`story-gift-art${phase === 'wrapped' ? ' is-idle' : ''}${open ? ' is-open' : ''}`}
-        onClick={() => {
-          // A tap is the one moment an iPhone allows the motion permission to be asked for.
-          if (shakeState === 'needs-permission') void enableShake();
-          shake();
-        }}
+        onClick={shake}
         disabled={phase !== 'wrapped'}
         aria-label={
           phase === 'wrapped'
@@ -346,11 +342,10 @@ function GiftSceneSvg({ templateType, recipientName, onComplete }: Props) {
         </span>
         <TapCoach active={phase === 'wrapped'} progress={shakes} y="62%" />
       </button>
+      </div>
 
       <div className="story-hint-row" aria-live="polite">
-        {phase === 'wrapped' ? (
-          <GiftHint shakes={shakes} shakeState={shakeState} onEnableShake={() => void enableShake()} />
-        ) : null}
+        {phase === 'wrapped' ? <GiftHint shakes={shakes} shakeState={shakeState} /> : null}
       </div>
 
       <div className="story-cta">
@@ -387,6 +382,7 @@ function tagLineFor(templateType: string): string {
 function GiftScene3D({
   templateType,
   recipientName,
+  fromName,
   onComplete,
   onFail,
 }: Props & { onFail: () => void }) {
@@ -429,7 +425,7 @@ function GiftScene3D({
       y: box ? box.top + box.height * 0.45 : window.innerHeight * 0.45,
     });
   }, [tap]);
-  const { state: shakeState, enable: enableShake } = useShake(shakeOpen, phase === 'wrapped');
+  const { state: shakeState } = useShake(shakeOpen, phase === 'wrapped');
 
   return (
     <section
@@ -439,33 +435,30 @@ function GiftScene3D({
     >
       <h2 className="story-scene-title">{copy.giftTitle(name, open)}</h2>
       <p className="story-scene-sub">{copy.giftSub(open)}</p>
+      <WishAnnouncement templateType={templateType} show={open} />
 
       <Gift3DStage
         ref={stage}
         theme={theme}
         name={name}
         line={tagLineFor(templateType)}
+        from={fromName?.trim() || undefined}
         disabled={phase !== 'wrapped'}
         ariaLabel={
           phase === 'wrapped'
             ? `Shake the gift, ${remaining} more ${remaining === 1 ? 'tap or shake' : 'taps or shakes'} to open`
             : 'Gift unwrapped'
         }
-        onTap={(at) => {
-          // A tap is the one moment an iPhone allows the motion permission to be asked for.
-          if (shakeState === 'needs-permission') void enableShake();
-          tap(at);
-        }}
+        onTap={tap}
         onOpened={() => setPhase('open')}
         onFail={onFail}
       >
         <TapCoach active={phase === 'wrapped'} progress={shakes} y="58%" />
+        {open ? <GiftWishBanner templateType={templateType} /> : null}
       </Gift3DStage>
 
       <div className="story-hint-row" aria-live="polite">
-        {phase === 'wrapped' ? (
-          <GiftHint shakes={shakes} shakeState={shakeState} onEnableShake={() => void enableShake()} />
-        ) : null}
+        {phase === 'wrapped' ? <GiftHint shakes={shakes} shakeState={shakeState} /> : null}
       </div>
 
       <div className="story-cta">
