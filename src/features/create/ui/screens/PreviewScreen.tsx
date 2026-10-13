@@ -20,6 +20,7 @@ import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
+import { Pip } from '../../../../shared/ui/Pip';
 import { PipLoader } from '../../../../shared/ui/PipLoader';
 import { Screen } from '../../../../shared/ui/Screen';
 import { ScreenActions } from '../../../../shared/ui/ScreenActions';
@@ -237,7 +238,10 @@ export function PreviewScreen({ navigation }: Props) {
       {photosShort > 0 && photoSlots !== null ? (
         <Text style={styles.error}>{framePhotosMessage(photosShort, photoSlots)}</Text>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <View style={styles.errorRow} accessibilityRole="alert">
+          <Pip mood="shocked" size={48} bob />
+          <Text style={styles.errorBesidePip}>{error}</Text>
+        </View>
       ) : null}
       {billingError && !isEditing ? (
         <Text style={styles.error}>{billingError}</Text>
@@ -271,8 +275,20 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     alignItems: 'center',
   },
+  errorRow: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   error: {
     marginTop: spacing.md,
+    color: colors.error,
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.4,
+  },
+  errorBesidePip: {
+    flex: 1,
     color: colors.error,
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.4,

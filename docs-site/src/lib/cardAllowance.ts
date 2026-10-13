@@ -133,6 +133,24 @@ export function billingStateFromSubscriber(
 }
 
 /**
+ * A brand-new Firebase uid (delete account, then sign in again) has no
+ * RevenueCat subscriber yet. That is unpaid, not an outage — 5xx is the outage.
+ */
+export function billingStateFromRevenueCatHttp(
+  status: number,
+  subscriber: RcSubscriber | undefined,
+  now: Date,
+): BillingState {
+  if (status === 404) {
+    return { proActive: false, creditsPurchased: 0 };
+  }
+  if (status < 200 || status >= 300) {
+    throw new Error(`revenuecat_${status}`);
+  }
+  return billingStateFromSubscriber(subscriber ?? {}, now);
+}
+
+/**
  * RevenueCat is the source of truth for plans and purchased credits. Without a
  * secret key nobody gets past the free card — failing open would give it away.
  */
@@ -150,10 +168,10 @@ export async function fetchBillingState(
     { headers: { Authorization: `Bearer ${secret}` }, cache: 'no-store' },
   );
   if (!res.ok) {
-    throw new Error(`revenuecat_${res.status}`);
+    return billingStateFromRevenueCatHttp(res.status, undefined, now);
   }
   const body = (await res.json()) as { subscriber?: RcSubscriber };
-  return billingStateFromSubscriber(body.subscriber ?? {}, now);
+  return billingStateFromRevenueCatHttp(res.status, body.subscriber, now);
 }
 
 function normalizeName(name: string): string {

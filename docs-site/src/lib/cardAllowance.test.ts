@@ -1,4 +1,5 @@
 import {
+  billingStateFromRevenueCatHttp,
   billingStateFromSubscriber,
   decideCreateAllowance,
   freeClaimId,
@@ -153,6 +154,36 @@ describe('billingStateFromSubscriber', () => {
         now,
       ),
     ).toEqual({ proActive: false, creditsPurchased: 0 });
+  });
+});
+
+describe('billingStateFromRevenueCatHttp', () => {
+  const now = new Date('2026-06-15T00:00:00Z');
+
+  it('treats a missing subscriber as unpaid, not an outage', () => {
+    expect(billingStateFromRevenueCatHttp(404, undefined, now)).toEqual({
+      proActive: false,
+      creditsPurchased: 0,
+    });
+  });
+
+  it('still fails closed when RevenueCat is actually down', () => {
+    expect(() => billingStateFromRevenueCatHttp(503, undefined, now)).toThrow(
+      'revenuecat_503',
+    );
+    expect(() => billingStateFromRevenueCatHttp(500, undefined, now)).toThrow(
+      'revenuecat_500',
+    );
+  });
+
+  it('reads a 200 the same way as the subscriber helper', () => {
+    expect(
+      billingStateFromRevenueCatHttp(
+        200,
+        { entitlements: { occasio_pro: { expires_date: '2026-07-01T00:00:00Z' } } },
+        now,
+      ),
+    ).toEqual({ proActive: true, creditsPurchased: 0 });
   });
 });
 
