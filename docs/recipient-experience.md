@@ -25,6 +25,13 @@ Every moment is a light, crisp scene: flat colour, hard-edged decorations, solid
 frosted glass (`backdrop-filter`), no blurred bokeh or glows behind content, no dark themes. Celebrations use
 normal blending (never additive) so they stay visible on light backgrounds.
 
+The one exception is the **floating balloons** behind the scenes (`components/story/fx/BalloonArt.tsx`): they are drawn as
+translucent, shaded latex on purpose, because flat ones read as stickers. The middle lets the page show through, the
+rim is deeper in colour, a window reflection sits top left, and the neck ends in a knot with a curling string, so two
+balloons that overlap show through each other. It is done with gradients and opacity only, no blur, glow or
+`backdrop-filter`. Small balloons read as farther away and sit a little fainter (`balloonOpacity` in `MomentBackdrop.tsx`).
+The balloons of the pop game (`BalloonPopScene.tsx`) are a separate drawing.
+
 ## 3D scenes
 
 The gift and the cake use three.js, loaded lazily (`gift3d/`). If WebGL is unavailable, or the GPU context is
@@ -92,26 +99,40 @@ A shared card link shows a picture, a title and a line before anyone opens it. I
 
 The person who receives a card is the best sharer: they have just been surprised, it costs them nothing, and every post
 puts the link in front of someone new. The finale has a **Share to your story** button (not shown inside the landing
-page's live sample).
+page's live sample). It opens a sheet with the picture, one switch and **Share**.
 
-- **The picture** (`GET /api/story-frame?occasion=birthday&found=5&of=6`, drawn by `lib/og/storyFrameImage.tsx`) is
-  1080x1920: Pip, "I GOT A SURPRISE", a headline for the moment ("Someone made me a birthday wish"), the stars found
-  ("5 of 6 stars found", "Every star found"; no row when none were found) and a button-shaped "Make one for someone".
-  Everything that matters sits between the strips Instagram covers (the top 250 px and bottom 340 px).
-- **It is public, so it carries nothing from the card**: no photo, no message, no names. Only the occasion and the score
-  are inputs, validated and clamped (`lib/experience/storyShare.ts`), so there is nothing to look up and the same address
-  always gives the same picture (about 450 possible ones), cached for good.
+- **The picture** (`GET /api/story-frame`, drawn by `lib/og/storyFrameImage.tsx`) is 1080x1920. Pip (the real one, in
+  the moment's costume) stands on a half-open card. A photo is tucked into its corner, the first words of the message
+  fade out on the paper, and the sender's name signs it ("With love, Aarav"). The headline says who made it ("Aarav made
+  me a birthday surprise"), chips say what is inside ("5 photos", "6 reasons", "5 of 6 stars found"), and a
+  button-shaped "Make one for someone" is where the person lays their link sticker. Everything that matters sits between
+  the strips Instagram covers (the top 250 px and bottom 340 px).
+- **One Pip everywhere.** The drawing lives in `components/story/fx/pipParts.tsx` and is used by the live page
+  (`Pip.tsx`), this picture and the link preview, so they cannot drift apart. They are plain functions, not
+  components, because the image renderer cannot expand a component inside an svg (and cannot take a fragment, so the
+  figure is one `<g>`).
+- **What goes public, and who decides.** The picture shows a peek at the card only through the card's own `slug`, which
+  is already the secret that opens it, so it reveals nothing the link does not. The switch **Show a peek of what they
+  wrote** (on by default) lets the person see the picture first and turn the peek off, which gives the plain picture:
+  "Someone made me a birthday wish", lines where the words would be, and only the star score.
+  - The photo is only ever the blurred wash (`lib/og/blurredPhoto.ts`), never the photo.
+  - The excerpt is the first 72 characters, cut at a word, and is dropped if it looks private (a link, an email address,
+    a run of six or more digits). Only the first name is used.
+  - A locked or missing card gets the plain picture. Nobody is named and nothing is quoted unless the card could be read.
+- **Cache.** The plain picture takes only the occasion and the score, so it is cached for good, which means a redesign
+  needs a new address: **bump `STORY_FRAME_VERSION`** in `lib/experience/storyShare.ts` whenever the design changes. A peek
+  is held for an hour only, because a card can be edited or revoked.
 - **Sharing** (`components/story/StoryShareButton.tsx`, `lib/experience/storyShareFlow.ts`): the picture is fetched ahead
   of the tap so the share sheet can open straight from it, which some browsers insist on. The share sheet (Instagram,
   WhatsApp Status, anything) gets the picture and the caption. A browser that cannot share files downloads it instead.
   The caption is copied either way, and the hint only says so when the clipboard accepted it.
-- **The link sticker**: Instagram does not let a page place one, so the button-shaped spot is where the person lays
-  their own link sticker, and the caption carries the link too. Adding it in one tap needs Meta's "Share to Stories"
-  API (a Meta developer app ID and a native module), which is a later step in the app.
+- **The link sticker**: Instagram does not let a page place one, so the person lays their own over the button shape, and
+  the caption carries the link too. Adding it in one tap needs Meta's "Share to Stories" API (a Meta developer app ID
+  and a native module), which is a later step in the app.
 - **The link points at the public landing page** with `?ref=<slug>`, never at the private card. `story_share` counts
-  taps on the button, next to `opened`, `finished`, `replayed` and `cta`, so shares per finished card, and the people
-  each one brings, can be measured.
-- Words are calm: no exclamation marks, no emoji (tested).
+  taps on **Share**, next to `opened`, `finished`, `replayed` and `cta`, so shares per finished card, and the people each
+  one brings, can be measured.
+- Words are calm: no exclamation marks, no emoji (tested), with or without the peek.
 
 ## Music under the message and the finale
 

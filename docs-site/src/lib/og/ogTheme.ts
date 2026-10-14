@@ -1,4 +1,4 @@
-import { momentThemeFor } from '../experience/momentTheme';
+import { momentThemeFor, type Costume } from '../experience/momentTheme';
 
 /** The colours the preview image needs, taken from the moment's own theme so each one looks like itself. */
 export type OgTheme = {
@@ -13,6 +13,8 @@ export type OgTheme = {
   ribbon: string;
   confetti: string[];
   mascot: { light: string; base: string; shade: string; cheek: string };
+  /** What Pip wears for this moment. */
+  costume: Costume;
 };
 
 export function ogThemeFor(templateType: string): OgTheme {
@@ -29,6 +31,7 @@ export function ogThemeFor(templateType: string): OgTheme {
     ribbon: gift.ribbon,
     confetti: theme.palette,
     mascot: theme.mascot,
+    costume: theme.costume,
   };
 }
 

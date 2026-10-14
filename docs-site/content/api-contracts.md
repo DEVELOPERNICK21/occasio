@@ -115,14 +115,19 @@ Get signed URL for client → R2/Firebase Storage upload.
 
 ## `GET /api/story-frame` (public)
 
-The picture a recipient posts to their story: a 1080x1920 PNG of Pip, the occasion and the stars found. It carries nothing
-from any card (no photo, message or name), so it needs no lookup and is cached for good.
+The picture a recipient posts to their story: a 1080x1920 PNG of Pip standing on a half-open card, with the occasion and the
+stars found. Without `slug` it carries nothing from any card, so the same address always gives the same picture and it is
+cached for good. With `slug` it also shows a peek: the sender's first name, the opening of the message (dropped if it looks
+private) and the photo only as a blurred wash. The slug already opens the card, so nothing new is revealed; a locked or
+missing card gets the plain picture, and a peek is cached for an hour only.
 
 | Query | Meaning |
 |---|---|
-| `occasion` | `birthday`, `anniversary`, `thank_you`, `congratulations` or `just_because`; anything else looks like `birthday` |
+| `occasion` | `birthday`, `anniversary`, `thank_you`, `congratulations` or `just_because`; anything else looks like `birthday`. With a readable `slug` the card's own type wins |
 | `found` | Stars found, 0 to 12 (never more than `of`) |
-| `of` | Stars there were, 0 to 12. With `found=0` or `of=0` the picture has no star row |
+| `of` | Stars there were, 0 to 12. With `found=0` or `of=0` there is no score |
+| `slug` | Optional. The card to peek at. The app leaves it out when the person turns the peek off |
+| `v` | Design version. Ignored by the server; it only keeps a cached older design from being served after a redesign |
 
 Anything out of range is made safe, not refused. See `docs/recipient-experience.md`.
 

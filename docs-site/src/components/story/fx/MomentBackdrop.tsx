@@ -2,6 +2,7 @@
 
 import { useMemo, type CSSProperties, type ReactNode } from 'react';
 import type { BackdropId, MomentTheme } from '@/lib/experience/momentTheme';
+import { BalloonArt } from './BalloonArt';
 
 type Item = {
   kind: string;
@@ -56,14 +57,7 @@ const PETAL = 'M12 2C7 6 5 12 8 18c2 3 6 3 8 0 3-6 1-12-4-16z';
 function Shape({ kind, color }: { kind: string; color: string }) {
   switch (kind) {
     case 'balloon':
-      return (
-        <svg viewBox="0 0 40 70" width="100%" height="100%" aria-hidden>
-          <ellipse cx="20" cy="22" rx="16" ry="20" fill={color} />
-          <ellipse cx="14" cy="14" rx="4" ry="7" fill="#fff" opacity=".45" />
-          <path d="M17 41h6l-3 5z" fill={color} />
-          <path d="M20 46c-5 6 5 10 0 16" stroke={color} strokeWidth="1.4" fill="none" opacity=".7" />
-        </svg>
-      );
+      return <BalloonArt color={color} />;
     case 'confetti':
       return (
         <svg viewBox="0 0 10 16" width="100%" height="100%" aria-hidden>
@@ -247,6 +241,16 @@ function Decor({ id }: { id: BackdropId }): ReactNode {
   }
 }
 
+/**
+ * A balloon is already see-through, so it needs no layer-wide fade. The small ones read as farther
+ * away and sit a little fainter; the big ones are close and nearly solid in colour.
+ */
+const BALLOON_SIZE = { near: 48, far: 26 } as const;
+function balloonOpacity(size: number): number {
+  const closeness = (size - BALLOON_SIZE.far) / (BALLOON_SIZE.near - BALLOON_SIZE.far);
+  return Number((0.7 + Math.min(1, Math.max(0, closeness)) * 0.26).toFixed(2));
+}
+
 /** Fixed, non-interactive atmosphere behind every scene of a moment. */
 export function MomentBackdrop({ theme }: { theme: MomentTheme }) {
   const layers = useMemo(
@@ -270,6 +274,7 @@ export function MomentBackdrop({ theme }: { theme: MomentTheme }) {
                   : {}),
                 width: item.size,
                 height: item.kind === 'balloon' ? item.size * 1.75 : item.size,
+                ...(item.kind === 'balloon' ? { opacity: balloonOpacity(item.size) } : {}),
                 animationDelay: `${item.delay}s`,
                 animationDuration: `${item.duration}s`,
                 '--drift': `${item.drift}px`,

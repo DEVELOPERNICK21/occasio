@@ -1,3 +1,4 @@
+import { pipFigure } from '../../components/story/fx/pipParts';
 import type { OgTheme } from './ogTheme';
 import { mix } from './ogTheme';
 import { headlineSize, type Teaser } from './teaser';
@@ -21,40 +22,6 @@ type Props = {
 };
 
 const SPARKLE = 'M0 -1 Q.14 -.14 1 0 Q.14 .14 0 1 Q-.14 .14 -1 0 Q-.14 -.14 0 -1Z';
-
-/**
- * Pip, flat, winking, in his party hat. Drawn at (0,0) to (240,236); the caller places and scales it.
- * A plain function, not a component: the image renderer cannot expand components inside an svg.
- */
-export function pipArt(colors: OgTheme['mascot']) {
-  return (
-    <g>
-      <ellipse cx="84" cy="236" rx="29" ry="13" fill={colors.shade} />
-      <ellipse cx="156" cy="236" rx="29" ry="13" fill={colors.shade} />
-      <path
-        d="M120 24C178 24 214 76 214 138C214 196 178 232 120 232C62 232 26 196 26 138C26 76 62 24 120 24Z"
-        fill={colors.base}
-      />
-      <ellipse cx="100" cy="92" rx="66" ry="54" fill={colors.light} opacity="0.7" />
-      <ellipse cx="78" cy="68" rx="30" ry="16" fill="#fff" opacity="0.32" transform="rotate(-24 78 68)" />
-      <ellipse cx="54" cy="152" rx="16" ry="10" fill={colors.cheek} opacity="0.7" />
-      <ellipse cx="186" cy="152" rx="16" ry="10" fill={colors.cheek} opacity="0.7" />
-      <path d="M64 128Q86 94 108 128" stroke="#2B1B2E" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <ellipse cx="154" cy="120" rx="22" ry="28" fill="#fff" />
-      <circle cx="152" cy="125" r="15" fill="#2B1B2E" />
-      <circle cx="158" cy="116" r="6" fill="#fff" />
-      <path d="M96 156Q120 182 144 156" stroke="#2B1B2E" strokeWidth="5" strokeLinecap="round" fill="none" />
-      <ellipse cx="134" cy="173" rx="8" ry="10" fill="#FF7A93" />
-      <g transform="rotate(-9 120 44)">
-        <path d="M82 46L120 -32L158 46Z" fill="#FF4D6D" />
-        <path d="M98 14L142 14L150 32L90 32Z" fill="#FFD166" />
-        <path d="M104 -2L136 -2L141 10L99 10Z" fill="#3A86FF" />
-        <ellipse cx="120" cy="46" rx="41" ry="9" fill="#FFB703" />
-        <circle cx="120" cy="-33" r="10" fill="#fff" />
-      </g>
-    </g>
-  );
-}
 
 const CONFETTI: ReadonlyArray<{ x: number; y: number; kind: 'dot' | 'bar' | 'star'; turn: number; size: number }> = [
   { x: 38, y: 96, kind: 'dot', turn: 0, size: 12 },
@@ -169,7 +136,9 @@ export function SurpriseImage({ teaser, theme, wash }: Props) {
             }
             return <path key={i} d={SPARKLE} fill={color} transform={`translate(${piece.x} ${piece.y}) scale(${piece.size})`} />;
           })}
-          <g transform="translate(262 52) scale(1.02)">{pipArt(theme.mascot)}</g>
+          <g transform="translate(262 52) scale(1.02)">
+            {pipFigure({ mood: 'wink', mascot: theme.mascot, costume: theme.costume, uid: 'og' })}
+          </g>
         </svg>
 
         {wash ? (

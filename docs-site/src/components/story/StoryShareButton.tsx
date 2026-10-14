@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { trackCardEvent } from '@/lib/cardEvents';
 import {
   storyFramePath,
@@ -20,6 +21,7 @@ type Props = {
 };
 
 type Status = 'idle' | 'working' | 'done' | 'error';
+type Frame = { file: File; url: string };
 
 const FILE_NAME = 'occasio-story.png';
 
@@ -45,36 +47,67 @@ function saveFile(file: File): void {
 }
 
 /**
- * "Share to your story": the picture of Pip and the star score, ready for Instagram or WhatsApp
- * Status. Nothing from the card is in it. The picture is fetched ahead of the tap so the share
- * sheet can open straight from it, which some browsers insist on.
+ * "Share to your story". A sheet shows the picture first, so the person sees exactly what will
+ * go public, with one switch for the peek at the card (who made it, the opening of the message, a
+ * blurred photo). Switched off, the picture says only that they got a surprise. The picture is
+ * fetched ahead of the tap so the share sheet can open straight from it, which some browsers
+ * insist on.
  */
 export function StoryShareButton({ slug, templateType, found, of, isDemo = false }: Props) {
   const occasion = storyOccasionFor(templateType);
-  const path = storyFramePath({ occasion, found, of });
-  const ready = useRef<File | null>(null);
+  const [open, setOpen] = useState(false);
+  const [peek, setPeek] = useState(true);
+  const [frame, setFrame] = useState<Frame | null>(null);
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<Status>('idle');
   const [copied, setCopied] = useState(false);
+  const path = storyFramePath({ occasion, found, of }, peek ? slug : null);
 
   useEffect(() => {
-    ready.current = null;
     const controller = new AbortController();
+    let objectUrl: string | null = null;
+    let current = true;
+    setLoading(true);
+    setFrame(null);
     void loadFrame(path, controller.signal).then((file) => {
-      ready.current = file;
+      if (!current) return;
+      setLoading(false);
+      if (!file) return;
+      objectUrl = URL.createObjectURL(file);
+      setFrame({ file, url: objectUrl });
     });
-    return () => controller.abort();
+    return () => {
+      current = false;
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [path]);
 
+  const close = useCallback(() => {
+    setOpen(false);
+    setStatus('idle');
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close();
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [open, close]);
+
   const share = useCallback(async () => {
+    if (!frame) return;
     setStatus('working');
-    const file = ready.current ?? (await loadFrame(path));
-    if (!file) {
-      setStatus('error');
-      return;
-    }
     const caption = storyShareCaption(occasion, storyLandingUrl(window.location.origin, slug));
     const nav = navigator as Navigator & { canShare?: (data: { files: File[] }) => boolean };
-    const outcome = await shareStoryFrame(file, caption, {
+    const outcome = await shareStoryFrame(frame.file, caption, {
       canShare: nav.canShare ? (data) => nav.canShare!(data) : undefined,
       share: nav.share ? (data) => nav.share(data) : undefined,
       save: saveFile,
@@ -87,30 +120,66 @@ export function StoryShareButton({ slug, templateType, found, of, isDemo = false
     setCopied(outcome.captionCopied);
     setStatus('done');
     trackCardEvent(slug, 'story_share', isDemo);
-  }, [isDemo, occasion, path, slug]);
+  }, [frame, isDemo, occasion, slug]);
 
   return (
     <>
-      <button
-        type="button"
-        className="landing-btn-secondary"
-        onClick={() => void share()}
-        disabled={status === 'working'}
-      >
-        {status === 'working' ? 'Making your picture…' : 'Share to your story'}
+      <button type="button" className="landing-btn-secondary" onClick={() => setOpen(true)}>
+        Share to your story
       </button>
-      {status === 'done' ? (
-        <p className="finale__hint" role="status">
-          {copied
-            ? 'Add a link sticker over the button when you post. Your caption is copied.'
-            : 'Add a link sticker over the button when you post.'}
-        </p>
-      ) : null}
-      {status === 'error' ? (
-        <p className="finale__hint" role="status">
-          Could not make the picture. Check your connection and try again.
-        </p>
-      ) : null}
+      {open && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="storysheet" onClick={close}>
+              <div
+                className="storysheet__panel"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="storysheet-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <h2 id="storysheet-title" className="storysheet__title">
+                  Share to your story
+                </h2>
+                <div className="storysheet__preview" aria-busy={loading}>
+                  {frame ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={frame.url} alt="The picture you will share" />
+                  ) : (
+                    <span>{loading ? 'Making your picture…' : 'Could not make the picture.'}</span>
+                  )}
+                </div>
+                <label className="storysheet__toggle">
+                  <input type="checkbox" checked={peek} onChange={(event) => setPeek(event.target.checked)} />
+                  <span>Show a peek of what they wrote</span>
+                </label>
+                <p className="storysheet__note">
+                  {peek
+                    ? 'Shows who made it, the opening of the message and a blurred photo. Nothing else.'
+                    : 'Shows only that you got a surprise.'}
+                </p>
+                <button
+                  type="button"
+                  className="landing-btn-primary"
+                  onClick={() => void share()}
+                  disabled={!frame || status === 'working'}
+                >
+                  {status === 'working' ? 'Opening…' : 'Share'}
+                </button>
+                <button type="button" className="landing-btn-secondary" onClick={close}>
+                  Not now
+                </button>
+                {status === 'done' ? (
+                  <p className="storysheet__note" role="status">
+                    {copied
+                      ? 'Add a link sticker over the button when you post. Your caption is copied.'
+                      : 'Add a link sticker over the button when you post.'}
+                  </p>
+                ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
