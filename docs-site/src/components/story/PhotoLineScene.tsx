@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
+import { classifyGesture } from '@/lib/experience/gesture';
 import { playTap } from '@/lib/experience/sfx';
 
 type Props = {
@@ -16,8 +17,9 @@ type Props = {
 const TILTS = [-4, 3, -2, 5, -3];
 
 /**
- * Photos pegged on a line. Tap a photo to flip it over and read the note on the
- * back. Every flip is a tiny discovery, so it earns a star.
+ * Photos pegged on a line. Tap a photo, or slide a finger across it, to flip it
+ * over and read the note on the back. Every flip is a tiny discovery, so it earns
+ * a star.
  */
 export function PhotoLineScene({
   urls,
@@ -29,6 +31,9 @@ export function PhotoLineScene({
   const { award } = useJoy();
   const photos = urls.map((u) => u.trim()).filter(Boolean).slice(0, 5);
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
+  const press = useRef<{ i: number; x: number; y: number; at: number } | null>(null);
+  // A slide ends in a click on some browsers; that click must not flip the photo back.
+  const slid = useRef(false);
   const allFlipped = flipped.size >= photos.length;
 
   const flip = (i: number, at: { x: number; y: number }) => {
@@ -46,7 +51,7 @@ export function PhotoLineScene({
     <section className="photoline" aria-label={title}>
       <h2 className="story-scene-title">{title}</h2>
       <p className="story-scene-sub">
-        {allFlipped ? 'Every note read' : 'Tap a photo to turn it over'}
+        {allFlipped ? 'Every note read' : 'Tap or slide a photo to turn it over'}
       </p>
 
       <div className="photoline__rope" aria-hidden />
@@ -59,8 +64,37 @@ export function PhotoLineScene({
               <button
                 type="button"
                 className={`photoline__card${isFlipped ? ' is-flipped' : ''}`}
-                onClick={(e) => flip(i, { x: e.clientX, y: e.clientY })}
-                aria-label={isFlipped ? `Photo ${i + 1}, showing note` : `Photo ${i + 1}, tap to read the note`}
+                onPointerDown={(e) => {
+                  press.current = { i, x: e.clientX, y: e.clientY, at: performance.now() };
+                }}
+                onPointerUp={(e) => {
+                  const start = press.current;
+                  press.current = null;
+                  if (!start || start.i !== i) return;
+                  const gesture = classifyGesture({
+                    dx: e.clientX - start.x,
+                    dy: e.clientY - start.y,
+                    ms: performance.now() - start.at,
+                  });
+                  if (gesture === 'slide-left' || gesture === 'slide-right') {
+                    slid.current = true;
+                    window.setTimeout(() => {
+                      slid.current = false;
+                    }, 60);
+                    flip(i, { x: e.clientX, y: e.clientY });
+                  }
+                }}
+                onPointerCancel={() => {
+                  press.current = null;
+                }}
+                onClick={(e) => {
+                  if (slid.current) {
+                    slid.current = false;
+                    return;
+                  }
+                  flip(i, { x: e.clientX, y: e.clientY });
+                }}
+                aria-label={isFlipped ? `Photo ${i + 1}, showing note` : `Photo ${i + 1}, tap or slide to read the note`}
               >
                 <span className="photoline__peg" aria-hidden />
                 <span className="photoline__face photoline__face--front">

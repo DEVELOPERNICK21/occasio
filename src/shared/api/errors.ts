@@ -8,6 +8,8 @@ export type HttpErrorCode =
   | 'NOT_IMPLEMENTED'
   | 'UNDER_AGE'
   | 'ATTESTATION_INVALID'
+  | 'EMAIL_NOT_VERIFIED'
+  | 'EMAIL_NOT_ALLOWED'
   | 'INTERNAL';
 
 export class HttpError extends Error {

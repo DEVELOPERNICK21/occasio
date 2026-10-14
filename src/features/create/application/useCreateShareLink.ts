@@ -18,10 +18,15 @@ import type { ExtraWishAccess } from '../../billing/domain/types';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from '../data/types';
 
+/** Why the free card could not be used yet: the email is not confirmed, or cannot be used. */
+export type VerifyReason = 'unverified' | 'not_allowed';
+
 type State = {
   isLoading: boolean;
   error: string | null;
   paywallRequired: boolean;
+  /** Set when the server asks for a confirmed email instead of a payment. */
+  verifyRequired: VerifyReason | null;
   result: CreateCreationResponse | null;
   /** True when the last successful save was a PATCH (same URL). */
   wasUpdated: boolean;
@@ -31,6 +36,7 @@ const initialState: State = {
   isLoading: false,
   error: null,
   paywallRequired: false,
+  verifyRequired: null,
   result: null,
   wasUpdated: false,
 };
@@ -53,6 +59,13 @@ type Options = {
   /** Photo slots of the chosen frame; the card cannot be shared with fewer photos. */
   photoSlots?: number | null;
 };
+
+function verifyReasonFor(error: unknown): VerifyReason | null {
+  if (!(error instanceof CreationApiError)) return null;
+  if (error.code === 'EMAIL_NOT_VERIFIED') return 'unverified';
+  if (error.code === 'EMAIL_NOT_ALLOWED') return 'not_allowed';
+  return null;
+}
 
 export function useCreateShareLink(options: Options = {}) {
   const {
@@ -117,6 +130,7 @@ export function useCreateShareLink(options: Options = {}) {
         isLoading: true,
         error: null,
         paywallRequired: false,
+        verifyRequired: null,
         result: null,
         wasUpdated: false,
       });
@@ -134,6 +148,7 @@ export function useCreateShareLink(options: Options = {}) {
           isLoading: false,
           error: null,
           paywallRequired: false,
+          verifyRequired: null,
           result,
           wasUpdated: isEdit,
         });
@@ -146,6 +161,20 @@ export function useCreateShareLink(options: Options = {}) {
             isLoading: false,
             error: null,
             paywallRequired: true,
+            verifyRequired: null,
+            result: null,
+            wasUpdated: false,
+          });
+          return null;
+        }
+        // The free card is waiting; it only needs a confirmed email. Not a payment.
+        const verify = verifyReasonFor(e);
+        if (verify) {
+          setState({
+            isLoading: false,
+            error: null,
+            paywallRequired: false,
+            verifyRequired: verify,
             result: null,
             wasUpdated: false,
           });
@@ -157,6 +186,7 @@ export function useCreateShareLink(options: Options = {}) {
           isLoading: false,
           error: message,
           paywallRequired: false,
+          verifyRequired: null,
           result: null,
           wasUpdated: false,
         });

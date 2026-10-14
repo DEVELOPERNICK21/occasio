@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
@@ -18,6 +18,7 @@ import {
 import { freeQuotaNotice, PRO_YEARLY_CARD_LIMIT } from '../../domain/quota';
 import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
+import { VerifyEmailSheet } from '../components/VerifyEmailSheet';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
 import { Pip } from '../../../../shared/ui/Pip';
@@ -31,7 +32,8 @@ type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
-  const { isSignedIn, requestAuth, user } = useAuth();
+  const { isSignedIn, requestAuth, user, sendVerificationEmail, refreshEmailVerification } =
+    useAuth();
   const { getById } = useTemplateCatalog();
   const {
     open: openPaywall,
@@ -50,7 +52,7 @@ export function PreviewScreen({ navigation }: Props) {
   const frame = draft.templateId ? getById(draft.templateId) : null;
   const photoSlots = frame?.photoSlots ?? null;
   const photosShort = framePhotosShort(draft.photoUris.length, photoSlots);
-  const { generate, isLoading, error, paywallRequired, reset } =
+  const { generate, isLoading, error, paywallRequired, verifyRequired, reset } =
     useCreateShareLink({
       cardsCreated,
       tier,
@@ -266,6 +268,17 @@ export function PreviewScreen({ navigation }: Props) {
           : 'Your link will be private and unlisted — only people you share it with can open it.'}
       </Text>
       {quotaNotice ? <Text style={styles.hint}>{quotaNotice}</Text> : null}
+      <VerifyEmailSheet
+        reason={verifyRequired}
+        email={user?.email ?? null}
+        sendVerification={sendVerificationEmail}
+        checkVerified={refreshEmailVerification}
+        onVerified={() => {
+          reset();
+          void createLink();
+        }}
+        onClose={reset}
+      />
     </Screen>
   );
 }

@@ -34,6 +34,10 @@ function storagePathsOf(values: unknown[]): string[] {
  * Erases an account and everything tied to it. Used for in-app account deletion
  * and when a person turns out to be under 13. Mirrors `deleteAccountData` in
  * `functions/src/account.ts` (that one is deployed separately).
+ *
+ * `free_claims` is deliberately NOT deleted: those one-way hashes are what stop
+ * "delete the account, sign up again, get another free card". They hold no name and
+ * no card, and the privacy policy and delete-account page say they are kept.
  */
 export async function purgeUser(uid: string): Promise<void> {
   const db = getAdminFirestore();

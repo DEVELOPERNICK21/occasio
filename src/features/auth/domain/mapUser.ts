@@ -6,6 +6,9 @@ type FirebaseUserLike = {
   phoneNumber: string | null;
   displayName: string | null;
   createdAt?: string | null;
+  emailVerified?: boolean;
+  /** Provider ids such as `password`, `google.com`, `apple.com`. */
+  providerIds?: readonly string[];
 };
 
 export function mapFirebaseUser(user: FirebaseUserLike): AuthUser {
@@ -15,6 +18,8 @@ export function mapFirebaseUser(user: FirebaseUserLike): AuthUser {
     phoneNumber: user.phoneNumber,
     displayName: user.displayName,
     createdAt: user.createdAt ?? null,
+    emailVerified: user.emailVerified === true,
+    usesPassword: user.providerIds?.includes('password') === true,
   };
 }
 

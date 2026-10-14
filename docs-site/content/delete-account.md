@@ -1,7 +1,7 @@
 ---
 title: Delete your account and data
 description: How to request deletion of your Occasio account or specific data.
-updated: 2026-10-08
+updated: 2026-10-14
 ---
 
 This page explains how to delete your **Occasio** account and associated data, or request deletion of specific information without closing your account.
@@ -46,6 +46,7 @@ When your account is deleted, we remove:
 | --- | --- |
 | **Cards created as a guest** (not tied to an account) | Remain available until their **expiry date** (30 days after creation), then card media and related server data are deleted |
 | **Logs and analytics** | May be retained in anonymized or aggregated form for up to **90 days** for security and reliability |
+| **Free-card record** | A one-way hash of the email or Google/Apple ID that used the free card, kept so deleting and re-creating an account does not give another free card. It holds no name and no card, and cannot be turned back into the address |
 | **Purchase and billing records** | Held by Apple or Google, and by us only where required by law (for example, tax or fraud prevention) |
 
 After account deletion, you will not be able to sign in again with the same account or recover Vault or history data.

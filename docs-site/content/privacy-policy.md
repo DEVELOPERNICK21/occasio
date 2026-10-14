@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Occasio collects, uses, and protects your information.
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
 This Privacy Policy explains how **Occasio** (“we”, “us”, “our”) handles information when you use our mobile app, recipient web pages at shared links, and related services (collectively, the **Service**).
@@ -43,6 +43,7 @@ You can create and share cards **without signing in**. In that case we do not co
 | **Push notification token** | If you allow notifications — so we can tell you when a card is ready to review |
 | **Purchase status** | Whether you have an active subscription or bought a single card, from the App Store or Google Play via RevenueCat — to provide what you paid for |
 | **IP address and browser info** | When someone opens a share link, and when you use the app's servers — security, abuse prevention, and delivery (kept in our hosting provider's logs) |
+| **Free-card record** | Each person gets one free card. So that deleting an account and signing up again does not give another one, we keep a one-way hash of the email address (or Google or Apple sign-in ID) that used it, with no name and no link to your cards. It cannot be turned back into the address, and it is kept after you delete your account. It is used only for this |
 | **Unsubscribe list** | If someone unsubscribes from our emails we keep a one-way hash of their email address, so we never email them again. It cannot be turned back into the address |
 | **Usage and crash reports (only if you turn them on)** | Off by default. If you switch on **Share usage and crash reports** in the app's Account tab, the app sends: which steps you use (for example "occasion picked", "card shared", which plan you looked at), a random app-install ID, your phone model, operating system, app version and approximate country (from the IP address, which is not stored). If the app crashes, it also sends the error and your account ID if you are signed in. Never your cards, photos, messages, contacts or share links, and no advertising ID. Used only to fix bugs and see which parts of the app work. Switching it off stops this immediately, deletes crash reports not yet sent and resets the app-install ID |
 

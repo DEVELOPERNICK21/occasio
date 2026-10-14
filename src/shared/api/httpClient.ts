@@ -30,6 +30,8 @@ function isHttpErrorCode(value: string): value is HttpErrorCode {
     'NOT_IMPLEMENTED',
     'UNDER_AGE',
     'ATTESTATION_INVALID',
+    'EMAIL_NOT_VERIFIED',
+    'EMAIL_NOT_ALLOWED',
     'INTERNAL',
   ].includes(value);
 }

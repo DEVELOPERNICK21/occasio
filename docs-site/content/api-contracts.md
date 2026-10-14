@@ -35,7 +35,7 @@ Create a shareable card. Requires `Authorization: Bearer <Firebase ID token>` (a
 
 **Allowance (server-enforced, one Firestore transaction with the card write):**
 
-1. The first card per person is free, once, ever — `users/{uid}.freeCardsUsed`, plus a hashed-email claim in `free_claims` so deleting the account and signing up again with the same inbox does not refill it (clients cannot write either).
+1. The first card per person is free, once, ever — `users/{uid}.freeCardsUsed`, plus one-way claims in `free_claims` (the inbox, spelled any way, and each Google or Apple id) so deleting the account and signing up again does not refill it (clients cannot write either). **The free card needs a verified identity**: Google, Apple, or an email the person confirmed. An email and password nobody has confirmed gets `403 EMAIL_NOT_VERIFIED` (the app asks them to confirm, it does not show the paywall), and a known throwaway inbox gets `403 EMAIL_NOT_ALLOWED`. Paying never needs verification. See `docs/free-card-abuse.md`.
 2. After that, RevenueCat is checked server-side (`REVENUECAT_SECRET_KEY` on Vercel): active `occasio_pro` → allowed while fewer than 24 cards were made in the last 365 days (`users/{uid}.proCardTimes`).
 3. Otherwise one purchased single-wish credit is spent (`wishCreditsUsed + 1`) if `purchased − used > 0` — this also covers a Pro member past 24.
 4. Else `402 QUOTA_EXCEEDED`. Without the RevenueCat key, only the free card works.
@@ -76,6 +76,8 @@ Server also persists on the creation document (not echoed in the response body t
 | `VALIDATION_ERROR` | 400 | Missing name/photos/template |
 | `UNAUTHORIZED` | 401 | No valid sign-in token |
 | `QUOTA_EXCEEDED` | 402 | Free card used, no Pro, no credits — paywall |
+| `EMAIL_NOT_VERIFIED` | 403 | The free card is waiting for a confirmed email — ask them to confirm, not to pay |
+| `EMAIL_NOT_ALLOWED` | 403 | A throwaway email address cannot use the free card |
 | `UPLOAD_MISSING` | 400 | photoRefs not found in storage |
 | `INTERNAL` | 500 | Retry |
 

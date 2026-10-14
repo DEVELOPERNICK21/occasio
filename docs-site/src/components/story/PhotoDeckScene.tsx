@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
+import { classifyGesture } from '@/lib/experience/gesture';
+import { playTap } from '@/lib/experience/sfx';
 
 type Props = {
   urls: string[];
@@ -37,6 +39,7 @@ export function PhotoDeckScene({
   const dragging = useRef(false);
   const startX = useRef(0);
   const startY = useRef(0);
+  const startedAt = useRef(0);
 
   const remaining = photos.slice(top);
   const done = remaining.length === 0;
@@ -98,7 +101,7 @@ export function PhotoDeckScene({
     <section className="story-photos">
       <h2 className="story-scene-title">{title}</h2>
       <p className="story-scene-sub">
-        Swipe through · {remaining.length} left
+        Tap or swipe · {remaining.length} left
       </p>
       <div
         className="story-polaroid-stack"
@@ -107,6 +110,7 @@ export function PhotoDeckScene({
           dragging.current = true;
           startX.current = e.clientX;
           startY.current = e.clientY;
+          startedAt.current = performance.now();
           setDx(0);
           setDy(0);
           (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -116,14 +120,37 @@ export function PhotoDeckScene({
           setDx(e.clientX - startX.current);
           setDy((e.clientY - startY.current) * 0.35);
         }}
-        onPointerUp={() => {
+        onPointerUp={(e) => {
           if (!dragging.current) return;
           dragging.current = false;
-          if (Math.abs(dx) > 72) {
-            dismissTop(dx >= 0 ? 'right' : 'left');
+          // A tap and a slide both move on to the next photo; anything else springs back.
+          const gesture = classifyGesture({
+            dx: e.clientX - startX.current,
+            dy: e.clientY - startY.current,
+            ms: performance.now() - startedAt.current,
+          });
+          if (gesture === 'tap') {
+            playTap();
+            // Alternate sides so a run of taps feels like dealing cards, not one repeated move.
+            dismissTop(top % 2 === 0 ? 'right' : 'left');
+          } else if (gesture === 'slide-left' || gesture === 'slide-right') {
+            dismissTop(gesture === 'slide-right' ? 'right' : 'left');
           } else {
             setDx(0);
             setDy(0);
+          }
+        }}
+        // Keyboard and screen readers get the same thing as a tap.
+        role="button"
+        tabIndex={0}
+        aria-label={`Photo ${top + 1} of ${photos.length}. Tap or swipe for the next one.`}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            dismissTop('right');
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            dismissTop('left');
           }
         }}
         onPointerCancel={() => {

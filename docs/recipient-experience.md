@@ -57,6 +57,37 @@ The gift tag that rises shows the name big, with "from {sender}" under it (the w
 known). The scene title above becomes a bold, non-repeating line ("Surprise, Maya"), so the wish is only said once
 in words. Screen readers hear the wish from a hidden live region, and the flags are hidden from them.
 
+## Photos: tap and slide
+
+Both photo scenes answer to a tap and to a slide, decided by `lib/experience/gesture.ts` (pure and tested: a finger
+always moves a little during a tap; a short quick flick counts as a slide).
+
+- **The deck** (birthday, anniversary): tap the photo, or slide it either way, to go to the next one. Arrow keys and
+  Enter do the same, and the "Next photo" button stays as the plain alternative.
+- **The line** (thank you, congratulations, just because): tap a photo, or slide a finger across it, to turn it over
+  and read the note. A slide flips it once; the click that follows it is ignored. Sideways slides reach the photo
+  while up and down still scroll the page (`touch-action: pan-y`).
+
+## The link preview (WhatsApp, Instagram, Messages, X)
+
+A shared card link shows a picture, a title and a line before anyone opens it. It is a **teaser, never a spoiler**:
+
+- **The image** (`app/c/[slug]/opengraph-image.tsx`, drawn by `lib/og/surpriseImage.tsx`) is a sealed gift with a "?" seal
+  and Pip peeking over it, in the moment's own colours, with the name, who it is from, and "Tap to open the surprise".
+- **Photos are never shown.** The preview is copied onto the chat service's own servers, so the real photo must not go
+  into it. When a card has photos, a tilted tile shows only a heavily blurred wash of the first one
+  (`lib/og/blurredPhoto.ts`: shrunk to 24x30 pixels, then softened, so every face and detail is gone for good). It
+  reads only data URLs, our own storage and (for demo cards) `public/demo`, never any other address, and goes without
+  the tile if anything is unexpected or `sharp` is not available.
+- **The message is never used.** A locked card shows no name, no sender and no photo at all.
+- The title and description come from the same function as the image text (`lib/og/teaser.ts`), so they can never
+  disagree. Card pages are `noindex` so search engines skip them. This is a page tag, not a `robots.txt` rule:
+  Facebook and Twitter read `robots.txt` before building a preview, and would show nothing.
+- Keep the image under about 300 KB: WhatsApp drops larger ones. It is about 180 KB now. The image uses the renderer's
+  built-in font (one weight) and thickens big text with a stroke, because a font fetched at request time would send each
+  recipient's name to a font server.
+- Chat apps keep a preview for a long time and cannot be told to refresh. The CDN keeps the image for an hour only.
+
 ## Music under the message and the finale
 
 `lib/experience/occasionMusic.ts` plays the moment's song (`public/sounds/*.mp3`, chosen in `occasionSongs.ts`)

@@ -43,6 +43,8 @@ export type ApiErrorCode =
   | 'QUOTA_EXCEEDED'
   | 'UPLOAD_MISSING'
   | 'UNAUTHORIZED'
+  | 'EMAIL_NOT_VERIFIED'
+  | 'EMAIL_NOT_ALLOWED'
   | 'INTERNAL';
 
 export class CreationApiError extends Error {

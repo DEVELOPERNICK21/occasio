@@ -17,6 +17,8 @@ import {
   signInWithGoogle,
   signOut,
   deleteAccount,
+  refreshEmailVerification,
+  sendVerificationEmail,
   subscribeAuthState,
 } from '../data/authRepository';
 import { ensureAccountStamped } from '../../age/data/ageRepository';
@@ -50,6 +52,10 @@ type AuthContextValue = {
   signInEmail: (email: string, password: string) => Promise<void>;
   createEmailAccount: (email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  /** Sends the "confirm your email" link to the signed-in account. */
+  sendVerificationEmail: () => Promise<void>;
+  /** Checks whether the inbox has been confirmed since; true when it now is. */
+  refreshEmailVerification: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -155,6 +161,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     trackEvent(AnalyticsEvents.passwordResetRequested);
   }, []);
 
+  const checkEmailVerification = useCallback(async () => {
+    const fresh = await refreshEmailVerification();
+    if (fresh) setUser(fresh);
+    return fresh?.emailVerified === true;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -171,6 +183,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInEmail,
       createEmailAccount,
       resetPassword,
+      sendVerificationEmail,
+      refreshEmailVerification: checkEmailVerification,
     }),
     [
       user,
@@ -187,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInEmail,
       createEmailAccount,
       resetPassword,
+      checkEmailVerification,
     ],
   );
 

@@ -21,6 +21,7 @@ export type PipSpot =
   | 'loginForgot'
   | 'photosPick'
   | 'photosReplace'
+  | 'verifyEmail'
   | 'ageGate'
   | 'cardMissing';
 
@@ -147,6 +148,11 @@ export const PIP_SPOTS: Record<PipSpot, PipSpotConfig> = {
       'You can crop it to fit.',
       'Faces look best near the middle.',
     ],
+  },
+  verifyEmail: {
+    mood: 'hopeful',
+    tapMood: 'joy',
+    lines: ['One quick step.', 'I will wait right here.', 'Check your spam folder too.'],
   },
   ageGate: {
     mood: 'hopeful',

@@ -2203,6 +2203,12 @@ body {
   cursor: grabbing;
 }
 
+.story-polaroid-stack:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 14px;
+}
+
 .story-polaroid {
   position: absolute;
   left: 50%;
@@ -4210,6 +4216,8 @@ body {
   animation-delay: calc(var(--i) * -0.7s);
 }
 .photoline__card {
+  /* Sideways slides reach the photo; up and down still scroll the page. */
+  touch-action: pan-y;
   position: relative;
   display: block;
   width: 100%;

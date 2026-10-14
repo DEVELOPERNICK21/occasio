@@ -7,12 +7,17 @@ import {
   decideCreateAllowance,
   fetchBillingState,
   freeCardsUsed,
-  freeClaimId,
   linkTtlDaysFor,
   proCardTimesInWindow,
   recipientEditAllowed,
   wishCreditsUsed,
 } from '@/lib/cardAllowance';
+import {
+  applyFreeRules,
+  eligibilityRefusal,
+  freeClaimIds,
+  freeEligibility,
+} from '@/lib/freeClaims';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
 import {
@@ -256,15 +261,28 @@ function passcodeFields(
  */
 export async function createCreation(
   input: CreateCreationInput,
-  user: { uid: string; email?: string | null },
+  user: {
+    uid: string;
+    /** Only ever a verified address. */
+    email?: string | null;
+    verified?: boolean;
+    subjects?: readonly string[];
+  },
 ): Promise<CreateCreationResult> {
   const { uid } = user;
   assertAllowedMedia(input, uid);
   const db = getAdminFirestore();
   const createdAt = new Date();
   const nowMs = createdAt.getTime();
-  const claimId = freeClaimId(user.email);
-  const claimRef = claimId ? db.collection('free_claims').doc(claimId) : null;
+  // The free card needs a verified identity, and is spent once per person however many
+  // accounts they make: see lib/freeClaims.ts for what counts.
+  const identity = {
+    email: user.email ?? null,
+    verified: user.verified === true,
+    subjects: user.subjects ?? [],
+  };
+  const eligibility = freeEligibility(identity);
+  const claimRefs = freeClaimIds(identity).map((id) => db.collection('free_claims').doc(id));
   const relaxed = isDevRelaxedQuota(input.devMode === true);
   const shareSlug = await uniqueShareSlug(db);
   const shareBase =
@@ -301,16 +319,20 @@ export async function createCreation(
   let billing: BillingState | null = null;
   let expiresAt = createdAt;
   let spent: 'free' | 'pro' | 'credit' = 'free';
+  // True when this person still has a free card but may not spend it yet (not verified).
+  let freeHeldBack = false;
   for (;;) {
     const allowance = await db.runTransaction(async (tx) => {
       const doc = ((await tx.get(userRef)).data() ?? {}) as AllowanceUserDoc;
-      const claim = claimRef ? await tx.get(claimRef) : null;
-      // The same inbox already had its free card under an earlier (deleted) account.
-      const claimedElsewhere =
-        claim?.exists === true && claim.data()?.uid !== uid;
-      const seen: AllowanceUserDoc = claimedElsewhere
-        ? { ...doc, freeCardsUsed: Math.max(1, freeCardsUsed(doc)) }
-        : doc;
+      const claims = claimRefs.length > 0 ? await tx.getAll(...claimRefs) : [];
+      // The same person already had their free card, under an earlier (deleted) account or a
+      // different door (another inbox spelling, Google, Apple).
+      const claimedElsewhere = claims.some(
+        (claim) => claim.exists && claim.data()?.uid !== uid,
+      );
+      const rules = applyFreeRules(doc, eligibility, claimedElsewhere);
+      freeHeldBack = rules.freeHeldBack;
+      const seen = rules.seen;
       const decided = relaxed ? 'pro' : decideCreateAllowance(seen, nowMs, billing);
       if (decided === 'needs_billing' || decided === 'none') {
         return decided;
@@ -318,7 +340,7 @@ export async function createCreation(
       if (!relaxed) {
         if (decided === 'free') {
           tx.set(userRef, { freeCardsUsed: freeCardsUsed(doc) + 1 }, { merge: true });
-          if (claimRef) {
+          for (const claimRef of claimRefs) {
             tx.set(claimRef, { uid, at: Timestamp.fromDate(createdAt) });
           }
         } else if (decided === 'pro') {
@@ -352,6 +374,12 @@ export async function createCreation(
     });
 
     if (allowance === 'none') {
+      // A free card they could have used but for being unverified is a different answer from
+      // "you have used it": the first asks them to confirm their email, the second to pay.
+      if (freeHeldBack && !eligibility.ok) {
+        const refusal = eligibilityRefusal(eligibility.reason);
+        throw new ApiRouteError(refusal.status, refusal.code, refusal.message);
+      }
       throw new ApiRouteError(
         402,
         'QUOTA_EXCEEDED',
