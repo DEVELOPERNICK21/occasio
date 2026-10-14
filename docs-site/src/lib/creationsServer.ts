@@ -14,9 +14,9 @@ import {
 } from '@/lib/cardAllowance';
 import {
   applyFreeRules,
-  eligibilityRefusal,
   freeClaimIds,
   freeEligibility,
+  heldBackRefusal,
 } from '@/lib/freeClaims';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import type { RecipientCard } from '@/lib/recipientCard';
@@ -376,8 +376,8 @@ export async function createCreation(
     if (allowance === 'none') {
       // A free card they could have used but for being unverified is a different answer from
       // "you have used it": the first asks them to confirm their email, the second to pay.
-      if (freeHeldBack && !eligibility.ok) {
-        const refusal = eligibilityRefusal(eligibility.reason);
+      const refusal = heldBackRefusal(freeHeldBack, eligibility);
+      if (refusal) {
         throw new ApiRouteError(refusal.status, refusal.code, refusal.message);
       }
       throw new ApiRouteError(
@@ -393,6 +393,10 @@ export async function createCreation(
       billing = await fetchBillingState(uid);
     } catch (error) {
       console.error('[createCreation] billing check failed', error);
+      const refusal = heldBackRefusal(freeHeldBack, eligibility);
+      if (refusal) {
+        throw new ApiRouteError(refusal.status, refusal.code, refusal.message);
+      }
       throw new ApiRouteError(503, 'INTERNAL', 'Could not check your plan. Try again.');
     }
   }

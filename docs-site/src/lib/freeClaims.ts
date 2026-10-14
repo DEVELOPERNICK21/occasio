@@ -109,6 +109,19 @@ export function eligibilityRefusal(reason: 'unverified' | 'disposable'): {
 }
 
 /**
+ * What to answer when nothing paid covers this card: ask for the confirmed email if a free card
+ * is waiting on it, otherwise null (the caller says the plan has no cards left). Also the answer
+ * when the plan lookup itself fails, because an unconfirmed account cannot use the free card
+ * either way, so an outage at the billing provider must not hide that step.
+ */
+export function heldBackRefusal(
+  freeHeldBack: boolean,
+  eligibility: FreeEligibility,
+): ReturnType<typeof eligibilityRefusal> | null {
+  return freeHeldBack && !eligibility.ok ? eligibilityRefusal(eligibility.reason) : null;
+}
+
+/**
  * The account's counters as the allowance decision should see them. When this person may not
  * spend the free card now (not verified, or somebody under this identity already had it) it
  * reads as spent, so the decision falls through to paid plans. `freeHeldBack` says they still

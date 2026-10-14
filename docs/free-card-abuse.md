@@ -32,6 +32,7 @@ The server decides (`createCreation` in `docs-site/src/lib/creationsServer.ts`);
 | 14 | Modified app, or a script calling the API with an account they minted | Same rules | The server checks the token itself. Needs a real, confirmed inbox to get a free card |
 | 15 | Already had an unconfirmed email account that used its free card before this change | Keeps using the app; asked to pay for the next card | The card was spent; no verification is asked for it |
 | 16 | Already had an unconfirmed account that never used its free card | Asked to confirm their email first | One-time, and the sheet says exactly what to do |
+| 17 | Unconfirmed account while the plan lookup (RevenueCat) is down or misconfigured | Still asked to confirm their email | They could not use the free card anyway, so the outage must not hide that step (a confirmed or paying account gets `503` and a Try again sheet) |
 
 ## Not covered (and what could cover it)
 

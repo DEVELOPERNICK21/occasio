@@ -4,6 +4,7 @@ import {
   eligibilityRefusal,
   freeClaimIds,
   freeEligibility,
+  heldBackRefusal,
   isDisposableEmail,
   type FreeIdentity,
 } from './freeClaims';
@@ -121,6 +122,24 @@ describe('eligibilityRefusal', () => {
  * The scenarios behind the free card, end to end through the same two functions the server
  * runs: what the account is allowed to do, given who it is and what was already claimed.
  */
+describe('heldBackRefusal', () => {
+  it('asks an unconfirmed account to confirm, which is also the answer if the plan lookup fails', () => {
+    const unverified = freeEligibility({ email: 'a@x.com', verified: false, subjects: [] });
+    expect(heldBackRefusal(true, unverified)?.code).toBe('EMAIL_NOT_VERIFIED');
+  });
+
+  it('names a throwaway address as not allowed', () => {
+    const throwaway = freeEligibility(verified({ email: 'a@mailinator.com' }));
+    expect(heldBackRefusal(true, throwaway)?.code).toBe('EMAIL_NOT_ALLOWED');
+  });
+
+  it('says nothing when no free card is waiting or the account is fine', () => {
+    const unverified = freeEligibility({ email: 'a@x.com', verified: false, subjects: [] });
+    expect(heldBackRefusal(false, unverified)).toBeNull();
+    expect(heldBackRefusal(true, { ok: true })).toBeNull();
+  });
+});
+
 describe('the free card, by scenario', () => {
   const NOW = Date.parse('2026-10-14T00:00:00Z');
   const none = { proActive: false, creditsPurchased: 0 };

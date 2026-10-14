@@ -22,6 +22,7 @@ export type PipSpot =
   | 'photosPick'
   | 'photosReplace'
   | 'verifyEmail'
+  | 'createFailed'
   | 'ageGate'
   | 'cardMissing';
 
@@ -153,6 +154,11 @@ export const PIP_SPOTS: Record<PipSpot, PipSpotConfig> = {
     mood: 'hopeful',
     tapMood: 'joy',
     lines: ['One quick step.', 'I will wait right here.', 'Check your spam folder too.'],
+  },
+  createFailed: {
+    mood: 'shocked',
+    tapMood: 'wink',
+    lines: ['That did not go through.', 'Your card is still here.', 'Try again when you are ready.'],
   },
   ageGate: {
     mood: 'hopeful',
