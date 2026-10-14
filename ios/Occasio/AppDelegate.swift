@@ -16,6 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // App Check must be registered before Firebase starts (the app picks its provider from JS).
+    // The pod ships no Swift module, so it is reached through the Objective-C runtime.
+    if let appCheck = NSClassFromString("RNFBAppCheckModule") {
+      _ = (appCheck as AnyObject).perform(NSSelectorFromString("sharedInstance"))
+    }
     if FirebaseApp.app() == nil {
       FirebaseApp.configure()
     }

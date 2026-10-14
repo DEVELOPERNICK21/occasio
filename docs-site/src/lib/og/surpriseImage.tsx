@@ -9,7 +9,7 @@ export const OG_SIZE = { width: 1200, height: 630 } as const;
  * send every recipient's name to a font server. So big text is thickened with a stroke in its
  * own colour instead (rounded, so the edges stay smooth).
  */
-function heavy(color: string, width: number) {
+export function heavy(color: string, width: number) {
   return { WebkitTextStroke: `${width}px ${color}`, paintOrder: 'stroke fill' } as const;
 }
 
@@ -26,7 +26,7 @@ const SPARKLE = 'M0 -1 Q.14 -.14 1 0 Q.14 .14 0 1 Q-.14 .14 -1 0 Q-.14 -.14 0 -1
  * Pip, flat, winking, in his party hat. Drawn at (0,0) to (240,236); the caller places and scales it.
  * A plain function, not a component: the image renderer cannot expand components inside an svg.
  */
-function pipArt(colors: OgTheme['mascot']) {
+export function pipArt(colors: OgTheme['mascot']) {
   return (
     <g>
       <ellipse cx="84" cy="236" rx="29" ry="13" fill={colors.shade} />

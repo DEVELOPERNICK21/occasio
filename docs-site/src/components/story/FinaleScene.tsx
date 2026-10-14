@@ -7,6 +7,7 @@ import { CelebrationCanvas, type CelebrationHandle } from '@/components/story/fx
 import { JoyMute } from '@/components/story/fx/JoyProvider';
 import { Pip } from '@/components/story/fx/Pip';
 import { StickerReveal } from '@/components/story/fx/StickerReveal';
+import { StoryShareButton } from '@/components/story/StoryShareButton';
 import { trackCardEvent } from '@/lib/cardEvents';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
 import { playBoom, playTada } from '@/lib/experience/sfx';
@@ -102,6 +103,15 @@ export function FinaleScene({
       <div className="finale__actions">
         {card.isDemo ? null : (
           <CardReaction slug={slug} initialCount={card.reactionCount ?? 0} />
+        )}
+        {embedded ? null : (
+          <StoryShareButton
+            slug={slug}
+            templateType={card.templateType}
+            found={stars}
+            of={maxStars}
+            isDemo={card.isDemo}
+          />
         )}
         <button type="button" className="landing-btn-secondary" onClick={replay}>
           Replay the surprise

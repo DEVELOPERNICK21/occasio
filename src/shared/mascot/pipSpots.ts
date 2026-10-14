@@ -21,7 +21,7 @@ export type PipSpot =
   | 'loginForgot'
   | 'photosPick'
   | 'photosReplace'
-  | 'verifyEmail'
+  | 'freeCardSignIn'
   | 'createFailed'
   | 'ageGate'
   | 'cardMissing';
@@ -150,10 +150,10 @@ export const PIP_SPOTS: Record<PipSpot, PipSpotConfig> = {
       'Faces look best near the middle.',
     ],
   },
-  verifyEmail: {
+  freeCardSignIn: {
     mood: 'hopeful',
     tapMood: 'joy',
-    lines: ['One quick step.', 'I will wait right here.', 'Check your spam folder too.'],
+    lines: ['Your free card is waiting.', 'One tap and it is yours.', 'Google or Apple, whichever you use.'],
   },
   createFailed: {
     mood: 'shocked',

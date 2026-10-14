@@ -1,3 +1,4 @@
+import { getAppCheckToken } from '../firebase/appCheck';
 import { HttpError, type HttpErrorCode } from './errors';
 
 type RequestOptions = {
@@ -30,8 +31,9 @@ function isHttpErrorCode(value: string): value is HttpErrorCode {
     'NOT_IMPLEMENTED',
     'UNDER_AGE',
     'ATTESTATION_INVALID',
-    'EMAIL_NOT_VERIFIED',
+    'FREE_CARD_NEEDS_PROVIDER',
     'EMAIL_NOT_ALLOWED',
+    'APP_CHECK_FAILED',
     'INTERNAL',
   ].includes(value);
 }
@@ -47,12 +49,15 @@ export async function httpRequest<T>(
 ): Promise<T> {
   const { method = 'GET', body, headers = {} } = options;
   const url = `${baseUrl.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+  // Writes say they come from the real app; reads are public pages and need nothing.
+  const appCheck = method === 'GET' ? null : await getAppCheckToken();
 
   const res = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...(appCheck ? { 'X-Firebase-AppCheck': appCheck } : {}),
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,

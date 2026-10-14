@@ -17,29 +17,29 @@ const verified = (overrides: Partial<FreeIdentity> = {}): FreeIdentity => ({
 });
 
 describe('freeEligibility', () => {
-  it('lets a verified Google, Apple or confirmed-email identity have the free card', () => {
+  it('lets a Google or Apple identity have the free card', () => {
     expect(freeEligibility(verified())).toEqual({ ok: true });
     expect(freeEligibility(verified({ email: 'abc123@privaterelay.appleid.com', subjects: ['apple.com:000.x'] }))).toEqual({ ok: true });
   });
 
-  it('refuses an unverified account: a made-up email and password proves nothing', () => {
+  it('refuses an email and password account: anyone can make those, confirmed or not', () => {
     expect(freeEligibility({ email: null, verified: false, subjects: [] })).toEqual({
       ok: false,
-      reason: 'unverified',
+      reason: 'needs_provider',
     });
   });
 
-  it('refuses a throwaway inbox even when it was "verified"', () => {
+  it('refuses a Google account that sits on a throwaway address', () => {
     expect(freeEligibility(verified({ email: 'x@mailinator.com' }))).toEqual({
       ok: false,
       reason: 'disposable',
     });
   });
 
-  it('says unverified before disposable, so the first step is always to confirm', () => {
+  it('asks for Google or Apple before looking at the address', () => {
     expect(freeEligibility({ email: 'x@mailinator.com', verified: false, subjects: [] })).toEqual({
       ok: false,
-      reason: 'unverified',
+      reason: 'needs_provider',
     });
   });
 });
@@ -108,9 +108,9 @@ describe('freeClaimIds', () => {
 
 describe('eligibilityRefusal', () => {
   it('uses codes the app can act on, and says what to do', () => {
-    const unverified = eligibilityRefusal('unverified');
-    expect([unverified.status, unverified.code]).toEqual([403, 'EMAIL_NOT_VERIFIED']);
-    expect(unverified.message).toMatch(/confirm your email/i);
+    const needsProvider = eligibilityRefusal('needs_provider');
+    expect([needsProvider.status, needsProvider.code]).toEqual([403, 'FREE_CARD_NEEDS_PROVIDER']);
+    expect(needsProvider.message).toMatch(/Google or Apple/);
 
     const disposable = eligibilityRefusal('disposable');
     expect([disposable.status, disposable.code]).toEqual([403, 'EMAIL_NOT_ALLOWED']);
@@ -123,9 +123,9 @@ describe('eligibilityRefusal', () => {
  * runs: what the account is allowed to do, given who it is and what was already claimed.
  */
 describe('heldBackRefusal', () => {
-  it('asks an unconfirmed account to confirm, which is also the answer if the plan lookup fails', () => {
+  it('asks an email account to sign in with Google or Apple, which is also the answer if the plan lookup fails', () => {
     const unverified = freeEligibility({ email: 'a@x.com', verified: false, subjects: [] });
-    expect(heldBackRefusal(true, unverified)?.code).toBe('EMAIL_NOT_VERIFIED');
+    expect(heldBackRefusal(true, unverified)?.code).toBe('FREE_CARD_NEEDS_PROVIDER');
   });
 
   it('names a throwaway address as not allowed', () => {
@@ -165,7 +165,7 @@ describe('the free card, by scenario', () => {
 
   const google = verified({ email: 'maya@gmail.com', subjects: ['google.com:1'] });
   const apple = verified({ email: 'x1@privaterelay.appleid.com', subjects: ['apple.com:9'] });
-  const fakeEmail: FreeIdentity = { email: null, verified: false, subjects: [] };
+  const emailAccount: FreeIdentity = { email: null, verified: false, subjects: [] };
 
   it('a first-time Google or Apple user gets the free card', () => {
     expect(outcome({ identity: google }).allowance).toBe('free');
@@ -181,33 +181,38 @@ describe('the free card, by scenario', () => {
 
   it('a made-up email and password gets no free card, however many are made', () => {
     for (let i = 0; i < 5; i += 1) {
-      const attempt = outcome({ identity: fakeEmail });
+      const attempt = outcome({ identity: emailAccount });
       expect(attempt.allowance).toBe('needs_billing');
       expect(attempt.freeHeldBack).toBe(true);
     }
-    expect(outcome({ identity: fakeEmail, billing: none })).toEqual({ allowance: 'none', freeHeldBack: true });
+    expect(outcome({ identity: emailAccount, billing: none })).toEqual({ allowance: 'none', freeHeldBack: true });
   });
 
-  it('confirming the email unlocks the free card, once', () => {
-    const confirmed = verified({ email: 'real.person@outlook.com' });
-    expect(outcome({ identity: confirmed }).allowance).toBe('free');
-    expect(outcome({ identity: confirmed, doc: { freeCardsUsed: 1 } }).allowance).toBe('needs_billing');
+  it('a confirmed email and password account still gets no free card: any inbox can be confirmed', () => {
+    // The server only sees "no Google or Apple", whether or not the inbox was confirmed.
+    const confirmedInbox: FreeIdentity = { email: 'real.person@outlook.com', verified: false, subjects: [] };
+    expect(outcome({ identity: confirmedInbox, billing: none })).toEqual({ allowance: 'none', freeHeldBack: true });
   });
 
-  it('a throwaway inbox is refused even after it is confirmed', () => {
+  it('the free card is spent once per Google or Apple account', () => {
+    expect(outcome({ identity: google }).allowance).toBe('free');
+    expect(outcome({ identity: google, doc: { freeCardsUsed: 1 } }).allowance).toBe('needs_billing');
+  });
+
+  it('a Google account on a throwaway address is refused', () => {
     const throwaway = verified({ email: 'abc@mailinator.com' });
     expect(outcome({ identity: throwaway, billing: none })).toEqual({ allowance: 'none', freeHeldBack: true });
   });
 
-  it('paying never needs verification: Pro and single wishes work for anyone', () => {
-    expect(outcome({ identity: fakeEmail, billing: proPlan }).allowance).toBe('pro');
+  it('paying never needs Google or Apple: Pro and single wishes work for anyone', () => {
+    expect(outcome({ identity: emailAccount, billing: proPlan }).allowance).toBe('pro');
     expect(
-      outcome({ identity: fakeEmail, billing: { proActive: false, creditsPurchased: 1 } }).allowance,
+      outcome({ identity: emailAccount, billing: { proActive: false, creditsPurchased: 1 } }).allowance,
     ).toBe('credit');
   });
 
-  it('an unverified account that already used its free card is simply asked to pay, not to verify', () => {
-    const used = outcome({ identity: fakeEmail, doc: { freeCardsUsed: 1 }, billing: none });
+  it('an email account that already used its free card is simply asked to pay, not to sign in with Google', () => {
+    const used = outcome({ identity: emailAccount, doc: { freeCardsUsed: 1 }, billing: none });
     expect(used).toEqual({ allowance: 'none', freeHeldBack: false });
   });
 

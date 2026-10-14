@@ -1207,6 +1207,9 @@ PODS:
     - BoringSSL-GRPC/Interface (= 0.0.37)
   - BoringSSL-GRPC/Interface (0.0.37)
   - FBLazyVector (0.86.0)
+  - Firebase/AppCheck (12.10.0):
+    - Firebase/CoreOnly
+    - FirebaseAppCheck (~> 12.10.0)
   - Firebase/Auth (12.10.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 12.10.0)
@@ -1233,6 +1236,12 @@ PODS:
     - GoogleUtilities/Network (~> 8.1)
     - "GoogleUtilities/NSData+zlib (~> 8.1)"
     - nanopb (~> 3.30910.0)
+  - FirebaseAppCheck (12.10.0):
+    - AppCheckCore (~> 11.0)
+    - FirebaseAppCheckInterop (~> 12.10.0)
+    - FirebaseCore (~> 12.10.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
   - FirebaseAppCheckInterop (12.10.0)
   - FirebaseAuth (12.10.0):
     - FirebaseAppCheckInterop (~> 12.10.0)
@@ -3543,6 +3552,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNFBAppCheck (23.8.8):
+    - Firebase/AppCheck (= 12.10.0)
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNFBApp
+    - Yoga
   - RNFBAuth (23.8.8):
     - Firebase/Auth (= 12.10.0)
     - hermes-engine
@@ -4162,6 +4195,7 @@ DEPENDENCIES:
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBAppCheck (from `../node_modules/@react-native-firebase/app-check`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
@@ -4188,6 +4222,7 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - Firebase
     - FirebaseAnalytics
+    - FirebaseAppCheck
     - FirebaseAppCheckInterop
     - FirebaseAuth
     - FirebaseAuthInterop
@@ -4393,6 +4428,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/analytics"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNFBAppCheck:
+    :path: "../node_modules/@react-native-firebase/app-check"
   RNFBAuth:
     :path: "../node_modules/@react-native-firebase/auth"
   RNFBCrashlytics:
@@ -4436,6 +4473,7 @@ SPEC CHECKSUMS:
   FBLazyVector: b3e7ad108f0d882e30445c5527d774e3fd432f3d
   Firebase: 99f203d3a114c6ba591f3b32263a9626e450af65
   FirebaseAnalytics: ef2970f65f3a2807e8f47a49cf3b8719d53e9fce
+  FirebaseAppCheck: 3cd5112c60c3b04e6207e41a864b6c3cb06f73ad
   FirebaseAppCheckInterop: 2480ab50a070a6bc02e26e62733874361f017a11
   FirebaseAuth: 7109e33998bbd96f983dc02b97289b535f6f4141
   FirebaseAuthInterop: f9c841843d840cae6a7db7551452eac520ffa3bd
@@ -4552,6 +4590,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: 59657c6f6ad620b34ab1f92ff3ebdc471684985a
   RNFBAnalytics: 74fddd4d01a88cbb948b66ba927d99f5d40519a8
   RNFBApp: 7b9f35bc79fcd15ba62d56d80587aa8822d584f1
+  RNFBAppCheck: 66e939a7aab68daa5cd88e4009263f463991340b
   RNFBAuth: 7d520e51984dd919d8a564f2b5b58840a9db6cf9
   RNFBCrashlytics: f62b83e79522ea2278b6cbbee12a23a2a48c6004
   RNFBFirestore: 0bbf62a17176f7b99477fc70a34894d24f9b0e21
@@ -4573,4 +4612,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 7e205be7258936101c770b9ea95a260076773767
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

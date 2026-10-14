@@ -1,13 +1,14 @@
 /**
  * Who may spend the one free card, and what "already had it" means.
  *
- * The free card is meant to be once per person, but an account is cheap to make. So the card
- * is tied to something that costs effort to fake: a verified inbox, or a Google or Apple
- * identity. Each leaves a one-way claim that outlives the account, so deleting the account and
- * signing up again does not refill it.
+ * The free card is meant to be once per person, but an account is cheap to make, and so is a
+ * "confirmed" throwaway inbox. So the card is tied to a Google or Apple identity, which costs
+ * real effort to fake. Email and password accounts can still pay for cards, just not claim
+ * this one. Each claim leaves a one-way record that outlives the account, so deleting the
+ * account and signing up again does not refill it.
  *
- * What this cannot stop: one person with several real inboxes or Apple/Google accounts. That
- * needs a device signal (see docs/free-card-abuse.md).
+ * What this cannot stop: one person with several real Google or Apple accounts. That needs a
+ * device signal (see docs/free-card-abuse.md).
  */
 import { createHash } from 'node:crypto';
 import { FREE_CARD_LIMIT, freeCardsUsed, freeClaimId, type AllowanceUserDoc } from './cardAllowance';
@@ -15,7 +16,7 @@ import { FREE_CARD_LIMIT, freeCardsUsed, freeClaimId, type AllowanceUserDoc } fr
 /** What the sign-in proved about the person. `email` is only ever a verified one. */
 export type FreeIdentity = {
   email: string | null;
-  /** The provider vouched for them: Google, Apple, or an email they confirmed. */
+  /** Google or Apple vouches for them. An email and password, confirmed or not, does not. */
   verified: boolean;
   /** Stable ids from Google or Apple, such as `google.com:1234`. They survive a changed email. */
   subjects: readonly string[];
@@ -23,7 +24,7 @@ export type FreeIdentity = {
 
 export type FreeEligibility =
   | { ok: true }
-  | { ok: false; reason: 'unverified' | 'disposable' };
+  | { ok: false; reason: 'needs_provider' | 'disposable' };
 
 /**
  * Throwaway inbox providers. A short list of the common ones, not a promise to catch every
@@ -64,7 +65,7 @@ export function isDisposableEmail(email: string | null | undefined): boolean {
 }
 
 export function freeEligibility(identity: FreeIdentity): FreeEligibility {
-  if (!identity.verified) return { ok: false, reason: 'unverified' };
+  if (!identity.verified) return { ok: false, reason: 'needs_provider' };
   if (isDisposableEmail(identity.email)) return { ok: false, reason: 'disposable' };
   return { ok: true };
 }
@@ -89,29 +90,29 @@ export function freeClaimIds(identity: FreeIdentity): string[] {
 }
 
 /** What to tell the app when the free card is refused for one of these reasons. */
-export function eligibilityRefusal(reason: 'unverified' | 'disposable'): {
+export function eligibilityRefusal(reason: 'needs_provider' | 'disposable'): {
   status: 403;
-  code: 'EMAIL_NOT_VERIFIED' | 'EMAIL_NOT_ALLOWED';
+  code: 'FREE_CARD_NEEDS_PROVIDER' | 'EMAIL_NOT_ALLOWED';
   message: string;
 } {
-  return reason === 'unverified'
+  return reason === 'needs_provider'
     ? {
         status: 403,
-        code: 'EMAIL_NOT_VERIFIED',
-        message: 'Confirm your email to use your free card. We sent you a link.',
+        code: 'FREE_CARD_NEEDS_PROVIDER',
+        message: 'The free card is for Google or Apple sign-in. Sign in with one of them, or choose a plan.',
       }
     : {
         status: 403,
         code: 'EMAIL_NOT_ALLOWED',
         message:
-          'That email address cannot be used for the free card. Sign in with Google or Apple, or use a regular email address.',
+          'That email address cannot be used for the free card. Use a Google or Apple account with a regular email address, or choose a plan.',
       };
 }
 
 /**
- * What to answer when nothing paid covers this card: ask for the confirmed email if a free card
- * is waiting on it, otherwise null (the caller says the plan has no cards left). Also the answer
- * when the plan lookup itself fails, because an unconfirmed account cannot use the free card
+ * What to answer when nothing paid covers this card: ask for Google or Apple sign-in if a free
+ * card is waiting on it, otherwise null (the caller says the plan has no cards left). Also the
+ * answer when the plan lookup itself fails, because an email account cannot use the free card
  * either way, so an outage at the billing provider must not hide that step.
  */
 export function heldBackRefusal(
@@ -123,9 +124,9 @@ export function heldBackRefusal(
 
 /**
  * The account's counters as the allowance decision should see them. When this person may not
- * spend the free card now (not verified, or somebody under this identity already had it) it
+ * spend the free card now (not signed in with Google or Apple, or somebody under this identity already had it) it
  * reads as spent, so the decision falls through to paid plans. `freeHeldBack` says they still
- * have a free card that only verification would unlock, which is a different answer to give.
+ * have a free card that only a Google or Apple sign-in would unlock, which is a different answer to give.
  */
 export function applyFreeRules(
   doc: AllowanceUserDoc,

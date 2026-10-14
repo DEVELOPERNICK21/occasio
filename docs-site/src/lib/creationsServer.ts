@@ -274,7 +274,7 @@ export async function createCreation(
   const db = getAdminFirestore();
   const createdAt = new Date();
   const nowMs = createdAt.getTime();
-  // The free card needs a verified identity, and is spent once per person however many
+  // The free card needs a Google or Apple identity, and is spent once per person however many
   // accounts they make: see lib/freeClaims.ts for what counts.
   const identity = {
     email: user.email ?? null,
@@ -374,8 +374,8 @@ export async function createCreation(
     });
 
     if (allowance === 'none') {
-      // A free card they could have used but for being unverified is a different answer from
-      // "you have used it": the first asks them to confirm their email, the second to pay.
+      // A free card they could have used but for not signing in with Google or Apple is a
+      // different answer from "you have used it": the first asks for that sign-in, the second to pay.
       const refusal = heldBackRefusal(freeHeldBack, eligibility);
       if (refusal) {
         throw new ApiRouteError(refusal.status, refusal.code, refusal.message);
@@ -561,10 +561,10 @@ export async function unlockCardBySlug(
   return { status: 'wrong', attemptsLeft: UNLOCK_MAX_FAILS - fails };
 }
 
-export const CARD_EVENT_TYPES = ['opened', 'finished', 'replayed', 'cta'] as const;
+export const CARD_EVENT_TYPES = ['opened', 'finished', 'replayed', 'cta', 'story_share'] as const;
 export type CardEventType = (typeof CARD_EVENT_TYPES)[number];
 
-/** Anonymous funnel counters (opened → finished → replayed → cta) for growth metrics. */
+/** Anonymous funnel counters (opened → finished → replayed → story_share / cta) for growth metrics. */
 export async function recordCardEvent(
   slug: string,
   type: CardEventType,

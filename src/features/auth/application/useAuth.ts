@@ -1,5 +1,4 @@
 import { useAuthContext } from './AuthProvider';
-import { needsEmailVerification } from '../domain/emailVerification';
 import type { GatedAction } from '../domain/types';
 
 export function useAuth() {
@@ -12,10 +11,10 @@ export function useAuth() {
     signOutUser,
     deleteAccountUser,
     signInGoogle,
+    canSignInWithApple,
+    signInApple,
     signInEmail,
     createEmailAccount,
-    sendVerificationEmail,
-    refreshEmailVerification,
     softAuthRequest,
   } = useAuthContext();
 
@@ -31,11 +30,10 @@ export function useAuth() {
     signOutUser,
     deleteAccountUser,
     signInGoogle,
+    canSignInWithApple,
+    signInApple,
     signInEmail,
     createEmailAccount,
-    sendVerificationEmail,
-    refreshEmailVerification,
-    needsEmailVerification: needsEmailVerification(user),
   };
 }
 

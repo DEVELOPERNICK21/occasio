@@ -108,6 +108,11 @@ describe('quota', () => {
     );
     expect(freeQuotaNotice(0, 'personal')).toBeNull();
   });
+
+  it('tells an email account that the free card needs Google or Apple, before it finds out the hard way', () => {
+    expect(freeQuotaNotice(0, 'free', false)).toBe('Your first card is free with Google or Apple sign-in.');
+    expect(freeQuotaNotice(1, 'free', false)).toBe(freeQuotaNotice(1, 'free'));
+  });
 });
 
 describe('occasionEffects', () => {

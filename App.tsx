@@ -18,11 +18,13 @@ import {
   isFirebaseConfigured,
 } from './src/shared/firebase/app';
 import { startAnalytics } from './src/shared/firebase/analytics';
+import { startAppCheck } from './src/shared/firebase/appCheck';
 import { startCrashReporting } from './src/shared/firebase/crashlytics';
 
 function App() {
   useEffect(() => {
     lockToPortrait();
+    startAppCheck();
     void loadAnalyticsConsent().then(() => {
       startCrashReporting();
       startAnalytics();

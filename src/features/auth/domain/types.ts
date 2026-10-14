@@ -16,10 +16,8 @@ export type AuthUser = {
   displayName: string | null;
   /** ISO timestamp from Firebase Auth metadata when available. */
   createdAt: string | null;
-  /** The inbox was confirmed (Google and Apple confirm it for us). */
-  emailVerified?: boolean;
-  /** They signed in with an email and password, so nobody has vouched for the address yet. */
-  usesPassword?: boolean;
+  /** Signed in with, or linked to, Google or Apple: the only sign-ins that can claim the free card. */
+  viaGoogleOrApple?: boolean;
 };
 
 export type AuthSessionStatus = 'loading' | 'guest' | 'signed_in';

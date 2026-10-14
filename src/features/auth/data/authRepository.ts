@@ -31,7 +31,6 @@ function mapUser(firebaseUser: FirebaseAuthTypes.User): AuthUser {
     phoneNumber: firebaseUser.phoneNumber,
     displayName: firebaseUser.displayName,
     createdAt: firebaseUser.metadata.creationTime ?? null,
-    emailVerified: firebaseUser.emailVerified,
     providerIds: firebaseUser.providerData.map((provider) => provider.providerId),
   });
 }
@@ -98,6 +97,7 @@ export async function signInWithGoogle(): Promise<AuthUser> {
       phoneNumber: null,
       displayName: 'Dev User',
       createdAt: new Date().toISOString(),
+      viaGoogleOrApple: true,
     };
     notifyMockListeners();
     return mockUser;
@@ -179,6 +179,7 @@ export async function signInWithApple(): Promise<AuthUser> {
       phoneNumber: null,
       displayName: 'Dev User',
       createdAt: new Date().toISOString(),
+      viaGoogleOrApple: true,
     };
     notifyMockListeners();
     return mockUser;
@@ -281,8 +282,6 @@ export async function createAccountWithEmail(
       phoneNumber: null,
       displayName: null,
       createdAt: new Date().toISOString(),
-      emailVerified: false,
-      usesPassword: true,
     };
     notifyMockListeners();
     return mockUser;
@@ -294,8 +293,6 @@ export async function createAccountWithEmail(
       throw new AuthError('UNKNOWN', 'Could not create account.');
     }
     await requireAgeForNewAccount(result.user);
-    // Best effort: if it does not go through, the sheet that asks for it can send it again.
-    await result.user.sendEmailVerification().catch(() => undefined);
     return mapUser(result.user);
   } catch (error) {
     if (error instanceof AuthError) {
@@ -303,55 +300,6 @@ export async function createAccountWithEmail(
     }
     throw mapFirebaseAuthError(error);
   }
-}
-
-/** Sends the "confirm your email" link to the signed-in account. */
-export async function sendVerificationEmail(): Promise<void> {
-  if (env.useMockAuth) {
-    return;
-  }
-  const user = auth().currentUser;
-  if (!user) {
-    throw new AuthError('UNKNOWN', 'Sign in again to confirm your email.');
-  }
-  try {
-    await user.sendEmailVerification();
-  } catch (error) {
-    const code =
-      typeof error === 'object' && error !== null && 'code' in error
-        ? String((error as { code: unknown }).code)
-        : '';
-    if (code === 'auth/too-many-requests') {
-      throw new AuthError('TOO_MANY_REQUESTS', 'Too many tries. Wait a minute, then send it again.');
-    }
-    throw new AuthError('NETWORK', 'Could not send the email. Check your connection and try again.');
-  }
-}
-
-/**
- * Asks Firebase whether the inbox has been confirmed since, and refreshes the sign-in token
- * so the server sees it too (the token carries the confirmed flag). Returns the fresh user.
- */
-export async function refreshEmailVerification(): Promise<AuthUser | null> {
-  if (env.useMockAuth) {
-    if (mockUser) {
-      mockUser = { ...mockUser, emailVerified: true };
-      notifyMockListeners();
-    }
-    return mockUser;
-  }
-  const user = auth().currentUser;
-  if (!user) {
-    return null;
-  }
-  try {
-    await user.reload();
-    await user.getIdToken(true);
-  } catch {
-    throw new AuthError('NETWORK', 'Could not check right now. Check your connection and try again.');
-  }
-  const fresh = auth().currentUser;
-  return fresh ? mapUser(fresh) : null;
 }
 
 export async function sendPasswordResetEmail(email: string): Promise<void> {

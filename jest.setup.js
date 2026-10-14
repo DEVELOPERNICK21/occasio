@@ -44,3 +44,10 @@ jest.mock('react-native-safe-area-context', () => {
     initialWindowMetrics: { insets: inset, frame: { x: 0, y: 0, width: 390, height: 844 } },
   };
 });
+
+// App Check needs a native runtime. Everywhere else a request simply goes without a token.
+jest.mock('./src/shared/firebase/appCheck', () => ({
+  APP_CHECK_TIMEOUT_MS: 5000,
+  startAppCheck: jest.fn(),
+  getAppCheckToken: jest.fn(async () => null),
+}));

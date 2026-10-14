@@ -31,11 +31,11 @@ Public greeting links are **unlisted** (anyone with the URL can view) but **time
 
 ## `POST /v1/creations` (auth)
 
-Create a shareable card. Requires `Authorization: Bearer <Firebase ID token>` (anonymous accounts refused). The guest can build the card; the app asks for sign-in at "Create the link".
+Create a shareable card. Requires `Authorization: Bearer <Firebase ID token>` (anonymous accounts refused). The app also sends `X-Firebase-AppCheck: <App Check token>` on writes, proving the request comes from the real app; it is checked and logged, and refused only when `APP_CHECK_MODE=enforce` (see `docs/app-check.md`). The guest can build the card; the app asks for sign-in at "Create the link".
 
 **Allowance (server-enforced, one Firestore transaction with the card write):**
 
-1. The first card per person is free, once, ever — `users/{uid}.freeCardsUsed`, plus one-way claims in `free_claims` (the inbox, spelled any way, and each Google or Apple id) so deleting the account and signing up again does not refill it (clients cannot write either). **The free card needs a verified identity**: Google, Apple, or an email the person confirmed. An email and password nobody has confirmed gets `403 EMAIL_NOT_VERIFIED` (the app asks them to confirm, it does not show the paywall), and a known throwaway inbox gets `403 EMAIL_NOT_ALLOWED`. Paying never needs verification. See `docs/free-card-abuse.md`.
+1. The first card per person is free, once, ever — `users/{uid}.freeCardsUsed`, plus one-way claims in `free_claims` (the inbox, spelled any way, and each Google or Apple id) so deleting the account and signing up again does not refill it (clients cannot write either). **The free card is for Google and Apple accounts only** (signed in with one, or has one linked). An email and password account, confirmed or not, gets `403 FREE_CARD_NEEDS_PROVIDER` (the app offers Google or Apple sign-in or the plans, it does not show the paywall), and a known throwaway inbox gets `403 EMAIL_NOT_ALLOWED`. Paying never needs Google or Apple: any account can buy Pro or single wishes. See `docs/free-card-abuse.md`.
 2. After that, RevenueCat is checked server-side (`REVENUECAT_SECRET_KEY` on Vercel): active `occasio_pro` → allowed while fewer than 24 cards were made in the last 365 days (`users/{uid}.proCardTimes`).
 3. Otherwise one purchased single-wish credit is spent (`wishCreditsUsed + 1`) if `purchased − used > 0` — this also covers a Pro member past 24.
 4. Else `402 QUOTA_EXCEEDED`. Without the RevenueCat key, only the free card works.
@@ -76,8 +76,9 @@ Server also persists on the creation document (not echoed in the response body t
 | `VALIDATION_ERROR` | 400 | Missing name/photos/template |
 | `UNAUTHORIZED` | 401 | No valid sign-in token |
 | `QUOTA_EXCEEDED` | 402 | Free card used, no Pro, no credits — paywall |
-| `EMAIL_NOT_VERIFIED` | 403 | The free card is waiting for a confirmed email — ask them to confirm, not to pay |
+| `FREE_CARD_NEEDS_PROVIDER` | 403 | The free card needs a Google or Apple account — offer that sign-in or the plans, not the paywall |
 | `EMAIL_NOT_ALLOWED` | 403 | A throwaway email address cannot use the free card |
+| `APP_CHECK_FAILED` | 403 | Only when enforcing: no valid App Check token — the app asks the person to update it |
 | `UPLOAD_MISSING` | 400 | photoRefs not found in storage |
 | `INTERNAL` | 500 | Retry |
 
@@ -111,6 +112,19 @@ Get signed URL for client → R2/Firebase Storage upload.
 ```json
 { "uploadUrl": "...", "photoRef": "uploads/tmp/abc.jpg", "expiresIn": 900 }
 ```
+
+## `GET /api/story-frame` (public)
+
+The picture a recipient posts to their story: a 1080x1920 PNG of Pip, the occasion and the stars found. It carries nothing
+from any card (no photo, message or name), so it needs no lookup and is cached for good.
+
+| Query | Meaning |
+|---|---|
+| `occasion` | `birthday`, `anniversary`, `thank_you`, `congratulations` or `just_because`; anything else looks like `birthday` |
+| `found` | Stars found, 0 to 12 (never more than `of`) |
+| `of` | Stars there were, 0 to 12. With `found=0` or `of=0` the picture has no star row |
+
+Anything out of range is made safe, not refused. See `docs/recipient-experience.md`.
 
 ## `GET /v1/cards/:slug` (public)
 

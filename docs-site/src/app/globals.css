@@ -3755,6 +3755,14 @@ body {
   align-items: center;
   gap: 0.7rem;
 }
+.finale__hint {
+  margin: 0;
+  max-width: 18rem;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
 .finale__loop {
   display: flex;
   flex-direction: column;

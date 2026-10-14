@@ -88,6 +88,31 @@ A shared card link shows a picture, a title and a line before anyone opens it. I
   recipient's name to a font server.
 - Chat apps keep a preview for a long time and cannot be told to refresh. The CDN keeps the image for an hour only.
 
+## Share to your story (the recipient's frame)
+
+The person who receives a card is the best sharer: they have just been surprised, it costs them nothing, and every post
+puts the link in front of someone new. The finale has a **Share to your story** button (not shown inside the landing
+page's live sample).
+
+- **The picture** (`GET /api/story-frame?occasion=birthday&found=5&of=6`, drawn by `lib/og/storyFrameImage.tsx`) is
+  1080x1920: Pip, "I GOT A SURPRISE", a headline for the moment ("Someone made me a birthday wish"), the stars found
+  ("5 of 6 stars found", "Every star found"; no row when none were found) and a button-shaped "Make one for someone".
+  Everything that matters sits between the strips Instagram covers (the top 250 px and bottom 340 px).
+- **It is public, so it carries nothing from the card**: no photo, no message, no names. Only the occasion and the score
+  are inputs, validated and clamped (`lib/experience/storyShare.ts`), so there is nothing to look up and the same address
+  always gives the same picture (about 450 possible ones), cached for good.
+- **Sharing** (`components/story/StoryShareButton.tsx`, `lib/experience/storyShareFlow.ts`): the picture is fetched ahead
+  of the tap so the share sheet can open straight from it, which some browsers insist on. The share sheet (Instagram,
+  WhatsApp Status, anything) gets the picture and the caption. A browser that cannot share files downloads it instead.
+  The caption is copied either way, and the hint only says so when the clipboard accepted it.
+- **The link sticker**: Instagram does not let a page place one, so the button-shaped spot is where the person lays
+  their own link sticker, and the caption carries the link too. Adding it in one tap needs Meta's "Share to Stories"
+  API (a Meta developer app ID and a native module), which is a later step in the app.
+- **The link points at the public landing page** with `?ref=<slug>`, never at the private card. `story_share` counts
+  taps on the button, next to `opened`, `finished`, `replayed` and `cta`, so shares per finished card, and the people
+  each one brings, can be measured.
+- Words are calm: no exclamation marks, no emoji (tested).
+
 ## Music under the message and the finale
 
 `lib/experience/occasionMusic.ts` plays the moment's song (`public/sounds/*.mp3`, chosen in `occasionSongs.ts`)

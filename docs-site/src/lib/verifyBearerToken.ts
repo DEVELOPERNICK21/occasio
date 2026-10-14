@@ -8,9 +8,9 @@ export type VerifiedUser = {
   /** Anonymous Firebase accounts cost nothing to mint, so they cannot hold a free allowance. */
   anonymous: boolean;
   /**
-   * The sign-in proved something real: Google or Apple vouched for them, or they confirmed
-   * their inbox. An email and password that nobody checked proves nothing, because anyone
-   * can mint those by the hundred.
+   * Google or Apple vouches for this account (it is signed in with one, or has one linked).
+   * An email and password proves nothing, even a confirmed one: throwaway inboxes receive the
+   * confirmation just fine and anyone can mint those by the hundred.
    */
   verified: boolean;
   /** Google or Apple ids (`google.com:1234`): they stay the same if the email changes. */
@@ -43,12 +43,11 @@ export async function verifyBearerToken(
       const ids = identities[name];
       return Array.isArray(ids) ? ids.map((id) => `${name}:${String(id)}`) : [];
     });
-    const vouched = (VOUCHING_PROVIDERS as readonly string[]).includes(provider ?? '');
     return {
       uid: decoded.uid,
       email: decoded.email && decoded.email_verified ? decoded.email : null,
       anonymous,
-      verified: !anonymous && (vouched || decoded.email_verified === true),
+      verified: !anonymous && subjects.length > 0,
       subjects,
     };
   } catch {

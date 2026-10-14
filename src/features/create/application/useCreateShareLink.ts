@@ -18,15 +18,15 @@ import type { ExtraWishAccess } from '../../billing/domain/types';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from '../data/types';
 
-/** Why the free card could not be used yet: the email is not confirmed, or cannot be used. */
-export type VerifyReason = 'unverified' | 'not_allowed';
+/** Why the free card is not available: it needs a Google or Apple account, or the address cannot be used. */
+export type FreeCardBlock = 'needs_provider' | 'not_allowed';
 
 type State = {
   isLoading: boolean;
   error: string | null;
   paywallRequired: boolean;
-  /** Set when the server asks for a confirmed email instead of a payment. */
-  verifyRequired: VerifyReason | null;
+  /** Set when the server says the free card needs a Google or Apple account, instead of a payment. */
+  freeCardBlocked: FreeCardBlock | null;
   result: CreateCreationResponse | null;
   /** True when the last successful save was a PATCH (same URL). */
   wasUpdated: boolean;
@@ -36,7 +36,7 @@ const initialState: State = {
   isLoading: false,
   error: null,
   paywallRequired: false,
-  verifyRequired: null,
+  freeCardBlocked: null,
   result: null,
   wasUpdated: false,
 };
@@ -60,9 +60,9 @@ type Options = {
   photoSlots?: number | null;
 };
 
-function verifyReasonFor(error: unknown): VerifyReason | null {
+function freeCardBlockFor(error: unknown): FreeCardBlock | null {
   if (!(error instanceof CreationApiError)) return null;
-  if (error.code === 'EMAIL_NOT_VERIFIED') return 'unverified';
+  if (error.code === 'FREE_CARD_NEEDS_PROVIDER') return 'needs_provider';
   if (error.code === 'EMAIL_NOT_ALLOWED') return 'not_allowed';
   return null;
 }
@@ -130,7 +130,7 @@ export function useCreateShareLink(options: Options = {}) {
         isLoading: true,
         error: null,
         paywallRequired: false,
-        verifyRequired: null,
+        freeCardBlocked: null,
         result: null,
         wasUpdated: false,
       });
@@ -148,7 +148,7 @@ export function useCreateShareLink(options: Options = {}) {
           isLoading: false,
           error: null,
           paywallRequired: false,
-          verifyRequired: null,
+          freeCardBlocked: null,
           result,
           wasUpdated: isEdit,
         });
@@ -161,20 +161,20 @@ export function useCreateShareLink(options: Options = {}) {
             isLoading: false,
             error: null,
             paywallRequired: true,
-            verifyRequired: null,
+            freeCardBlocked: null,
             result: null,
             wasUpdated: false,
           });
           return null;
         }
-        // The free card is waiting; it only needs a confirmed email. Not a payment.
-        const verify = verifyReasonFor(e);
-        if (verify) {
+        // The free card is there for a Google or Apple account. Not a payment.
+        const blocked = freeCardBlockFor(e);
+        if (blocked) {
           setState({
             isLoading: false,
             error: null,
             paywallRequired: false,
-            verifyRequired: verify,
+            freeCardBlocked: blocked,
             result: null,
             wasUpdated: false,
           });
@@ -186,7 +186,7 @@ export function useCreateShareLink(options: Options = {}) {
           isLoading: false,
           error: message,
           paywallRequired: false,
-          verifyRequired: null,
+          freeCardBlocked: null,
           result: null,
           wasUpdated: false,
         });

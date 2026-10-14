@@ -19,7 +19,7 @@ import { freeQuotaNotice, PRO_YEARLY_CARD_LIMIT } from '../../domain/quota';
 import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
 import { CreateProblemSheet } from '../components/CreateProblemSheet';
-import { VerifyEmailSheet } from '../components/VerifyEmailSheet';
+import { FreeCardSheet } from '../components/FreeCardSheet';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Button } from '../../../../shared/ui/Button';
 import { PipLoader } from '../../../../shared/ui/PipLoader';
@@ -32,7 +32,7 @@ type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
 export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
-  const { isSignedIn, requestAuth, user, sendVerificationEmail, refreshEmailVerification } =
+  const { isSignedIn, requestAuth, user, canSignInWithApple, signInGoogle, signInApple } =
     useAuth();
   const { getById } = useTemplateCatalog();
   const {
@@ -52,7 +52,7 @@ export function PreviewScreen({ navigation }: Props) {
   const frame = draft.templateId ? getById(draft.templateId) : null;
   const photoSlots = frame?.photoSlots ?? null;
   const photosShort = framePhotosShort(draft.photoUris.length, photoSlots);
-  const { generate, isLoading, error, paywallRequired, verifyRequired, reset } =
+  const { generate, isLoading, error, paywallRequired, freeCardBlocked, reset } =
     useCreateShareLink({
       cardsCreated,
       tier,
@@ -62,7 +62,7 @@ export function PreviewScreen({ navigation }: Props) {
     });
   const quotaNotice = isEditing
     ? null
-    : freeQuotaNotice(cardsCreated, tier);
+    : freeQuotaNotice(cardsCreated, tier, user ? user.viaGoogleOrApple === true : true);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.previewOpened, {
@@ -178,16 +178,20 @@ export function PreviewScreen({ navigation }: Props) {
     void createLink();
   };
 
+  const showPlans = async () => {
+    if (!isConfigured) {
+      Alert.alert(
+        'Plans unavailable',
+        'We could not load the Occasio Pro plans right now. Check your connection and try again.',
+      );
+      return;
+    }
+    await openPaywall();
+  };
+
   const createLink = async () => {
     if (paywallRequired && !isEditing) {
-      if (!isConfigured) {
-        Alert.alert(
-          'Plans unavailable',
-          'We could not load the Occasio Pro plans right now. Check your connection and try again.',
-        );
-        return;
-      }
-      await openPaywall();
+      await showPlans();
       return;
     }
 
@@ -264,12 +268,16 @@ export function PreviewScreen({ navigation }: Props) {
       </Text>
       {quotaNotice ? <Text style={styles.hint}>{quotaNotice}</Text> : null}
       <CreateProblemSheet message={error} onRetry={() => void createLink()} onClose={reset} />
-      <VerifyEmailSheet
-        reason={verifyRequired}
-        email={user?.email ?? null}
-        sendVerification={sendVerificationEmail}
-        checkVerified={refreshEmailVerification}
-        onVerified={() => {
+      <FreeCardSheet
+        reason={freeCardBlocked}
+        canSignInWithApple={canSignInWithApple}
+        signInGoogle={signInGoogle}
+        signInApple={signInApple}
+        onSeePlans={() => {
+          reset();
+          void showPlans();
+        }}
+        onSignedIn={() => {
           reset();
           void createLink();
         }}

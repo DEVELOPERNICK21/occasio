@@ -1,4 +1,4 @@
-export type CardEventName = 'opened' | 'finished' | 'replayed' | 'cta';
+export type CardEventName = 'opened' | 'finished' | 'replayed' | 'cta' | 'story_share';
 
 /** Fire-and-forget funnel counter. Never blocks or breaks the card. */
 export function trackCardEvent(slug: string, type: CardEventName, isDemo = false): void {

@@ -51,6 +51,8 @@ export function freeCardsRemaining(
 export function freeQuotaNotice(
   cardsCreated: number,
   tier: SubscriptionTier = 'free',
+  /** False for an email and password account, which cannot claim the free card. */
+  viaGoogleOrApple = true,
 ): string | null {
   const remaining = freeCardsRemaining(cardsCreated, tier);
   if (remaining === null) {
@@ -60,7 +62,9 @@ export function freeQuotaNotice(
     return 'Your free card is used — buy one more wish or pick a plan when you are ready.';
   }
   if (remaining === 1) {
-    return 'Your first card is free.';
+    return viaGoogleOrApple
+      ? 'Your first card is free.'
+      : 'Your first card is free with Google or Apple sign-in.';
   }
   return `${remaining} free cards left.`;
 }

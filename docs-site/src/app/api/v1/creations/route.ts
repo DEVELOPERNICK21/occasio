@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import {
+  APP_CHECK_REFUSAL,
+  appCheckDecision,
+  appCheckMode,
+  checkAppCheck,
+} from '@/lib/appCheck';
+import {
   ApiRouteError,
   createCreation,
   validateCreateInput,
@@ -26,6 +32,22 @@ export async function POST(request: Request) {
       { code: 'UNAUTHORIZED', message: 'Sign in to create your link.' },
       { status: 401 },
     );
+  }
+
+  // Is this the real app? Logged first, refused only once APP_CHECK_MODE is `enforce`.
+  const mode = appCheckMode();
+  if (mode !== 'off') {
+    const appCheck = await checkAppCheck(request);
+    const decision = appCheckDecision(mode, appCheck);
+    if (decision.log) {
+      (appCheck === 'valid' ? console.info : console.warn)('[app-check]', { result: appCheck, mode });
+    }
+    if (!decision.allow) {
+      return NextResponse.json(
+        { code: APP_CHECK_REFUSAL.code, message: APP_CHECK_REFUSAL.message },
+        { status: APP_CHECK_REFUSAL.status },
+      );
+    }
   }
 
   if (!rateLimit(`create:${clientIp(request)}`, 20, 60 * 60 * 1000)) {
