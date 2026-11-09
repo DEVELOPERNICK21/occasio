@@ -5,8 +5,11 @@
  * personal at all from a locked card.
  */
 
+import { OCCASION_INFO, formatDay, invitationTitle, type Invitation } from '../invitation';
+
 export type TeaserInput =
   | { kind: 'card'; greeting: string; recipientName: string; fromName: string | null }
+  | { kind: 'invitation'; invitation: Pick<Invitation, 'occasion' | 'nameOne' | 'nameTwo' | 'date'> }
   | { kind: 'locked' };
 
 export type Teaser = {
@@ -55,6 +58,27 @@ export function teaserFor(input: TeaserInput): Teaser {
       headline: 'For you',
       line: 'Someone locked something for you',
       cta: 'Tap to enter the code',
+    };
+  }
+
+  if (input.kind === 'invitation') {
+    // An invitation is meant to be passed around, so its preview names the host and the day. The
+    // venue, the photos and the note stay inside.
+    const { invitation } = input;
+    const info = OCCASION_INFO[invitation.occasion];
+    const title = truncate(invitationTitle(invitation), 60);
+    const day = formatDay(invitation.date, 'long');
+    const weekday = formatDay(invitation.date, 'weekday');
+    const short = truncate(title, 40);
+    return {
+      title: info.couple
+        ? `You are invited to the ${info.noun} of ${short}`
+        : `You are invited to ${short}'s ${info.noun}`,
+      description: day ? `Join us on ${day}. Tap to open the invitation.` : 'Tap to open the invitation.',
+      eyebrow: 'YOU ARE INVITED',
+      headline: title,
+      line: day ? `${weekday}, ${day}` : `A ${info.noun} invitation`,
+      cta: 'Tap to open the invitation',
     };
   }
 

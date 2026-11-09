@@ -233,6 +233,7 @@ const EMPTY_EDIT_DRAFT: CreationDraft = {
   passcode: '',
   passcodeHint: '',
   hasPasscode: false,
+  invitation: null,
   editingCreationId: null,
   editingShareSlug: null,
   editingShareUrl: null,

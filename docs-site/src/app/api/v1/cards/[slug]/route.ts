@@ -68,5 +68,6 @@ export async function GET(request: Request, context: RouteContext) {
     fromName: card.fromName,
     reactionCount: card.reactionCount ?? 0,
     reasons: card.reasons ?? [],
+    invitation: card.invitation ?? null,
   });
 }

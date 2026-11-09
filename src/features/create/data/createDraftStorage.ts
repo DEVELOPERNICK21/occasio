@@ -1,20 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Audience, Occasion } from '../domain/templateSchema';
-import type { CreationDraft, TemplateType } from '../domain/types';
+import { invitationFromStored } from '../domain/invitation';
+import { parseTemplateType } from '../domain/templates';
+import type { CreationDraft } from '../domain/types';
 
 const STORAGE_KEY = 'occasio.create.draft';
-
-const TEMPLATE_TYPES = new Set<TemplateType>([
-  'birthday',
-  'anniversary',
-  'sorry',
-  'proposal',
-  'mothers_day',
-  'fathers_day',
-  'thank_you',
-  'congratulations',
-  'just_because',
-]);
 
 const AUDIENCES = new Set<Audience>([
   'mom',
@@ -79,13 +69,7 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
   if (!value || typeof value !== 'object') return null;
 
   const record = value as Record<string, unknown>;
-  const templateType =
-    record.templateType === null
-      ? null
-      : typeof record.templateType === 'string' &&
-          TEMPLATE_TYPES.has(record.templateType as TemplateType)
-        ? (record.templateType as TemplateType)
-        : null;
+  const templateType = parseTemplateType(record.templateType);
   const templateId =
     typeof record.templateId === 'string' && record.templateId.trim() !== ''
       ? record.templateId
@@ -123,6 +107,7 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
   const passcodeHint =
     typeof record.passcodeHint === 'string' ? record.passcodeHint.slice(0, 60) : '';
   const hasPasscode = record.hasPasscode === true;
+  const invitation = templateType === 'invitation' ? invitationFromStored(record.invitation) : null;
   const editingCreationId =
     typeof record.editingCreationId === 'string' &&
     record.editingCreationId.trim() !== ''
@@ -159,6 +144,7 @@ function parseCreationDraft(value: unknown): CreationDraft | null {
     passcode,
     passcodeHint,
     hasPasscode,
+    invitation,
     editingCreationId,
     editingShareSlug,
     editingShareUrl,

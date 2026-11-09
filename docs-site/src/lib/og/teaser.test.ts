@@ -46,6 +46,51 @@ describe('teaserFor a locked card', () => {
   });
 });
 
+describe('teaserFor an invitation', () => {
+  const wedding = { occasion: 'wedding' as const, nameOne: 'Aarav', nameTwo: 'Priya', date: '2027-02-23' };
+
+  it('names the couple and the day, and invites rather than teases', () => {
+    const teaser = teaserFor({ kind: 'invitation', invitation: wedding });
+    expect(teaser.title).toBe('You are invited to the wedding of Aarav & Priya');
+    expect(teaser.description).toBe('Join us on 23 February 2027. Tap to open the invitation.');
+    expect(teaser.eyebrow).toBe('YOU ARE INVITED');
+    expect(teaser.headline).toBe('Aarav & Priya');
+    expect(teaser.line).toBe('Tuesday, 23 February 2027');
+    expect(teaser.cta).toBe('Tap to open the invitation');
+  });
+
+  it('says it the way a person would for each kind of occasion', () => {
+    const birthday = { occasion: 'birthday' as const, nameOne: 'Meera', nameTwo: '', date: '2027-02-23' };
+    expect(teaserFor({ kind: 'invitation', invitation: birthday }).title).toBe("You are invited to Meera's birthday");
+    expect(teaserFor({ kind: 'invitation', invitation: { ...birthday, occasion: 'baby_shower' } }).title).toBe(
+      "You are invited to Meera's baby shower",
+    );
+    expect(teaserFor({ kind: 'invitation', invitation: { ...wedding, occasion: 'anniversary' } }).title).toBe(
+      'You are invited to the anniversary of Aarav & Priya',
+    );
+  });
+
+  it('still reads well when the date is missing', () => {
+    const teaser = teaserFor({ kind: 'invitation', invitation: { ...wedding, date: '' } });
+    expect(teaser.description).toBe('Tap to open the invitation.');
+    expect(teaser.line).toBe('A wedding invitation');
+  });
+
+  it('keeps two long names from running off the preview', () => {
+    const teaser = teaserFor({
+      kind: 'invitation',
+      invitation: { ...wedding, nameOne: 'A'.repeat(36), nameTwo: 'B'.repeat(36) },
+    });
+    expect(teaser.headline.length).toBeLessThanOrEqual(60);
+    expect(teaser.title.length).toBeLessThanOrEqual('You are invited to the wedding of '.length + 40);
+  });
+
+  it('never carries the venue, a photo or the note', () => {
+    const everything = Object.values(teaserFor({ kind: 'invitation', invitation: wedding })).join(' ').toLowerCase();
+    expect(everything).not.toMatch(/venue|photo|message/);
+  });
+});
+
 describe('headlineSize', () => {
   it('shrinks as a one-line name gets longer, and never goes below a readable size', () => {
     const oneLine = ['Ana', 'Maya', 'Maya Rao', 'Maximilia'].map((n) => headlineSize(n));

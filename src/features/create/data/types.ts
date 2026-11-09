@@ -1,3 +1,4 @@
+import type { HttpErrorCode } from '../../../shared/api/errors';
 import type { TemplateType } from '../domain/types';
 
 export type PresignUploadResponse = {
@@ -36,9 +37,13 @@ export type OwnedCreationResponse = CreateCreationResponse & {
   reasons?: string[];
   hasPasscode?: boolean;
   passcodeHint?: string | null;
+  /** The stored invitation, for `invitation` cards. Read back with `invitationFromStored`. */
+  invitation?: unknown;
 };
 
-export type ApiErrorCode =
+/** The API errors the create flow tells apart; anything else is reported as `INTERNAL`. */
+export type ApiErrorCode = Extract<
+  HttpErrorCode,
   | 'VALIDATION_ERROR'
   | 'QUOTA_EXCEEDED'
   | 'UPLOAD_MISSING'
@@ -46,7 +51,8 @@ export type ApiErrorCode =
   | 'FREE_CARD_NEEDS_PROVIDER'
   | 'EMAIL_NOT_ALLOWED'
   | 'APP_CHECK_FAILED'
-  | 'INTERNAL';
+  | 'INTERNAL'
+>;
 
 export class CreationApiError extends Error {
   constructor(

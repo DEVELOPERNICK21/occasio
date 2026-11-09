@@ -184,6 +184,7 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
             <TemplateRenderer
               definition={definition}
               occasion={draft.occasion}
+              templateType={draft.templateType}
               photoUris={draft.photoUris}
               recipientName={draft.recipientName}
               message={draft.message}

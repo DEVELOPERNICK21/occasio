@@ -75,6 +75,78 @@ always moves a little during a tap; a short quick flick counts as a slide).
   and read the note. A slide flips it once; the click that follows it is ignored. Sideways slides reach the photo
   while up and down still scroll the page (`touch-action: pan-y`).
 
+## Invitations (`templateType: invitation`)
+
+An invitation is not a story for one person: it is one link a host sends to every guest, for a wedding, engagement,
+anniversary, birthday, baby shower, housewarming, graduation or any party. `RecipientCardView` hands it to
+`components/invitation/InvitationPlayer.tsx`, which owns what every look shares (the theme, the game state, the confetti
+and the report link) and picks a **scene** (`SCENES` in that file). **A scene is a story, not a colour scheme**: each owns
+its entrance, its art, the order of its page and its own small game, so no two feel alike.
+
+A wedding, engagement or anniversary is told in one of **three scenes** the host chooses (`invitation.design`); every
+other occasion has the party scene. Each was made after a different reference reel: what the reel's *idea* was (a
+wedding car, doors that open on curtains and a garden, a palace gate), never its artwork. The ceremony scenes are built
+on **free-licence photographs** (below), cut and animated in CSS, not on drawings.
+
+| Scene (`design`) | Entrance | The story | The small game |
+|---|---|---|---|
+| **Baraat road** (`regal`) | The couple's names over a photograph of a wedding car, printed with a white border, on a maroon and lamp-light backdrop. Tap to honk: the print jolts, petals fly, and the page arrives over the same photograph, out of focus | An ivory sheet with the photograph printed on it, the names on a green banner, the countdown as four number plates, and each celebration a stop on the road you scroll down. The road ends at the venue under a marigold toran | Honk at a stop and a string of marigolds is hung over the print, up to five. |
+| **Garden doors** (`sage`) | A photograph of the green gate at the City Palace in Jaipur. Tap the brass boss: the two golden doors swing open on their hinges to champagne satin curtains, which draw back; the doorway is a hole in the wall, so the garden itself is what shows, and the whole front moves towards it | A photograph of a garden with a fountain that you walk into as you scroll: the whole frame grows around the fountain and a second copy, kept only at its edges, grows faster so the flowers sweep past. Then a foil heart to scratch, a lawn of cards, the venue | Scratch the glittering foil heart (a real canvas) to find the date; turn each card to see its day, time and place |
+| **Pink City palace** (`palace`) | A photograph of the lotus gate at the City Palace: a fan of petals over carved golden doors. Pull a door ring and the doors swing open on a lit room; the whole front then comes towards you, as if you were walking in | The wall of that gate, out of focus, behind a frosted arch. The shloka appears; as you scroll the arch fills with plum satin, the monogram draws itself, the names and the invitation arrive, and the host's own first photograph rests in a small gold arch at its foot, above the marble steps | Open each shuttered window on the rail to see its event. The countdown is four brass plates |
+| **Party** (every other occasion) | A bunch of balloons. Pop any for confetti; pop the big one and the screen lifts away | A pinned hero that assembles as you scroll, a countdown, the plan, the venue | Collect a star for each event |
+
+The three ceremony scenes live in `components/invitation/scenes/{baraat,garden,palace}/`, each with its own stylesheet;
+`invitationTheme.ts` holds every colour and phrase and tests that each pairing reads clearly.
+
+### Photographs
+
+The images are in `docs-site/public/invitation/`, cropped and compressed (WebP) from the originals, which are not kept.
+The doors of the two gates are cut from the same image as the wall, as clip-paths in box units, so they match when shut
+and swing as arches. All are free for commercial use and need no credit; they are listed so they can be found again.
+
+| File | What it is | Source and licence |
+|---|---|---|
+| `palace-gate.webp` | The lotus gate, City Palace, Jaipur | [Pexels 19149579](https://www.pexels.com/photo/door-in-the-city-palace-jaipur-india-19149579/), AXP Photography, Pexels licence |
+| `garden-gate.webp` | The green gate, City Palace, Jaipur | [Pexels 16738852](https://www.pexels.com/photo/entrance-to-the-city-palace-jaipur-india-16738852/), AXP Photography, Pexels licence |
+| `garden-fountain.webp` | A garden with a fountain | [Pexels 38843961](https://www.pexels.com/photo/charming-garden-with-central-fountain-and-colorful-flowers-38843961/), Karen F, Pexels licence |
+| `baraat-car.webp` | A wedding car dressed with red flowers. **The number plate is replaced with a blank one** | [Pexels 14745476](https://www.pexels.com/photo/a-white-bridal-car-14745476/), Xuân Thống Trần, Pexels licence |
+| `satin.webp` | Gold crepe satin, the colour and fine weave of the garden curtains | [Poly Haven, Crepe Satin](https://polyhaven.com/a/crepe_satin), Rico Cilliers, CC0 |
+
+None shows a person's face. The host's own photographs are used where people belong (the palace arch and the photo stack).
+
+**Shared pieces.** The reply pass, the venue, the photo stack and the footer are shared (`scenes/Closing.tsx`) and take
+the look of the scene through a `variant` (an arched map and arched prints for the palace, leafy corners for the
+garden, a gold-edged paper frame for the baraat). Dates read the way an invitation writes them (`scenes/dates.ts`: "23rd - 27th
+February 2027"), and a long pair of names is sized to fit (`scenes/typography.ts`).
+
+**How it moves.** `scroll.ts` runs one animation-frame loop that writes each scene's progress into a CSS custom property
+(`--p`, and `--page` for the whole page); the stylesheet turns those into transforms and opacity, so scrolling never
+re-renders React and only compositor-friendly properties animate. Pulling a door open uses `useOpenGesture`, which drives
+`--open` from the finger and finishes by itself past a third of the way. Reveals use one shared `IntersectionObserver` and
+are only hidden once the script has run, so a page whose script fails still shows everything. With reduced motion the
+entrances still open, but everything else sits in its finished place and nothing drifts, turns or flies. The scratch
+heart has a button to reveal the date without scratching, and is shown straight away with reduced motion.
+
+**Replies go to the host on WhatsApp.** The pass builds a `wa.me/<number>?text=...` link from the guest's name, yes or no,
+party size (1 to 10), which events and an optional note. **Nothing a guest types is sent to or stored by Occasio.** There is
+no guest list, no response count and no account. With no number the page says "Please let the family know you are
+coming" instead of showing the pass.
+
+**Save the date** is `GET /api/v1/cards/<slug>/calendar` (an `.ics`, see the API contracts).
+
+**Rules live in one file**, `lib/invitation.ts` (occasions, validation, formatting, the RSVP message, the `.ics`), with
+tests in `invitation.test.ts`. The server and the page share it; the app keeps a mirror in
+`src/features/create/domain/invitation.ts` and the API contract is the source for both.
+
+**Demos** (dated ahead of today, so a countdown always has something to count): a ceremony names its design after the
+occasion: `/c/demo-invite-wedding-regal-example` (baraat road), `/c/demo-invite-wedding-sage-example` (garden doors),
+`/c/demo-invite-wedding-palace-example` (Pink City palace), also for `engagement` and `anniversary`. Every other occasion
+has one look: `/c/demo-invite-birthday-example`, `/c/demo-invite-baby_shower-example`. The older
+`/c/demo-wedding-<anything>` still works, with or without a design. The app's "See an example" opens the same links.
+
+The floating "Report this card" and "Copyright" links stay on this page (App Store guideline 1.2), on a pill that matches
+the look so they stay readable over the text.
+
 ## The link preview (WhatsApp, Instagram, Messages, X)
 
 A shared card link shows a picture, a title and a line before anyone opens it. It is a **teaser, never a spoiler**:
@@ -87,6 +159,15 @@ A shared card link shows a picture, a title and a line before anyone opens it. I
   reads only data URLs, our own storage and (for demo cards) `public/demo`, never any other address, and goes without
   the tile if anything is unexpected or `sharp` is not available.
 - **The message is never used.** A locked card shows no name, no sender and no photo at all.
+- **An invitation has its own preview**, in the look of its design. A wedding, engagement or anniversary shows **its
+  design's own photograph** (`lib/og/invitationPhotoImage.tsx`, the photographs from the table below, cut by
+  `lib/og/designPhoto.ts`): the palace gate in an arch on plum, the garden under a card of names, the wedding car as a
+  print under a marigold garland. Any other occasion keeps balloons and confetti (`lib/og/invitationImage.tsx`, which is
+  also the fallback if `sharp` is missing). All show the names, the day and "Tap to open the invitation".
+  Because an invitation is meant to be passed around, it does name the host and the day; **a photograph the host
+  uploaded never appears**, nor does the venue or the note, and a locked invitation is as blank as any other card. The
+  photographed previews are reduced to a palette (`slimPng`) so they stay around 85 to 140 KB.
+  Which kind of preview a card gets is decided in one place, `lib/og/cardTeaser.ts`, for both the title and the image.
 - The title and description come from the same function as the image text (`lib/og/teaser.ts`), so they can never
   disagree. Card pages are `noindex` so search engines skip them. This is a page tag, not a `robots.txt` rule:
   Facebook and Twitter read `robots.txt` before building a preview, and would show nothing.

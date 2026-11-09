@@ -5,8 +5,8 @@ import { PasscodeGate } from '@/components/PasscodeGate';
 import { RecipientCardView } from '@/components/RecipientCardView';
 import { recordCardView } from '@/lib/creationsServer';
 import { fetchRecipientCard } from '@/lib/fetchRecipientCard';
+import { teaserInputForCard } from '@/lib/og/cardTeaser';
 import { teaserFor } from '@/lib/og/teaser';
-import { wishGreeting } from '@/lib/recipientCard';
 import { shareUrlForSlug } from '@/lib/shareBase';
 
 type Props = {
@@ -29,16 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Link previews are the first thing a recipient sees in chat. Tease, never
   // spoil: no message, no photo, and nothing at all from a locked card.
   if (result.kind === 'locked' || result.kind === 'card') {
-    const teaser = teaserFor(
-      result.kind === 'locked'
-        ? { kind: 'locked' }
-        : {
-            kind: 'card',
-            greeting: wishGreeting(result.card.templateType),
-            recipientName: result.card.recipientName,
-            fromName: result.card.fromName,
-          },
-    );
+    const teaser = teaserFor(result.kind === 'locked' ? { kind: 'locked' } : teaserInputForCard(result.card));
     const { title, description } = teaser;
 
     return {

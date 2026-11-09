@@ -1,10 +1,15 @@
 import { ImageResponse } from 'next/og';
 import { fetchRecipientCard } from '@/lib/fetchRecipientCard';
 import { blurredPhotoDataUrl } from '@/lib/og/blurredPhoto';
+import { INVITATION_TEMPLATE } from '@/lib/invitation';
+import { themeFor } from '@/lib/invitationTheme';
+import { teaserInputForCard } from '@/lib/og/cardTeaser';
+import { designPhotoDataUrl, slimPng } from '@/lib/og/designPhoto';
+import { InvitationImage } from '@/lib/og/invitationImage';
+import { InvitationPhotoImage } from '@/lib/og/invitationPhotoImage';
 import { ogThemeFor } from '@/lib/og/ogTheme';
 import { SurpriseImage } from '@/lib/og/surpriseImage';
 import { teaserFor } from '@/lib/og/teaser';
-import { wishGreeting } from '@/lib/recipientCard';
 
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
@@ -50,14 +55,25 @@ export default async function OpengraphImage({ params }: Props) {
   // its colours (never the photo), so a link preview copied onto another service
   // leaks nothing. A locked card gets no name and no photo at all.
   const card = result.kind === 'card' ? result.card : null;
-  const teaser = card
-    ? teaserFor({
-        kind: 'card',
-        greeting: wishGreeting(card.templateType),
-        recipientName: card.recipientName,
-        fromName: card.fromName,
-      })
-    : teaserFor({ kind: 'locked' });
+  const teaser = card ? teaserFor(teaserInputForCard(card)) : teaserFor({ kind: 'locked' });
+
+  // An invitation gets its own picture, in the look of its occasion: the names and the day. A ceremony
+  // shows its design's own photograph (one the page ships with); no photo a host uploaded ever appears.
+  if (card?.templateType === INVITATION_TEMPLATE && card.invitation) {
+    const { occasion, design } = card.invitation;
+    const look = themeFor(occasion, design).look;
+    const photo = look === 'party' ? null : await designPhotoDataUrl(look);
+    const image = photo && look !== 'party'
+      ? <InvitationPhotoImage teaser={teaser} invitation={{ ...card.invitation, design: look }} photo={photo} />
+      : <InvitationImage teaser={teaser} invitation={card.invitation} />;
+    const headers = { 'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400' };
+    const rendered = new ImageResponse(image, { ...size, headers });
+    if (!photo) return rendered;
+    return new Response(await slimPng(await rendered.arrayBuffer()), {
+      headers: { ...headers, 'Content-Type': contentType },
+    });
+  }
+
   const wash = card
     ? await blurredPhotoDataUrl(card.mediaUrls, { allowDemoFiles: card.isDemo })
     : null;

@@ -51,6 +51,43 @@ Create a shareable card. Requires `Authorization: Bearer <Firebase ID token>` (a
 }
 ```
 
+**Invitation (`templateType: "invitation"`).** One link for many guests: a wedding, birthday or any other gathering. The body also carries an `invitation` object, checked by `parseInvitation` (`docs-site/src/lib/invitation.ts`, the one place the rules live; the app keeps a mirror in `src/features/create/domain/invitation.ts`). The server sets `recipientName` to the name or names (`"Aarav & Priya"`, `"Meera"`) whatever the client sent, and still needs at least one photo (the first is the portrait).
+
+```json
+"invitation": {
+  "occasion": "wedding",
+  "design": "sage",
+  "nameOne": "Aarav",
+  "nameTwo": "Priya",
+  "tagline": "Together forever",
+  "date": "2027-02-23",
+  "venueName": "The Grand Courtyard",
+  "venueAddress": "Civil Lines, Jaipur",
+  "events": [{ "title": "Sangeet", "date": "2027-02-22", "time": "19:30", "venue": "The Grand Courtyard" }],
+  "hostLine": "Together with their families",
+  "rsvpWhatsapp": "919876543210",
+  "rsvpBy": "2027-02-01",
+  "blessing": "ganesh",
+  "dressCode": "Festive Indian"
+}
+```
+
+| Field | Rule |
+|---|---|
+| `occasion` | Required: `wedding`, `engagement`, `anniversary`, `birthday`, `baby_shower`, `housewarming`, `graduation` or `party`. Decides the look (the three ceremonies are regal, the rest are party) and the wording |
+| `design` | Optional: `regal` (default), `sage` or `palace`. Only the three couple occasions use it; every other occasion has one look and the server stores `regal` whatever was sent. Unknown values fall back to `regal` |
+| `nameOne`, `nameTwo` | `nameOne` is required, up to 36 characters. `nameTwo` is required for the three couple occasions (wedding, engagement, anniversary) and ignored for the rest, so a couple fits the 80-character recipient name |
+| `tagline` | Optional, up to 40 characters, shown under the names ("turning 30", "25 years together") |
+| `date` | Required, `YYYY-MM-DD`, a real calendar day |
+| `venueName` | Required. `venueAddress` is optional and only feeds the map link |
+| `events` | Up to 6, each with a title and a date (`time` is `HH:MM`, optional; `venue` is optional). Stored sorted by date and time. With none, the page and the calendar file use the main day |
+| `rsvpWhatsapp` | Optional. Digits only (country code first, 8 to 15 digits). With none, the page shows a plain "let the family know" line instead of the reply pass |
+| `rsvpBy` | Optional date |
+| `blessing` | `ganesh` or `none` (default `none`) |
+| `hostLine`, `dressCode` | Optional short text; `hostLine` defaults by occasion ("Together with their families" for a wedding or engagement, "You are invited" otherwise) |
+
+A bad value answers `400 VALIDATION_ERROR` with a plain message (for example "Choose the occasion" or "Add the date"), which the app shows as it is. The same object is stored on the creation document and returned by `GET /v1/creations/:creationId` for editing.
+
 **Response 201**
 ```json
 {
@@ -142,11 +179,18 @@ Recipient view metadata (no auth).
   "message": "...",
   "templateType": "birthday",
   "mediaUrls": ["https://cdn.../1.jpg"],
-  "fromName": "Rohan"
+  "fromName": "Rohan",
+  "invitation": null
 }
 ```
 
+`invitation` is the object above for an invitation, and `null` for every other kind.
+
 **Errors:** `NOT_FOUND` 404 · `EXPIRED` 410
+
+## `GET /v1/cards/:slug/calendar` (public)
+
+The dates of an invitation as an `.ics` file (`text/calendar`), one entry per event (or one all-day entry named for the occasion when none are listed). Times are floating local times, so a guest's phone shows them as written for the venue, three hours long. An event held somewhere else carries only its own venue as the location; the address is the main venue's. It follows the same read rules as the card (rate limit, expiry, `404` for anything that is not an invitation) and is sent `no-store` and `noindex`.
 
 ## `POST /v1/scheduled-sends/:id/approve`
 
@@ -157,9 +201,14 @@ Requires the generated creation to have ≥1 `photoRef` or `mediaUrl`. Otherwise
 On success the send moves `review` → `approved`, then `dispatchScheduledSend` runs:
 
 - If `OCCASIO_AUTOSEND_DISPATCH` is **not** `true` (default), channel calls are skipped and the send stays `approved`. `shareUrl` from generation is still returned so the client can open the system share sheet.
-- If `OCCASIO_AUTOSEND_DISPATCH=true`, mock providers run **whatsapp → sms → email** using `relationships.contactChannel` (`whatsapp` for WA and SMS unless `phone` is set; `email` for email). First success → `sent` + FCM `autosend_sent`. All fail → `failed` + `lastError`.
+- If `OCCASIO_AUTOSEND_DISPATCH=true`, the providers run in order **whatsapp → email** (mock providers for whatsapp, sms and email only in the emulator or with `OCCASIO_MOCK_DELIVERY=true`). A channel is used only when its provider is configured and `relationships.deliveryConsent.<channel>` is `true`: `whatsapp` (Meta Cloud API, see `docs/whatsapp-delivery.md`) and `email` (Resend). First success → `sent` + FCM `autosend_sent`. All fail → retried by the sweep, then `failed` + `lastError`.
+- WhatsApp refusals leave a `lastError` of `whatsapp_yearly_cap` (100 a year per user), `whatsapp_opted_out` (they replied STOP), `whatsapp_not_on_whatsapp`, `whatsapp_rate_limited`, `whatsapp_template`, `whatsapp_auth`, or `whatsapp_<http status>`; email takes over in each case.
 
 Set `OCCASIO_MOCK_DELIVERY_FAIL=whatsapp,sms` (comma-separated channels) to force mock failures and test fallback.
+
+### `GET|POST /v1/whatsapp/webhook`
+
+Meta's webhook for the WhatsApp number. **No Firebase auth**; trust comes from Meta. `GET` answers the one-time address check (`hub.verify_token` must equal `WHATSAPP_VERIFY_TOKEN`, else **403**). `POST` needs a valid `X-Hub-Signature-256` (HMAC-SHA256 of the raw body keyed with `WHATSAPP_APP_SECRET`; **401** otherwise, **503** if the secret is not set). A reply of STOP, UNSUBSCRIBE, CANCEL, END, QUIT or OPT OUT records the sender's number (as a SHA-256 hash in `whatsapp_optouts`); that number is never sent a WhatsApp wish again. Always **200 `{ ok: true }`** for a signed delivery.
 
 **Response 200**
 ```json

@@ -2,6 +2,7 @@ import { env } from '../../../shared/config/env';
 import { httpClient } from '../../../shared/api/httpClient';
 import { HttpError } from '../../../shared/api/errors';
 import { cleanReasons, isValidPasscode } from '../domain/creationRules';
+import { toInvitationPayload } from '../domain/invitation';
 import type { CreationDraft } from '../domain/types';
 import type {
   CreateCreationResponse,
@@ -69,6 +70,7 @@ function creationBody(
       ? { experienceMode: draft.experienceMode }
       : {}),
     reasons: cleanReasons(draft.reasons),
+    ...(draft.invitation ? { invitation: toInvitationPayload(draft.invitation) } : {}),
     ...(isValidPasscode(draft.passcode)
       ? {
           passcode: draft.passcode,

@@ -1,0 +1,883 @@
+/*
+ * The garden invitation. The hero is placed on a 400 by 800 stage (`--u` is one unit in pixels);
+ * three layers of the garden scale at different rates with the scroll (`--p`, 0 to 1) so it feels
+ * like walking forward. The rest of the page is ordinary flow.
+ */
+
+.gate,
+.sticky {
+  --u: min(max(calc(100vw / 400), calc(100svh / 800)), calc(100svh / 800 * 1.08));
+}
+
+/* ------------------------------------------------------------------ the gate */
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+/* On a screen wider than the stage, the same photograph out of focus and dimmed fills the sides. */
+.sides {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: polygon(
+    evenodd,
+    0 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 0,
+    calc(50% - var(--u) * 200) calc(50% - var(--u) * 400),
+    calc(50% + var(--u) * 200) calc(50% - var(--u) * 400),
+    calc(50% + var(--u) * 200) calc(50% + var(--u) * 400),
+    calc(50% - var(--u) * 200) calc(50% + var(--u) * 400),
+    calc(50% - var(--u) * 200) calc(50% - var(--u) * 400)
+  );
+}
+.sidesImage {
+  position: absolute;
+  inset: -8%;
+  background: url('/invitation/garden-gate.webp') 50% 30% / auto 200%;
+  filter: blur(22px) brightness(0.55) saturate(1.1);
+}
+.rig {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 400);
+  height: calc(var(--u) * 800);
+  translate: -50% -50%;
+  transform-origin: 49.5% 64.7%;
+  box-shadow: 0 0 60px 8px rgba(8, 18, 6, 0.55);
+}
+/* Once the curtains have gone the whole front moves towards the doorway, and the garden is what is left. */
+.gate[data-stage='curtains'] .rig {
+  animation: walkIn 1.5s cubic-bezier(0.55, 0, 0.25, 1) 0.45s forwards;
+}
+.facade {
+  position: absolute;
+  inset: 0;
+  background: url('/invitation/garden-gate.webp') 0 0 / 100% 100% no-repeat;
+  /* The doorway is a hole in the wall, so what shows through it is the page behind. */
+  clip-path: url(#gardenWall);
+}
+.clips {
+  position: absolute;
+  pointer-events: none;
+}
+.doorway {
+  position: absolute;
+  left: calc(var(--u) * 108);
+  top: calc(var(--u) * 354);
+  width: calc(var(--u) * 180);
+  height: calc(var(--u) * 328);
+  perspective: calc(var(--u) * 600);
+}
+.curtains {
+  position: absolute;
+  inset: 0;
+  clip-path: url(#gardenDoorway);
+}
+/*
+ * Champagne satin: the fabric's own colour, folds in two widths so they do not repeat in step, and a
+ * shadow that deepens towards the floor. The cloth is wider than half the doorway so it overlaps.
+ */
+.curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.8%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 250, 232, 0.75) 6%, rgba(86, 52, 18, 0.5) 15%, rgba(255, 255, 255, 0) 26%, rgba(255, 255, 255, 0) 100%) 0 0 / calc(var(--u) * 37) 100% repeat-x,
+    linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 250, 232, 0.5) 9%, rgba(86, 52, 18, 0.4) 20%, rgba(255, 255, 255, 0) 32%) calc(var(--u) * 11) 0 / calc(var(--u) * 61) 100% repeat-x,
+    linear-gradient(rgba(255, 244, 214, 0.28), rgba(50, 30, 8, 0.4)),
+    url('/invitation/satin.webp') 0 0 / calc(var(--u) * 240) auto,
+    #d6ab70;
+  background-blend-mode: normal, normal, normal, multiply, normal;
+  transition: transform 1.7s cubic-bezier(0.6, 0, 0.25, 1);
+  will-change: transform;
+}
+.curtainLeft {
+  left: 0;
+  transform-origin: 0 50%;
+}
+.curtainRight {
+  right: 0;
+  transform-origin: 100% 50%;
+}
+.gate[data-stage='curtains'] .curtainLeft,
+.gate[data-stage='curtains'] .curtainRight {
+  transform: scaleX(0.2);
+}
+/* The doors are cut from the wall photograph, so they match it when shut. */
+.door {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background-image: url('/invitation/garden-gate.webp');
+  background-size: calc(var(--u) * 400) calc(var(--u) * 800);
+  transition: transform 1.3s cubic-bezier(0.22, 0.82, 0.2, 1);
+  will-change: transform;
+}
+.door::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(14, 24, 8, 0.6), rgba(14, 24, 8, 0.1));
+  opacity: 0;
+  transition: opacity 1.3s ease;
+  pointer-events: none;
+}
+.doorLeft {
+  left: 0;
+  clip-path: url(#gardenLeafLeft);
+  background-position: calc(var(--u) * -108) calc(var(--u) * -354);
+  transform-origin: 0 50%;
+}
+.doorRight {
+  right: 0;
+  clip-path: url(#gardenLeafRight);
+  background-position: calc(var(--u) * -198) calc(var(--u) * -354);
+  transform-origin: 100% 50%;
+}
+.doorRight::after {
+  background: linear-gradient(270deg, rgba(14, 24, 8, 0.6), rgba(14, 24, 8, 0.1));
+}
+.gate:not([data-stage='closed']) .doorLeft {
+  transform: rotateY(104deg);
+}
+.gate:not([data-stage='closed']) .doorRight {
+  transform: rotateY(-104deg);
+}
+.gate:not([data-stage='closed']) .door::after {
+  opacity: 0.9;
+}
+.gateNames {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 52);
+  margin: 0;
+  padding: 0 calc(var(--u) * 24);
+  text-align: center;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: calc(var(--u) * 42);
+  line-height: 1.05;
+  color: #fff8de;
+  isolation: isolate;
+  text-shadow:
+    0 1px 0 rgba(30, 55, 28, 0.9),
+    0 3px 6px rgba(14, 28, 10, 0.85),
+    0 8px 18px rgba(14, 28, 10, 0.6);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+/* The carved arch is busy; a soft shade behind the names keeps them easy to read. */
+.gateNames::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--u) * -26) 0 calc(var(--u) * -22);
+  z-index: -1;
+  background: radial-gradient(ellipse 62% 62% at 50% 50%, rgba(12, 26, 10, 0.62), rgba(12, 26, 10, 0));
+  pointer-events: none;
+}
+/* A brass boss at the seam of the doors; tap it to open them. */
+.seal {
+  position: absolute;
+  left: calc(var(--u) * 152);
+  top: calc(var(--u) * 474);
+  width: calc(var(--u) * 92);
+  height: calc(var(--u) * 92);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.seal:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.sealDot {
+  position: absolute;
+  inset: calc(var(--u) * 31);
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #fff3c2, #d4a840 52%, #7a5410);
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.55),
+    inset 0 -2px 3px rgba(60, 36, 4, 0.5);
+}
+.sealHalo {
+  position: absolute;
+  inset: calc(var(--u) * 14);
+  border: 2px solid rgba(255, 246, 207, 0.95);
+  border-radius: 50%;
+  animation: halo 2.2s ease-out infinite;
+  pointer-events: none;
+}
+.gate:not([data-stage='closed']) .seal {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.gateHint {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 722);
+  translate: -50% 0;
+  width: max-content;
+  max-width: calc(var(--u) * 360);
+  margin: 0;
+  padding: calc(var(--u) * 7) calc(var(--u) * 16);
+  border-radius: 999px;
+  background: rgba(255, 252, 240, 0.86);
+  box-shadow: 0 2px 10px rgba(30, 50, 20, 0.25);
+  text-align: center;
+  font-size: max(11px, calc(var(--u) * 10));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #3a3012;
+  animation: pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.gate:not([data-stage='closed']) .gateNames,
+.gate:not([data-stage='closed']) .gateHint {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* ------------------------------------------------------------------ the garden */
+
+.page {
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
+}
+.stage {
+  --p: 0;
+  position: relative;
+  height: 300svh;
+}
+.sticky {
+  /* The names fade first; the garden itself stays until the page takes over, so no scroll is blank. */
+  --out: clamp(0, calc((var(--p) - 0.5) / 0.22), 1);
+  --end: clamp(0, calc((var(--p) - 0.7) / 0.3), 1);
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+/* Towards the end of the walk the foot of the garden melts into the page that follows. */
+.sticky::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 6;
+  height: 42%;
+  background: linear-gradient(transparent, var(--bg) 88%);
+  opacity: var(--end);
+  pointer-events: none;
+}
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#142810 0%, #25451b 38%, #36542a 68%, #5f6a4b 100%);
+}
+/* The top of the same photograph, blown up and out of focus, is the canopy above the garden. */
+.sky::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  background: url('/invitation/garden-fountain.webp') 50% 0 / 280% auto no-repeat;
+  filter: blur(12px) brightness(0.72) saturate(1.1);
+}
+.box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 400);
+  height: calc(var(--u) * 800);
+  translate: -50% -50%;
+}
+/*
+ * The garden is one photograph, which the page walks into: the whole frame grows around the fountain, and
+ * a second copy, kept only at its left and right edges, grows faster so the flowers at the sides sweep
+ * past. Its top melts into the foliage of the sky behind.
+ */
+.photo,
+.near {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--u) * 760);
+  aspect-ratio: 3 / 2;
+  translate: -50% 0;
+  background: url('/invitation/garden-fountain.webp') 0 0 / 100% 100% no-repeat;
+  transform-origin: 50.5% 62%;
+  will-change: transform;
+}
+.photo {
+  transform: scale(calc(1 + var(--p) * 1));
+  mask-image:
+    linear-gradient(transparent 0, #000 22%),
+    linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  mask-composite: intersect;
+}
+.near {
+  transform: scale(calc(1 + var(--p) * 2.1));
+  mask-image: linear-gradient(90deg, #000 0, transparent 22%, transparent 78%, #000 100%);
+}
+
+.text {
+  position: absolute;
+  left: calc(var(--u) * 28);
+  top: calc(var(--u) * 78);
+  width: calc(var(--u) * 344);
+  z-index: 4;
+  padding: calc(var(--u) * 20) calc(var(--u) * 14) calc(var(--u) * 18);
+  border: 1px solid rgba(201, 166, 70, 0.7);
+  border-radius: calc(var(--u) * 22);
+  background: rgba(253, 250, 236, 0.88);
+  box-shadow: 0 18px 34px rgba(50, 80, 40, 0.22);
+  text-align: center;
+  opacity: calc(1 - var(--out));
+  transform: translate3d(0, calc(var(--out) * -50px), 0);
+  pointer-events: none;
+}
+.rise {
+  opacity: 0;
+}
+[data-opened] .rise {
+  animation: rise 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(1.1s + var(--r, 0) * 0.16s);
+}
+.eyebrow {
+  margin: 0;
+  font-size: max(11.5px, calc(var(--u) * 10.5));
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #4d6b4b;
+}
+.lead {
+  margin: calc(var(--u) * 6) 0 0;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-style: italic;
+  font-size: calc(var(--u) * 18);
+  color: #4d6b4b;
+}
+.names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0 calc(var(--u) * 10);
+  margin: calc(var(--u) * 6) 0 0;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: calc(var(--u) * var(--ns, 52));
+  line-height: 1;
+  color: #2e5238;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+  overflow-wrap: anywhere;
+}
+.amp {
+  color: #b8923f;
+}
+.tagline {
+  margin: calc(var(--u) * 4) 0 0;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-size: calc(var(--u) * 24);
+  color: #6f8a5f;
+}
+.host {
+  margin: calc(var(--u) * 10) 0 0;
+  font-size: calc(var(--u) * 11.5);
+  letter-spacing: 0.1em;
+  color: #6b6f5e;
+}
+.cue {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(56px, calc(env(safe-area-inset-bottom) + 48px));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: calc(1 - var(--p) * 10);
+  pointer-events: none;
+}
+.cueText {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #fff8de;
+  text-shadow: 0 1px 4px rgba(20, 40, 20, 0.7);
+}
+.cueArrow {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid #fff8de;
+  border-bottom: 2px solid #fff8de;
+  transform: rotate(45deg);
+  animation: cueBounce 1.6s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ scratch to reveal */
+
+.scratchSection {
+  padding: 60px 20px 40px;
+  text-align: center;
+  background: linear-gradient(var(--bg), #dce9cf 90px, var(--bg) 320px);
+}
+.script {
+  margin: 0;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: 42px;
+  line-height: 1.1;
+  color: var(--primary);
+}
+.scratchHint {
+  margin: 6px 0 24px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.heartWrap {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  width: min(78vw, 300px);
+  aspect-ratio: 300 / 270;
+  margin: 0 auto 52px;
+}
+.heartPane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 19%;
+  clip-path: url(#gardenHeartClip);
+  background: radial-gradient(circle at 50% 38%, #fffdf2, #f1e6c4 80%);
+  color: var(--primary-deep);
+}
+.heartDay {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.heartNumber {
+  margin: 0;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: 78px;
+  line-height: 0.95;
+  color: var(--primary);
+}
+.heartMonth {
+  margin: 0;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 19px;
+}
+.heartPlace {
+  max-width: 56%;
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.heartLine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 12px rgba(50, 80, 40, 0.28));
+}
+.foil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s ease;
+}
+.heartWrap[data-revealed] .foil {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+.skip {
+  position: absolute;
+  left: 50%;
+  bottom: -46px;
+  padding: 12px 14px;
+  border: 0;
+  background: none;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.skip:focus-visible {
+  outline: 3px solid var(--pop);
+  outline-offset: 2px;
+}
+.afterScratch {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease,
+    visibility 0s linear 0.7s;
+}
+.afterScratch[data-shown] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.5s, 0.5s, 0s;
+}
+.handCount {
+  margin: 0 0 22px;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--primary);
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.solid,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 38px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+.solid {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 38%, transparent);
+}
+.ghost {
+  border: 1.5px solid var(--accent);
+  color: var(--primary);
+}
+.solid:active,
+.ghost:active {
+  transform: scale(0.97);
+}
+.solid:focus-visible,
+.ghost:focus-visible {
+  outline: 3px solid var(--pop);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ the cards */
+
+.deckSection {
+  padding: 36px 20px 8px;
+  text-align: center;
+}
+.deckIntro {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+.deckCount {
+  margin: 6px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.deckNumber {
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-size: 26px;
+  letter-spacing: 0;
+  color: var(--primary);
+}
+.deck {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 420px;
+  margin: 22px auto 0;
+  padding: 0;
+  list-style: none;
+}
+.flip:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 7px);
+}
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 3.7;
+  perspective: 900px;
+}
+.flipHit {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.flipHit:focus-visible {
+  outline: 3px solid var(--pop);
+  outline-offset: 4px;
+}
+.flipInner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.85s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.flip[data-flipped] .flipInner {
+  transform: rotateY(180deg);
+}
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 16px 10px;
+  border: 1.5px solid var(--accent);
+  border-radius: 20px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 14px 24px rgba(50, 80, 40, 0.22);
+  text-align: center;
+}
+.front {
+  background: linear-gradient(150deg, #8aa579, #6b8a5d);
+  color: #fffbea;
+}
+.front::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px dashed rgba(255, 255, 236, 0.55);
+  border-radius: 14px;
+  pointer-events: none;
+}
+.cornerLeaf {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 0 100% 0 100%;
+  background: rgba(255, 255, 236, 0.3);
+}
+.faceIcon {
+  width: 40px;
+  height: 40px;
+  color: #fff3c4;
+}
+.faceTitle {
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+}
+.faceHint {
+  margin-top: 4px;
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+.back {
+  transform: rotateY(180deg);
+  background: radial-gradient(circle at 50% 30%, #fffdf2, #f1e6c4);
+  color: var(--primary-deep);
+}
+.backDay {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.backDate {
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: 54px;
+  line-height: 0.9;
+  color: var(--primary);
+}
+.backMonth {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+}
+.backTime {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.backPlace {
+  max-width: 88%;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.dressCard {
+  max-width: 340px;
+  margin: 28px auto 0;
+  padding: 22px 20px;
+  border: 1.5px solid var(--accent-soft);
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: 0 12px 24px rgba(50, 80, 40, 0.1);
+  text-align: center;
+}
+.dressIcon {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+}
+.dressLabel {
+  margin: 8px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dressText {
+  margin: 4px 0 0;
+  font-family: var(--font-hand), 'Segoe Script', cursive;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--primary);
+}
+
+/* ------------------------------------------------------------------ keyframes */
+
+@keyframes walkIn {
+  0% {
+    scale: 1;
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    scale: 3.6;
+    opacity: 0;
+  }
+}
+@keyframes halo {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes cueBounce {
+  0%,
+  100% {
+    translate: 0 -2px;
+    opacity: 0.5;
+  }
+  50% {
+    translate: 0 6px;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    height: auto;
+  }
+  .sticky {
+    position: relative;
+    height: calc(var(--u) * 800);
+    --p: 0;
+  }
+  .rise,
+  [data-opened] .rise {
+    opacity: 1;
+    animation: none;
+  }
+  .sealHalo,
+  .gateHint,
+  .faceHint,
+  .cueArrow {
+    animation: none;
+  }
+  .cue {
+    display: none;
+  }
+  .curtain,
+  .door {
+    transition-duration: 0.01ms;
+  }
+  .gate[data-stage='curtains'] .rig {
+    animation-duration: 0.01ms;
+    animation-delay: 0.3s;
+  }
+}

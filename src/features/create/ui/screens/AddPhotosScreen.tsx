@@ -19,7 +19,9 @@ import { Text } from '../../../../shared/ui/Text';
 import { usePhotoPicker } from '../../application/usePhotoPicker';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useTemplateCatalog } from '../../application/useTemplateCatalog';
+import { INVITATION_TEMPLATE } from '../../domain/invitation';
 import { nextUnlock } from '../../domain/recommendTemplates';
+import { InviteProgress } from '../components/InviteProgress';
 import { validatePickedPhoto } from '../../domain/photoValidation';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { Screen } from '../../../../shared/ui/Screen';
@@ -132,6 +134,7 @@ export function AddPhotosScreen({ navigation, route }: Props) {
 
   const slots = Array.from({ length: maxPhotos }, (_, i) => i);
   const filledCount = draft.photoUris.slice(0, maxPhotos).filter(Boolean).length;
+  const isInvitation = draft.templateType === INVITATION_TEMPLATE;
   const isQuickCreate = !draft.audience;
   // Set when the person picked a frame that needs more photos than they had.
   const forFrameId = route.params?.forFrame;
@@ -150,19 +153,25 @@ export function AddPhotosScreen({ navigation, route }: Props) {
     <Screen
       title="Photos"
       subtitle={
-        forFrame
+        isInvitation
+          ? 'The first photo is the portrait guests see first.'
+          : forFrame
           ? `${forFrame.title} uses ${forFrame.photoSlots} ${forFrame.photoSlots === 1 ? 'photo' : 'photos'}.`
           : isQuickCreate
             ? 'Add up to 5 photos.'
             : `Add 1–${maxPhotos} photos — you'll pick a frame next.`
       }
-      progress={<CreateProgress stage="photos" />}
+      progress={isInvitation ? <InviteProgress stage="photos" /> : <CreateProgress stage="photos" />}
       onBack={() => navigation.goBack()}
       headerAction={
         <ScreenHeaderAction
           label="Next"
           disabled={draft.photoUris.length < 1 || picking}
           onPress={() => {
+            if (isInvitation) {
+              navigation.navigate('Preview');
+              return;
+            }
             if (forFrame) {
               // Back to the frames with the one they wanted ready to arrange.
               navigation.navigate('TemplateRecommend', { openFrame: forFrame.id });
@@ -173,7 +182,7 @@ export function AddPhotosScreen({ navigation, route }: Props) {
         />
       }
     >
-      <CreateNudge stage="photos" />
+      {isInvitation ? null : <CreateNudge stage="photos" />}
       <View style={styles.row}>
         {slots.map((i) => {
           const uri = draft.photoUris[i];
@@ -223,9 +232,11 @@ export function AddPhotosScreen({ navigation, route }: Props) {
         <Text style={styles.error}>{validationError}</Text>
       ) : null}
       <Text style={styles.hint}>
-        {env.useBase64Media
-          ? 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Extra photos show in the story deck.'
-          : 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Photos upload when you share.'}
+        {isInvitation
+          ? 'Select up to 5 photos from your library, or use the camera. Tap a photo to replace and crop it. The others become a stack guests can swipe through. Photos upload when you share.'
+          : env.useBase64Media
+            ? 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Extra photos show in the story deck.'
+            : 'Select up to 5 photos at once from your library, or use the camera. Tap a photo to replace and crop it. Photos upload when you share.'}
       </Text>
       <PhotoSourceSheet {...sheet} />
       <PhotoProblemSheet {...problemSheet} />

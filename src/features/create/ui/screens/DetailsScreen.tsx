@@ -5,14 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  type TextInput as RNTextInput,
 } from 'react-native';
 import { PenLine } from 'lucide-react-native';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
-import { TextInput } from '../../../../shared/ui/TextInput';
+import { TextInput, type TextInputHandle } from '../../../../shared/ui/TextInput';
 import { useAuth } from '../../../auth/application/useAuth';
-import { AccountToggle } from '../../../auth/ui/components/AccountToggle';
+import { Toggle } from '../../../../shared/ui/Toggle';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import {
   isInteractiveExperience,
@@ -61,8 +60,8 @@ export function DetailsScreen({ navigation }: Props) {
   const reasonRows =
     draft.reasons.length > 0 ? draft.reasons : ['', '', ''];
   const [lockOn, setLockOn] = useState(draft.passcode.length > 0);
-  const messageRef = useRef<RNTextInput>(null);
-  const starters = messageStarters(draft.occasion);
+  const messageRef = useRef<TextInputHandle>(null);
+  const starters = messageStarters(draft.occasion, draft.templateType);
   const balloonWords = draft.balloonLine
     .trim()
     .split(/\s+/)
@@ -165,7 +164,7 @@ export function DetailsScreen({ navigation }: Props) {
                 Balloons, candle, gift, then photos and your letter
               </Text>
             </View>
-            <AccountToggle
+            <Toggle
               value={interactiveOn}
               onValueChange={(on) =>
                 setExperienceMode(on ? 'story' : 'classic')
@@ -245,7 +244,7 @@ export function DetailsScreen({ navigation }: Props) {
                 : 'They enter 4 digits to open it — try your anniversary date'}
             </Text>
           </View>
-          <AccountToggle
+          <Toggle
             value={lockOn}
             onValueChange={(on) => {
               setLockOn(on);

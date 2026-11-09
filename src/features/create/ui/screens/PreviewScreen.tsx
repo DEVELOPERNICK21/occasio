@@ -2,9 +2,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
+import { appPlatform } from '../../../../shared/platform/runtime';
+import { NoticeCard } from '../../../../shared/ui/NoticeCard';
 import { Text } from '../../../../shared/ui/Text';
 import { useAuth } from '../../../auth/application/useAuth';
+import { useBillingNotice } from '../../../billing/application/useBillingNotice';
+import { useWishBalance } from '../../../billing/application/useWishBalance';
 import { usePaywall } from '../../../billing/application/usePaywall';
+import { describeBillingNotice } from '../../../billing/domain/billingNotice';
+import { nextWishNotice } from '../../../billing/domain/wishBalance';
 import { useFreeCardsUsed } from '../../../billing/application/useFreeCardsUsed';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useCreateShareLink } from '../../application/useCreateShareLink';
@@ -15,9 +21,12 @@ import {
   resolveDraftExperienceMode,
   storyBeatHint,
 } from '../../domain/experienceMode';
+import { INVITATION_TEMPLATE } from '../../domain/invitation';
 import { freeQuotaNotice, PRO_YEARLY_CARD_LIMIT } from '../../domain/quota';
 import { PACKAGE_SINGLE_WISH } from '../../../billing/domain/entitlements';
 import { CardPreviewStage } from '../components/CardPreviewStage';
+import { InvitationSummary } from '../components/InvitationSummary';
+import { InviteProgress } from '../components/InviteProgress';
 import { CreateProblemSheet } from '../components/CreateProblemSheet';
 import { FreeCardSheet } from '../components/FreeCardSheet';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
@@ -30,6 +39,12 @@ import { CreateNudge, CreateProgress } from '../components/CreateProgress';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Preview'>;
 
+/** Plans could not be loaded at all (billing is not set up, or the offer list is empty). */
+function alertPlansUnavailable() {
+  const notice = describeBillingNotice('NOT_CONFIGURED', { platform: appPlatform() });
+  Alert.alert(notice.title, notice.message);
+}
+
 export function PreviewScreen({ navigation }: Props) {
   const { draft, isEditing, clearEditing } = useCreateDraftContext();
   const { isSignedIn, requestAuth, user, canSignInWithApple, signInGoogle, signInApple } =
@@ -41,9 +56,9 @@ export function PreviewScreen({ navigation }: Props) {
     tier,
     plans,
     purchase,
-    error: billingError,
     resolveExtraWish,
   } = usePaywall();
+  const billingNotice = useBillingNotice();
   // The server's count of free cards, not local History rows, which can lag or fail to sync.
   const { used: freeCardsUsed, refresh: resolveFreeCardsUsed } = useFreeCardsUsed(
     isSignedIn ? (user?.uid ?? null) : null,
@@ -60,9 +75,14 @@ export function PreviewScreen({ navigation }: Props) {
       resolveFreeCardsUsed,
       photoSlots,
     });
+  const invitation = draft.templateType === INVITATION_TEMPLATE ? draft.invitation : null;
+  const { balance } = useWishBalance(isSignedIn ? (user?.uid ?? null) : null);
+  // Say which of their wishes this card will use, from the server's own count; fall back to the plain
+  // free-card line for a guest or when the count could not be read.
   const quotaNotice = isEditing
     ? null
-    : freeQuotaNotice(cardsCreated, tier, user ? user.viaGoogleOrApple === true : true);
+    : (balance ? nextWishNotice(balance) : null) ??
+      freeQuotaNotice(cardsCreated, tier, user ? user.viaGoogleOrApple === true : true);
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.previewOpened, {
@@ -76,10 +96,7 @@ export function PreviewScreen({ navigation }: Props) {
     }
 
     if (!isConfigured) {
-      Alert.alert(
-        'Plans unavailable',
-        'We could not load the Occasio Pro plans right now. Check your connection and try again.',
-      );
+      alertPlansUnavailable();
       reset();
       return;
     }
@@ -180,10 +197,7 @@ export function PreviewScreen({ navigation }: Props) {
 
   const showPlans = async () => {
     if (!isConfigured) {
-      Alert.alert(
-        'Plans unavailable',
-        'We could not load the Occasio Pro plans right now. Check your connection and try again.',
-      );
+      alertPlansUnavailable();
       return;
     }
     await openPaywall();
@@ -221,21 +235,27 @@ export function PreviewScreen({ navigation }: Props) {
       subtitle={
         isEditing
           ? 'Updates keep the same share link'
-          : 'This is what they’ll open'
+          : invitation
+            ? 'This is what your guests will open'
+            : 'This is what they’ll open'
       }
-      progress={<CreateProgress stage="preview" />}
+      progress={invitation ? <InviteProgress stage="review" /> : <CreateProgress stage="preview" />}
       onBack={() => navigation.goBack()}
     >
-      <CreateNudge stage="preview" />
-      <CardPreviewStage
-        recipientName={draft.recipientName}
-        message={draft.message}
-        occasion={draft.occasion}
-        templateType={draft.templateType}
-        templateId={draft.templateId}
-        photoUris={draft.photoUris}
-        fromName={draft.fromName}
-      />
+      {invitation ? null : <CreateNudge stage="preview" />}
+      {invitation ? (
+        <InvitationSummary invitation={invitation} photoUri={draft.photoUris[0] ?? null} note={draft.message} />
+      ) : (
+        <CardPreviewStage
+          recipientName={draft.recipientName}
+          message={draft.message}
+          occasion={draft.occasion}
+          templateType={draft.templateType}
+          templateId={draft.templateId}
+          photoUris={draft.photoUris}
+          fromName={draft.fromName}
+        />
+      )}
       {isLoading ? (
         <View style={styles.loader}>
           <PipLoader kind={isEditing ? 'saving' : 'creating'} holdsGift={!isEditing} size={84} />
@@ -244,8 +264,10 @@ export function PreviewScreen({ navigation }: Props) {
       {photosShort > 0 && photoSlots !== null ? (
         <Text style={styles.error}>{framePhotosMessage(photosShort, photoSlots)}</Text>
       ) : null}
-      {billingError && !isEditing ? (
-        <Text style={styles.error}>{billingError}</Text>
+      {billingNotice && !isEditing ? (
+        <View style={styles.notice}>
+          <NoticeCard {...billingNotice} />
+        </View>
       ) : null}
 
       <ScreenActions>
@@ -264,7 +286,9 @@ export function PreviewScreen({ navigation }: Props) {
       <Text style={styles.hint}>
         {isEditing
           ? 'Anyone with the link will see your updates. The URL stays the same.'
-          : 'Your link will be private and unlisted — only people you share it with can open it.'}
+          : invitation
+            ? 'Your link is unlisted. Send it to your guests; anyone who has it can open the invitation.'
+            : 'Your link will be private and unlisted — only people you share it with can open it.'}
       </Text>
       {quotaNotice ? <Text style={styles.hint}>{quotaNotice}</Text> : null}
       <CreateProblemSheet message={error} onRetry={() => void createLink()} onClose={reset} />
@@ -291,6 +315,9 @@ const styles = StyleSheet.create({
   loader: {
     marginTop: spacing.lg,
     alignItems: 'center',
+  },
+  notice: {
+    marginTop: spacing.md,
   },
   error: {
     marginTop: spacing.md,

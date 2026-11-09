@@ -19,6 +19,13 @@ import {
   heldBackRefusal,
 } from '@/lib/freeClaims';
 import { getAdminFirestore, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
+import {
+  INVITATION_TEMPLATE,
+  invitationFromStored,
+  invitationTitle,
+  parseInvitation,
+  type Invitation,
+} from '@/lib/invitation';
 import type { RecipientCard } from '@/lib/recipientCard';
 import {
   PASSCODE_PATTERN,
@@ -54,6 +61,8 @@ export type CreateCreationInput = {
   /** 4-digit code the recipient must enter. `null` clears it on update; omitted keeps it. */
   passcode?: string | null;
   passcodeHint?: string;
+  /** An invitation's details. Required for `invitation`, ignored for every other type. */
+  invitation?: Invitation;
 };
 
 const MAX_REASONS = 5;
@@ -135,7 +144,7 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
   const input = body as Partial<CreateCreationInput>;
   const templateType = input.templateType?.trim();
   const templateId = input.templateId?.trim() || null;
-  const recipientName = input.recipientName?.trim() ?? '';
+  let recipientName = input.recipientName?.trim() ?? '';
   const fromName = input.fromName?.trim() ?? '';
   const message = input.message?.trim() ?? '';
   const photoRefs = input.photoRefs;
@@ -143,6 +152,16 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
 
   if (!templateType) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Template is required');
+  }
+  // An invitation is addressed to everyone who opens the link, so its "recipient" is the host.
+  let invitation: Invitation | undefined;
+  if (templateType === INVITATION_TEMPLATE) {
+    const parsed = parseInvitation(input.invitation);
+    if (!parsed.ok) {
+      throw new ApiRouteError(400, 'VALIDATION_ERROR', parsed.message);
+    }
+    invitation = parsed.invitation;
+    recipientName = invitationTitle(invitation);
   }
   if (recipientName.length < 1 || recipientName.length > 80) {
     throw new ApiRouteError(400, 'VALIDATION_ERROR', 'Recipient name is required');
@@ -227,6 +246,7 @@ export function validateCreateInput(body: unknown): CreateCreationInput {
     reasons,
     ...(passcode !== undefined ? { passcode } : {}),
     ...(passcodeHint ? { passcodeHint } : {}),
+    ...(invitation ? { invitation } : {}),
     devMode,
   };
 }
@@ -307,6 +327,7 @@ export async function createCreation(
       ? normalizeBalloonLine(input.balloonLine)
       : null,
     reasons: input.reasons ?? [],
+    invitation: input.invitation ?? null,
     ...passcodeFields(input),
     shareSlug,
     watermarked: true,
@@ -494,6 +515,7 @@ function cardFromDoc(
             (r): r is string => typeof r === 'string' && r.trim().length > 0,
           )
         : [],
+      invitation: doc.templateType === INVITATION_TEMPLATE ? invitationFromStored(doc.invitation) : null,
   };
 }
 
@@ -606,6 +628,7 @@ export type OwnedCreation = {
   experienceMode: 'story' | 'classic' | null;
   balloonLine: string | null;
   reasons: string[];
+  invitation: Invitation | null;
   hasPasscode: boolean;
   passcodeHint: string | null;
 };
@@ -725,6 +748,7 @@ export async function getOwnedCreation(
             (r): r is string => typeof r === 'string',
           )
         : [],
+      invitation: doc.templateType === INVITATION_TEMPLATE ? invitationFromStored(doc.invitation) : null,
       hasPasscode: typeof doc.passcodeHash === 'string',
       passcodeHint:
         typeof doc.passcodeHint === 'string' ? doc.passcodeHint : null,
@@ -791,6 +815,7 @@ export async function updateCreation(
       ? normalizeBalloonLine(input.balloonLine)
       : null,
     reasons: input.reasons ?? [],
+    invitation: input.invitation ?? null,
     ...passcodeFields(input),
     updatedAt: Timestamp.now(),
     updatedBy: uid,

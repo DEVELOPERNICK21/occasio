@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Occasio collects, uses, and protects your information.
-updated: 2026-10-14
+updated: 2026-10-27
 ---
 
 This Privacy Policy explains how **Occasio** (“we”, “us”, “our”) handles information when you use our mobile app, recipient web pages at shared links, and related services (collectively, the **Service**).
@@ -29,7 +29,7 @@ We collect only what is needed to provide the Service.
 | **Email address** | When you create an account or sign in with email | Authentication and account security (your password is handled by Firebase Authentication; we never see it) |
 | **Google account info** | When you choose Google sign-in | Authentication (name, email as provided by Google) |
 | **Apple account info** | When you choose Sign in with Apple | Authentication (the name and email, or Apple’s private relay address, that you choose to share) |
-| **Card content** | When you create a card | Photos, recipient name, message, template choice |
+| **Card content** | When you create a card | Photos, recipient name, message, template choice. For an invitation (a wedding, birthday or other gathering) also the host’s names, the dates, the venue and address, and, if you add one, the WhatsApp number guests can reply to |
 | **Vault entries** | When you save a person | Name, relationship, dates (e.g. birthday), optional WhatsApp or phone |
 | **Support messages** | When you contact us | Respond to your request |
 
@@ -54,6 +54,8 @@ We do **not** scrape your phone contacts. Vault data is limited to what you manu
 ### 3.3 Information about other people
 
 When you add someone to your Vault or address a card to them, you provide **their** name and optionally contact details or dates. You are responsible for having a lawful basis to store and use that information (for example, your personal relationship with them). We use it only to deliver the features you request, such as reminders or auto-send when available.
+
+When a guest replies to an invitation, the reply is a WhatsApp message that the guest sends from their own phone to the number the host gave. **We do not receive, store or see those replies**, and we keep no guest list.
 
 ### 3.4 Cookies and on-device storage
 

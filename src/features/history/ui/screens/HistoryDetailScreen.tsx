@@ -24,7 +24,8 @@ import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreat
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useHistory, useDeleteHistory } from '../../application/useHistory';
 import { LINK_STILL_ACTIVE_NOTICE } from '../../domain/deleteOutcome';
-import { templateLabel } from '../../domain/display';
+import { INVITATION_TEMPLATE } from '../../../create/domain/invitation';
+import { templateLabel } from '../../../create/domain/templates';
 import {
   formatHistoryDate,
   isHistoryEntryExpired,
@@ -127,6 +128,11 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
           Alert.alert('Could not edit', err);
           return;
         }
+        // An invitation is edited through its own steps; a card goes back to its photos.
+        if (entry.templateType === INVITATION_TEMPLATE) {
+          navigation.navigate('InvitesTab', { screen: 'InviteDetails' });
+          return;
+        }
         navigation.navigate('CreateTab', { screen: 'AddPhotos' });
       })();
     });
@@ -214,7 +220,7 @@ export function HistoryDetailScreen({ navigation, route }: Props) {
   return (
     <Screen
       title={entry.recipientName}
-      subtitle={`${templateLabel(entry.templateType)} · ${formatHistoryDate(entry.createdAt)}`}
+      subtitle={`${templateLabel(entry.templateType, 'Wish')} · ${formatHistoryDate(entry.createdAt)}`}
       onBack={() => navigation.goBack()}
     >
       {expired ? (

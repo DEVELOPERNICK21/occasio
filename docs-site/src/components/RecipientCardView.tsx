@@ -6,7 +6,9 @@ import { CardReaction } from '@/components/CardReaction';
 import { OccasionStickerShower } from '@/components/OccasionStickerShower';
 import { ReportCardLink } from '@/components/ReportCardLink';
 import { WishCard } from '@/components/WishCard';
+import { InvitationPlayer } from '@/components/invitation/InvitationPlayer';
 import { StoryPlayer } from '@/components/story/StoryPlayer';
+import { INVITATION_TEMPLATE } from '@/lib/invitation';
 import { resolveExperience } from '@/lib/experience/resolveExperience';
 import type { RecipientCard } from '@/lib/recipientCard';
 
@@ -20,6 +22,11 @@ export function RecipientCardView({ card, slug }: Props) {
   const handleReplay = useCallback(() => {
     setReplayKey((k) => k + 1);
   }, []);
+
+  // An invitation has its own page: one link for every guest, not a story for one person.
+  if (card.templateType === INVITATION_TEMPLATE && card.invitation) {
+    return <InvitationPlayer card={{ ...card, invitation: card.invitation }} slug={slug} />;
+  }
 
   try {
     const resolved = resolveExperience(card);
