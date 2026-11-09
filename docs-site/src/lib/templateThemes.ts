@@ -8,6 +8,8 @@ export type WebTemplateTheme = {
   orbSecondary: string;
 };
 
+import { HOLIDAY_LOOKS, webHolidayFor } from './holidays';
+
 const THEMES: Record<string, WebTemplateTheme> = {
   birthday: {
     label: 'Birthday',
@@ -45,28 +47,26 @@ const THEMES: Record<string, WebTemplateTheme> = {
     orbPrimary: '#F5B8C8',
     orbSecondary: '#E8615D',
   },
-  mothers_day: {
-    label: "Mother's Day",
-    kicker: 'For mom',
-    accent: '#E07A8A',
-    accentSecondary: '#F7C9B6',
-    softBackground: '#FCEEF2',
-    orbPrimary: '#F7C9B6',
-    orbSecondary: '#F6A94A',
-  },
-  fathers_day: {
-    label: "Father's Day",
-    kicker: 'For dad',
-    accent: '#5B7A6E',
-    accentSecondary: '#A8C4B8',
-    softBackground: '#EEF4F1',
-    orbPrimary: '#A8C4B8',
-    orbSecondary: '#857371',
-  },
 };
 
 const FALLBACK = THEMES.birthday;
 
+/** A festival takes its colour family's five colours, the same ones the app uses. */
+function holidayTheme(templateType: string): WebTemplateTheme | null {
+  const holiday = webHolidayFor(templateType);
+  if (!holiday) return null;
+  const { accent, accentSecondary, softBackground, orbPrimary, orbSecondary } = HOLIDAY_LOOKS[holiday.look];
+  return {
+    label: holiday.label,
+    kicker: `A ${holiday.label} wish`,
+    accent,
+    accentSecondary,
+    softBackground,
+    orbPrimary,
+    orbSecondary,
+  };
+}
+
 export function getWebTemplateTheme(templateType: string): WebTemplateTheme {
-  return THEMES[templateType] ?? FALLBACK;
+  return THEMES[templateType] ?? holidayTheme(templateType) ?? FALLBACK;
 }

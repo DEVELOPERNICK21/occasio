@@ -1,3 +1,5 @@
+import { holidayById } from './holidays';
+import { INVITATION_TEMPLATE } from './invitation';
 import type { Audience, Occasion } from './templateSchema';
 import type { TemplateType } from './types';
 
@@ -49,11 +51,17 @@ export function occasionHeadline(occasion: Occasion | null): string | null {
   return OCCASION_HEADLINES[occasion];
 }
 
+/**
+ * The headline a card shows: a festival's own ("Happy Diwali"), or the everyday moment's.
+ * The frame's `occasion` alone would call a Diwali card a birthday.
+ */
+export function momentHeadline(templateType: TemplateType | null, occasion: Occasion | null): string | null {
+  return holidayById(templateType)?.headline ?? occasionHeadline(occasion);
+}
+
 export function defaultTemplateIdForType(templateType: TemplateType): string {
   switch (templateType) {
     case 'birthday':
-    case 'mothers_day':
-    case 'fathers_day':
       return 'B10';
     case 'thank_you':
     case 'congratulations':
@@ -64,12 +72,20 @@ export function defaultTemplateIdForType(templateType: TemplateType): string {
     case 'sorry':
     case 'proposal':
       return 'B01';
+    case 'invitation':
+      // Not a frame: an invitation has its own page. The id only marks the draft as having a design.
+      return INVITATION_TEMPLATE;
+    default:
+      // A festival: the full-photo frame suits every person and every festival.
+      return 'B10';
   }
 }
 
 export function occasionFromTemplateType(
   templateType: TemplateType,
 ): Occasion | null {
+  const holiday = holidayById(templateType);
+  if (holiday) return holiday.frame;
   if (
     templateType === 'birthday' ||
     templateType === 'anniversary' ||
@@ -87,11 +103,9 @@ export function homeSelectionFromTemplateType(templateType: TemplateType): {
   occasion: Occasion;
   audience: Audience | null;
 } {
-  if (templateType === 'mothers_day') {
-    return { occasion: 'birthday', audience: 'mom' };
-  }
-  if (templateType === 'fathers_day') {
-    return { occasion: 'birthday', audience: 'dad' };
+  const holiday = holidayById(templateType);
+  if (holiday) {
+    return { occasion: holiday.frame, audience: holiday.audience };
   }
   const occasion = occasionFromTemplateType(templateType);
   if (occasion) {

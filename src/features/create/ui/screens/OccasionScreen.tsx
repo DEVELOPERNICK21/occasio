@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
@@ -54,6 +55,17 @@ export function OccasionScreen({ navigation }: Props) {
           );
         })}
       </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Festivals and holidays"
+        accessibilityHint="Opens the list of festivals and holidays"
+        onPress={() => navigation.navigate('Holidays', { fromOccasion: true })}
+        hitSlop={8}
+        style={styles.festivals}
+      >
+        <Text style={styles.festivalsText}>Making it for a festival or holiday?</Text>
+        <ChevronRight size={16} color={colors.accent} strokeWidth={2} absoluteStrokeWidth />
+      </Pressable>
       <Text style={styles.hint}>
         You will add a photo next — the frame comes after.
       </Text>
@@ -66,8 +78,21 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.md,
   },
+  festivals: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 2,
+    minHeight: 32,
+    marginTop: spacing.md,
+  },
+  festivalsText: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.accent,
+  },
   hint: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.4,
     color: colors.muted,

@@ -1,15 +1,21 @@
+import type { HolidayId } from './holidays';
+import type { InvitationDraft } from './invitation';
 import type { Audience, Occasion } from './templateSchema';
 
-export type TemplateType =
+/** The everyday moments, and the two old ones (sorry, proposal) that stored cards may still carry. */
+export type BaseTemplateType =
   | 'birthday'
   | 'anniversary'
   | 'sorry'
   | 'proposal'
-  | 'mothers_day'
-  | 'fathers_day'
   | 'thank_you'
   | 'congratulations'
-  | 'just_because';
+  | 'just_because'
+  /** An invitation for many guests: its details are in `CreationDraft.invitation`. */
+  | 'invitation';
+
+/** A card type: an everyday moment, or one of the festivals and holidays in `holidays.ts`. */
+export type TemplateType = BaseTemplateType | HolidayId;
 
 export type CreationDraft = {
   templateType: TemplateType | null;
@@ -38,6 +44,8 @@ export type CreationDraft = {
   passcodeHint: string;
   /** True when the card being edited already has a passcode (the code itself is never returned). */
   hasPasscode: boolean;
+  /** The details of an invitation, when `templateType` is `invitation`. Null for every other card. */
+  invitation: InvitationDraft | null;
   /**
    * When set, Preview saves via PATCH (same share URL) instead of create.
    */
@@ -70,6 +78,7 @@ export const EMPTY_CREATION_DRAFT: CreationDraft = {
   passcode: '',
   passcodeHint: '',
   hasPasscode: false,
+  invitation: null,
   editingCreationId: null,
   editingShareSlug: null,
   editingShareUrl: null,

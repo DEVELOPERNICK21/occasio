@@ -12,6 +12,16 @@ import {
   occasionToTemplateType,
 } from '../domain/audienceOccasion';
 import { canPreviewDraft } from '../domain/creationRules';
+import {
+  INVITATION_TEMPLATE,
+  emptyInvitation,
+  invitationFromStored,
+  invitationTitle,
+  type InvitationDraft,
+  type InvitationOccasion,
+} from '../domain/invitation';
+import { holidayById, type HolidayId } from '../domain/holidays';
+import { parseTemplateType } from '../domain/templates';
 import type { Audience, Occasion } from '../domain/templateSchema';
 import {
   EMPTY_CREATION_DRAFT,
@@ -20,24 +30,6 @@ import {
 } from '../domain/types';
 
 const PERSIST_DEBOUNCE_MS = 300;
-
-const TEMPLATE_TYPES = new Set<TemplateType>([
-  'birthday',
-  'anniversary',
-  'sorry',
-  'proposal',
-  'mothers_day',
-  'fathers_day',
-  'thank_you',
-  'congratulations',
-  'just_because',
-]);
-
-function parseTemplateType(value: string): TemplateType | null {
-  return TEMPLATE_TYPES.has(value as TemplateType)
-    ? (value as TemplateType)
-    : null;
-}
 
 export function useCreateDraft() {
   const [draft, setDraft] = useState<CreationDraft>(EMPTY_CREATION_DRAFT);
@@ -137,6 +129,28 @@ export function useCreateDraft() {
     [],
   );
 
+  /** A new invitation for this occasion. It replaces whatever card was being made: there is one draft. */
+  const startInvitation = useCallback((occasion: InvitationOccasion) => {
+    setDraft({
+      ...EMPTY_CREATION_DRAFT,
+      templateType: INVITATION_TEMPLATE,
+      templateId: defaultTemplateIdForType(INVITATION_TEMPLATE),
+      invitation: emptyInvitation(occasion),
+    });
+  }, []);
+
+  /**
+   * Changes some of the invitation's fields. The name the card is addressed to follows the names, so
+   * a link, a History row and a guest's preview always say who it is for.
+   */
+  const updateInvitation = useCallback((patch: Partial<InvitationDraft>) => {
+    setDraft((d) => {
+      if (!d.invitation) return d;
+      const invitation = { ...d.invitation, ...patch };
+      return { ...d, invitation, recipientName: invitationTitle(invitation) };
+    });
+  }, []);
+
   const reset = useCallback(() => {
     setDraft(EMPTY_CREATION_DRAFT);
     void clearCreationDraft();
@@ -178,6 +192,22 @@ export function useCreateDraft() {
     });
   }, []);
 
+  /**
+   * A festival or holiday card: its type and stand-in occasion are set, the photo is the first ask.
+   * `keepAudience` carries over who it is for when they already said (from the "What's the moment?"
+   * step); otherwise the festival's usual audience, or a neutral one so the frames can be listed.
+   */
+  const startFromHoliday = useCallback((id: HolidayId, keepAudience = false) => {
+    const holiday = holidayById(id);
+    if (!holiday) return;
+    setDraft((d) => ({
+      ...EMPTY_CREATION_DRAFT,
+      audience: keepAudience && d.audience ? d.audience : (holiday.audience ?? 'someone_special'),
+      occasion: holiday.frame,
+      templateType: holiday.id,
+    }));
+  }, []);
+
   const startFromAudience = useCallback((audience: Audience) => {
     setDraft({
       ...EMPTY_CREATION_DRAFT,
@@ -199,6 +229,25 @@ export function useCreateDraft() {
 
       if (photoUris.length < 1) {
         return 'This card has no photos to edit. Create a new card instead.';
+      }
+
+      if (templateType === INVITATION_TEMPLATE) {
+        const invitation = invitationFromStored(card.invitation);
+        if (!invitation) return 'This invitation could not be opened for editing.';
+        setDraft({
+          ...EMPTY_CREATION_DRAFT,
+          templateType,
+          templateId: defaultTemplateIdForType(templateType),
+          photoUris,
+          recipientName: card.recipientName,
+          message: card.message ?? '',
+          invitation,
+          editingCreationId: card.creationId,
+          editingShareSlug: card.shareSlug,
+          editingShareUrl: card.shareUrl,
+          editingExpiresAt: card.expiresAt,
+        });
+        return null;
       }
 
       setDraft({
@@ -252,6 +301,9 @@ export function useCreateDraft() {
     startWish,
     startQuickCreate,
     startFromAudience,
+    startFromHoliday,
+    startInvitation,
+    updateInvitation,
     loadForEdit,
     canPreview,
     isEditing,

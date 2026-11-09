@@ -3,6 +3,9 @@
  * celebration style, mascot costume and the gate's jokes. Scenes read CSS
  * variables set from `vars`, so a new moment is a new entry here, not new CSS.
  */
+import { mix, withAlpha } from '../colorMix';
+import { HOLIDAY_LOOKS, webHolidayFor } from '../holidays';
+
 export type MomentId =
   | 'birthday'
   | 'anniversary'
@@ -66,6 +69,8 @@ export type CakeStyle = {
 
 export type MomentTheme = {
   id: MomentId;
+  /** The card type the song is chosen by, when it is not the moment (a festival keeps its own). */
+  songType?: string;
   label: string;
   dark: boolean;
   backdrop: BackdropId;
@@ -289,9 +294,91 @@ export function isMomentId(value: string): value is MomentId {
   return value in THEMES;
 }
 
-/** Any other template type (sorry, proposal...) falls back to birthday's look. */
+const WHITE = '#FFFFFF';
+const BLACK = '#000000';
+const NIGHT = '#1A1210';
+
+/**
+ * A festival's story look, built from its colour family: its accent and second colour become the
+ * gift paper, the ribbon, the confetti and the page wash, so each festival has its own colours
+ * without 50 hand-made themes. It borrows "just because" for what a festival does not change
+ * (the candle cake is never shown, since festivals have no candle scene).
+ */
+function buildHolidayTheme(templateType: string): MomentTheme | null {
+  const holiday = webHolidayFor(templateType);
+  if (!holiday) return null;
+  const look = HOLIDAY_LOOKS[holiday.look];
+  const { accent, accentSecondary: gold, softBackground: soft, orbPrimary, orbSecondary } = look;
+  const ink = mix(accent, NIGHT, 0.82);
+  const label = holiday.label;
+  return {
+    id: 'just_because',
+    songType: templateType,
+    label,
+    dark: false,
+    backdrop: look.backdrop,
+    fx: look.fx,
+    costume: look.costume,
+    mascot: { light: mix(gold, WHITE, 0.45), base: gold, shade: mix(gold, BLACK, 0.2), cheek: accent },
+    palette: [accent, gold, orbPrimary, orbSecondary, mix(accent, WHITE, 0.4), mix(gold, WHITE, 0.5)],
+    starName: 'wishes',
+    gift: {
+      paper: accent,
+      motif: WHITE,
+      motif2: gold,
+      ribbon: gold,
+      ribbonSheen: mix(gold, WHITE, 0.6),
+      pattern: look.pattern,
+      glow: gold,
+    },
+    cake: THEMES.just_because.cake,
+    letter: {
+      envelope: mix(accent, WHITE, 0.55),
+      lining: soft,
+      liningMotif: gold,
+      wax: mix(accent, BLACK, 0.25),
+      paper: '#FFFDF8',
+      ink,
+      accent,
+      pattern: look.pattern,
+    },
+    vars: {
+      '--bg': mix(soft, WHITE, 0.4),
+      '--surface': mix(soft, WHITE, 0.75),
+      '--sidebar': soft,
+      '--border': mix(orbPrimary, WHITE, 0.35),
+      '--ink': ink,
+      '--ink-soft': mix(accent, NIGHT, 0.68),
+      '--muted': mix(ink, WHITE, 0.45),
+      '--accent': accent,
+      '--accent-hover': mix(accent, BLACK, 0.15),
+      '--accent-soft': mix(accent, WHITE, 0.72),
+      '--secondary': gold,
+      '--on-accent': WHITE,
+      '--story-mesh': `radial-gradient(70% 45% at 12% 4%, ${withAlpha(orbPrimary, 0.55)}, transparent 70%), radial-gradient(60% 40% at 92% 10%, ${withAlpha(orbSecondary, 0.5)}, transparent 70%), radial-gradient(80% 50% at 50% 100%, ${withAlpha(gold, 0.3)}, transparent 70%), linear-gradient(180deg, ${mix(soft, WHITE, 0.5)} 0%, ${soft} 100%)`,
+    },
+    gate: {
+      hopeful: 'has a wish for you',
+      hopefulSub: `A ${label} wish, just for you.`,
+      refusedOnce: 'Not even a quick look?',
+      refusedOnceSub: 'Pip will wait, politely.',
+      refusedTwice: 'Pip is a little sad now.',
+      refusedTwiceSub: 'One tap would fix it.',
+      yes: 'Open it',
+    },
+  };
+}
+
+const holidayThemes = new Map<string, MomentTheme | null>();
+
+/**
+ * A moment's own look; a festival's look from its colours; anything else (sorry, proposal...)
+ * falls back to birthday's.
+ */
 export function momentThemeFor(templateType: string): MomentTheme {
-  return THEMES[isMomentId(templateType) ? templateType : FALLBACK];
+  if (isMomentId(templateType)) return THEMES[templateType];
+  if (!holidayThemes.has(templateType)) holidayThemes.set(templateType, buildHolidayTheme(templateType));
+  return holidayThemes.get(templateType) ?? THEMES[FALLBACK];
 }
 
 export function allMomentThemes(): MomentTheme[] {

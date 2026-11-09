@@ -1,33 +1,48 @@
-import type { TemplateType } from './types';
+import { holidayById, isHolidayId } from './holidays';
+import type { BaseTemplateType, TemplateType } from './types';
 
 export type TemplateOption = {
-  id: TemplateType;
+  id: BaseTemplateType;
   label: string;
 };
 
 /**
- * Display labels for every occasion the app has ever written to a draft.
- * Legacy values stay so old history entries and share links keep their label —
- * the create flow only offers the occasions in `OCCASION_OPTIONS`.
+ * Display labels for the everyday card types, including the legacy ones (sorry, proposal) that old
+ * history entries and share links may carry. The create flow only offers the occasions in
+ * `OCCASION_OPTIONS`, and the festivals in `holidays.ts`, which add their own labels.
  */
 export const TEMPLATE_OPTIONS: TemplateOption[] = [
   { id: 'birthday', label: 'Birthday' },
   { id: 'anniversary', label: 'Anniversary' },
   { id: 'sorry', label: 'Sorry' },
   { id: 'proposal', label: 'Proposal' },
-  { id: 'mothers_day', label: "Mother's Day" },
-  { id: 'fathers_day', label: "Father's Day" },
   { id: 'thank_you', label: 'Thank you' },
   { id: 'congratulations', label: 'Congratulations' },
   { id: 'just_because', label: 'Just because' },
+  { id: 'invitation', label: 'Invitation' },
 ];
 
-export function templateLabel(templateType: TemplateType | null): string {
-  if (!templateType) return 'Special wish';
-  return TEMPLATE_OPTIONS.find((t) => t.id === templateType)?.label ?? 'Special wish';
+const BASE_TYPE_IDS: ReadonlySet<string> = new Set(TEMPLATE_OPTIONS.map((t) => t.id));
+
+/** Whether a stored or received string is a card type the app knows. */
+export function parseTemplateType(value: unknown): TemplateType | null {
+  if (typeof value !== 'string') return null;
+  return BASE_TYPE_IDS.has(value) || isHolidayId(value) ? (value as TemplateType) : null;
+}
+
+/** The display name of a card type. `fallback` is what an unknown or missing type is called. */
+export function templateLabel(templateType: string | null, fallback = 'Special wish'): string {
+  if (!templateType) return fallback;
+  return (
+    TEMPLATE_OPTIONS.find((t) => t.id === templateType)?.label ??
+    holidayById(templateType)?.label ??
+    fallback
+  );
 }
 
 export function wishGreeting(templateType: TemplateType | null): string {
+  const holiday = holidayById(templateType);
+  if (holiday) return holiday.greeting;
   switch (templateType) {
     case 'sorry':
       return 'Thinking of you,';

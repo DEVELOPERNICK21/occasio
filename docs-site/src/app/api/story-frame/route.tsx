@@ -36,12 +36,15 @@ export async function GET(request: Request) {
   let glimpse: StoryGlimpse | null = null;
   let wash: string | null = null;
   let occasion = params.occasion;
+  // The colours follow the card's own type, so a Diwali card is not drawn in birthday colours.
+  let themeType: string = params.occasion;
   if (wantsPeek) {
     const result = await fetchRecipientCard(slug);
     if (result.kind === 'card') {
       glimpse = storyGlimpse(result.card);
       wash = await blurredPhotoDataUrl(result.card.mediaUrls, { allowDemoFiles: result.card.isDemo });
       occasion = storyOccasionFor(result.card.templateType);
+      themeType = result.card.templateType;
     }
   }
 
@@ -50,7 +53,7 @@ export async function GET(request: Request) {
     (
       <StoryFrameImage
         copy={storyFrameCopy(framed, glimpse)}
-        theme={ogThemeFor(occasion)}
+        theme={ogThemeFor(themeType)}
         wash={wash}
         peek={glimpse !== null}
       />

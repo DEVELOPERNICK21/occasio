@@ -49,21 +49,27 @@ describe('occasionFromTemplateType', () => {
   });
 
   it('returns null for non-occasion template types', () => {
-    expect(occasionFromTemplateType('mothers_day')).toBeNull();
-    expect(occasionFromTemplateType('fathers_day')).toBeNull();
     expect(occasionFromTemplateType('sorry')).toBeNull();
     expect(occasionFromTemplateType('proposal')).toBeNull();
+    expect(occasionFromTemplateType('invitation')).toBeNull();
+  });
+
+  it('frames a festival as the everyday moment it is closest to', () => {
+    expect(occasionFromTemplateType('mothers_day')).toBe('thank_you');
+    expect(occasionFromTemplateType('fathers_day')).toBe('thank_you');
+    expect(occasionFromTemplateType('diwali')).toBe('just_because');
+    expect(occasionFromTemplateType('valentines_day')).toBe('anniversary');
   });
 });
 
 describe('homeSelectionFromTemplateType', () => {
-  it('maps mothers/fathers day to birthday with audience', () => {
+  it('maps mothers/fathers day to their frame occasion with the usual audience', () => {
     expect(homeSelectionFromTemplateType('mothers_day')).toEqual({
-      occasion: 'birthday',
+      occasion: 'thank_you',
       audience: 'mom',
     });
     expect(homeSelectionFromTemplateType('fathers_day')).toEqual({
-      occasion: 'birthday',
+      occasion: 'thank_you',
       audience: 'dad',
     });
   });

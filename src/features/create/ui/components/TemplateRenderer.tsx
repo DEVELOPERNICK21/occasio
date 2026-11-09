@@ -1,5 +1,6 @@
-import { occasionHeadline } from '../../domain/audienceOccasion';
+import { momentHeadline } from '../../domain/audienceOccasion';
 import type { Occasion, TemplateDefinition } from '../../domain/templateSchema';
+import type { TemplateType } from '../../domain/types';
 import { AsymmetricSplit } from './layouts/AsymmetricSplit';
 import { BigWords } from './layouts/BigWords';
 import { CinemaStill } from './layouts/CinemaStill';
@@ -32,6 +33,8 @@ export type LayoutProps = {
 type Props = {
   definition: TemplateDefinition;
   occasion: Occasion | null;
+  /** The card type: a festival card says "Happy Diwali", not the headline of its stand-in occasion. */
+  templateType?: TemplateType | null;
   photoUris: string[];
   recipientName: string;
   message: string;
@@ -44,6 +47,7 @@ type Props = {
 export function TemplateRenderer({
   definition,
   occasion,
+  templateType = null,
   photoUris,
   recipientName,
   message,
@@ -53,7 +57,7 @@ export function TemplateRenderer({
   animate = true,
 }: Props) {
   const headline =
-    occasionHeadline(occasion) ??
+    momentHeadline(templateType, occasion) ??
     definition.texts.find((text) => text.role === 'headline')?.default ??
     '';
   const bodyDefault =

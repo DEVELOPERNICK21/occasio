@@ -1,3 +1,5 @@
+import { webHolidayFor } from '@/lib/holidays';
+
 type Props = {
   templateType: string;
   className?: string;
@@ -6,8 +8,10 @@ type Props = {
 /** Minimal line icons — matches editorial card mock above the greeting. */
 export function OccasionIcon({ templateType, className = '' }: Props) {
   const shared = `${className}`.trim();
+  // A festival is drawn as the everyday moment it is framed as: a heart, a leaf or a spark.
+  const kind = webHolidayFor(templateType)?.frame ?? templateType;
 
-  switch (templateType) {
+  switch (kind) {
     case 'birthday':
       return (
         <svg

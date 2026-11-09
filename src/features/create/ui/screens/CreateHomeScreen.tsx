@@ -9,6 +9,7 @@ import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { useAuth } from '../../../auth/application/useAuth';
 import { usePaywall } from '../../../billing/application/usePaywall';
+import { useWishBalance } from '../../../billing/application/useWishBalance';
 import { useHistory } from '../../../history/application/useHistory';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { Text } from '../../../../shared/ui/Text';
@@ -19,7 +20,9 @@ import type { CreateStackParamList, MainTabParamList } from '../../../../shared/
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useBadgeCelebration } from '../../application/useBadgeCelebration';
 import { BadgeCelebration } from '../components/BadgeCelebration';
+import { WishBalanceCard } from '../components/WishBalanceCard';
 import { CreateWishPill } from '../components/CreateWishPill';
+import { HolidayFeatureCard } from '../components/HolidayFeatureCard';
 import { HomeHeroStage } from '../components/HomeHeroStage';
 import { WishJourneyCard } from '../components/WishJourneyCard';
 import { AudienceCard } from '../components/AudienceCard';
@@ -27,16 +30,16 @@ import { UpcomingOccasionCard } from '../components/UpcomingOccasionCard';
 import { VaultNudgeCard } from '../components/VaultNudgeCard';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import { AUDIENCE_OPTIONS } from '../../domain/audienceOccasion';
+import { featuredHoliday } from '../../domain/holidays';
 import { freeQuotaNotice } from '../../domain/quota';
 import type { Audience } from '../../domain/templateSchema';
 import {
-  countWishesThisMonth,
   getCreateHomeHero,
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
   shouldShowVaultNudge,
 } from '../../domain/createHome';
-import { computeWishJourney } from '../../domain/wishJourney';
+import { computeWishJourney, countArmedAutoSend } from '../../domain/wishJourney';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<CreateStackParamList, 'CreateHome'>,
@@ -51,8 +54,8 @@ export function CreateHomeScreen({ navigation }: Props) {
   const isFocused = useIsFocused();
 
   const { isSignedIn, user } = useAuth();
-  const { tier } = usePaywall();
-  const { startFromAudience, startQuickCreate } = useCreateDraftContext();
+  const { tier, openForced } = usePaywall();
+  const { startFromAudience, startFromHoliday, startQuickCreate } = useCreateDraftContext();
   const { people, isLoading: vaultLoading } = useVaultPeople(isSignedIn);
   const { entries, isLoading: historyLoading } = useHistory(isSignedIn);
 
@@ -60,19 +63,23 @@ export function CreateHomeScreen({ navigation }: Props) {
     () => getUpcomingOccasionsFromVault(people, 2),
     [people],
   );
-  const wishCount = useMemo(
-    () => (isSignedIn && !historyLoading ? countWishesThisMonth(entries) : 0),
-    [entries, historyLoading, isSignedIn],
-  );
   const journey = useMemo(
-    () => computeWishJourney(isSignedIn ? entries : [], isSignedIn ? people.length : 0),
-    [entries, isSignedIn, people.length],
+    () =>
+      computeWishJourney(isSignedIn ? entries : [], isSignedIn ? people.length : 0, new Date(), {
+        armedAutoSend: isSignedIn ? countArmedAutoSend(people) : 0,
+      }),
+    [entries, isSignedIn, people],
+  );
+  const { balance, settled: balanceSettled, refresh: refreshBalance } = useWishBalance(
+    isSignedIn ? (user?.uid ?? null) : null,
   );
   const { celebrating, dismiss: dismissCelebration } = useBadgeCelebration(
     isSignedIn ? (user?.uid ?? null) : null,
     journey.badges,
     isFocused && isSignedIn && !historyLoading && !vaultLoading,
   );
+  // Recomputed each time Home comes into view, so it moves on after the day.
+  const festival = useMemo(() => (isFocused ? featuredHoliday(new Date()) : null), [isFocused]);
   const quotaNotice = freeQuotaNotice(isSignedIn && !historyLoading ? entries.length : 0, tier);
 
   const hero = useMemo(
@@ -96,6 +103,11 @@ export function CreateHomeScreen({ navigation }: Props) {
     trackEvent(AnalyticsEvents.createStarted);
   }, []);
 
+  // A card made or a purchase since the last look changes what is left.
+  useEffect(() => {
+    if (isFocused) void refreshBalance();
+  }, [isFocused, refreshBalance]);
+
   const pickAudience = (audience: Audience) => {
     triggerCardHaptic();
     startFromAudience(audience);
@@ -111,6 +123,23 @@ export function CreateHomeScreen({ navigation }: Props) {
     startQuickCreate();
     trackEvent(AnalyticsEvents.quickCreateStarted);
     navigation.navigate('AddPhotos');
+  };
+
+  const handleStartFestival = () => {
+    if (!festival) return;
+    triggerCardHaptic();
+    startFromHoliday(festival.holiday.id);
+    trackEvent(AnalyticsEvents.holidaySelected, {
+      holiday: festival.holiday.id,
+      group: festival.holiday.group,
+      source: 'create_home',
+    });
+    navigation.navigate('AddPhotos');
+  };
+
+  const handleSeeFestivals = () => {
+    triggerCardHaptic();
+    navigation.navigate('Holidays');
   };
 
   const handleSendCard = (personName: string) => {
@@ -169,9 +198,24 @@ export function CreateHomeScreen({ navigation }: Props) {
 
       <View style={styles.engagementSection}>
         <CreateWishPill onPress={handleQuickWish} />
-        {quotaNotice ? <Text style={styles.quota}>{quotaNotice}</Text> : null}
+        <HolidayFeatureCard
+          occurrence={festival}
+          onStart={handleStartFestival}
+          onSeeAll={handleSeeFestivals}
+        />
+        {balance ? (
+          <WishBalanceCard
+            balance={balance}
+            onPress={() => navigation.navigate('AccountTab')}
+            onGetMore={() => void openForced()}
+          />
+        ) : balanceSettled && quotaNotice ? (
+          <Text style={styles.quota}>{quotaNotice}</Text>
+        ) : null}
 
-        {showJourney ? <WishJourneyCard journey={journey} /> : null}
+        {showJourney ? (
+          <WishJourneyCard journey={journey} onSeeAll={() => navigation.navigate('Badges')} />
+        ) : null}
 
         {isSignedIn && !showVaultNudge ? (
           <UpcomingSection
@@ -196,7 +240,14 @@ export function CreateHomeScreen({ navigation }: Props) {
         ) : null}
       </View>
 
-      <BadgeCelebration badge={celebrating} onDismiss={dismissCelebration} />
+      <BadgeCelebration
+        badge={celebrating}
+        firstName={journey.firstRecipient}
+        next={journey.nextBadge}
+        onCreate={handleQuickWish}
+        onVault={() => navigation.navigate('VaultTab', { screen: 'AddPerson', params: {} })}
+        onDismiss={dismissCelebration}
+      />
     </Screen>
   );
 }

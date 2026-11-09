@@ -1,3 +1,4 @@
+import { templateLabel } from '../../create/domain/templates';
 import type { HistoryEntry } from './types';
 import { isHistoryEntryExpired } from './historyRules';
 
@@ -24,6 +25,8 @@ export function filterHistoryEntries(
     (entry) =>
       entry.recipientName.toLowerCase().includes(needle) ||
       entry.templateType.toLowerCase().includes(needle) ||
+      // A festival is found by its name too: "new year", not only the stored "new_year".
+      templateLabel(entry.templateType, '').toLowerCase().includes(needle) ||
       entry.message.toLowerCase().includes(needle),
   );
 }

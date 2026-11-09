@@ -1,3 +1,4 @@
+import { webHolidayFor } from '../holidays';
 import { splitRevealLine } from './splitRevealLine';
 import type {
   ExperienceCardInput,
@@ -6,7 +7,7 @@ import type {
   SceneId,
 } from './types';
 
-/** All five create-flow moments get the interactive story by default. */
+/** The five create-flow moments, and every festival, get the interactive story by default. */
 const STORY_TYPES = new Set([
   'birthday',
   'anniversary',
@@ -19,7 +20,7 @@ const STORY_TYPES = new Set([
 const CANDLE_TYPES = new Set(['birthday', 'anniversary']);
 
 export function defaultExperienceMode(templateType: string): ExperienceMode {
-  return STORY_TYPES.has(templateType) ? 'story' : 'classic';
+  return STORY_TYPES.has(templateType) || webHolidayFor(templateType) ? 'story' : 'classic';
 }
 
 /** The joke "terms" scene suits the light-hearted moments. */

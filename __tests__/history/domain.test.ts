@@ -68,6 +68,13 @@ describe('historyList', () => {
     expect(filterHistoryEntries(entries, 'happy')).toHaveLength(2);
   });
 
+  it('finds a festival card by its name, not only the stored id', () => {
+    const entry = { ...sampleEntry('a', '2026-09-10T00:00:00Z', '2026-10-10T00:00:00Z'), templateType: 'new_year' };
+    const other = { ...sampleEntry('b', '2026-09-10T00:00:00Z', '2026-10-10T00:00:00Z'), templateType: 'diwali' };
+    expect(filterHistoryEntries([entry, other], 'new year')).toEqual([entry]);
+    expect(filterHistoryEntries([entry, other], 'diwali')).toEqual([other]);
+  });
+
   it('summarizes totals and active links', () => {
     const entries = [
       sampleEntry('a', '2026-09-10T00:00:00Z', '2026-10-10T00:00:00Z'),

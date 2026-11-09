@@ -1,8 +1,9 @@
+import { isHolidayId } from './holidays';
 import type { TemplateType } from './types';
 
 export type ExperienceMode = 'story' | 'classic';
 
-/** All five create-flow moments open as an interactive story by default. */
+/** The five create-flow moments, and every festival, open as an interactive story by default. */
 const STORY_TYPES = new Set<TemplateType>([
   'birthday',
   'anniversary',
@@ -17,7 +18,7 @@ const CANDLE_TYPES = new Set<TemplateType>(['birthday', 'anniversary']);
 export function isInteractiveExperience(
   templateType: TemplateType | null,
 ): boolean {
-  return templateType !== null && STORY_TYPES.has(templateType);
+  return templateType !== null && (STORY_TYPES.has(templateType) || isHolidayId(templateType));
 }
 
 /** Effective mode: explicit draft override, else occasion default. */

@@ -13,7 +13,8 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useTemplateCatalog } from '../../application/useTemplateCatalog';
-import { occasionHeadline } from '../../domain/audienceOccasion';
+import { momentHeadline } from '../../domain/audienceOccasion';
+import { holidayById } from '../../domain/holidays';
 import { listFrames } from '../../domain/recommendTemplates';
 import type { TemplateDefinition } from '../../domain/templateSchema';
 import { getTemplateTheme } from '../../domain/templateTheme';
@@ -53,33 +54,6 @@ const TEMPLATE_CUES: Record<string, string> = {
   F05: 'Five frames, one circled',
 };
 
-const STYLE_TONES: Record<
-  TemplateDefinition['style'],
-  { wash: string; photo: string; photoAlt: string; accent: string; ink: string }
-> = {
-  elegant: {
-    wash: '#FCEEE8',
-    photo: '#E8A4A0',
-    photoAlt: '#F7C9B6',
-    accent: '#C94E4A',
-    ink: colors.ink,
-  },
-  emotional: {
-    wash: '#FAE8E8',
-    photo: '#E8615D',
-    photoAlt: '#F6A94A',
-    accent: '#E8615D',
-    ink: colors.ink,
-  },
-  minimal: {
-    wash: '#F5EDEA',
-    photo: '#B07A6F',
-    photoAlt: '#D4B8B0',
-    accent: '#857371',
-    ink: colors.ink,
-  },
-};
-
 export function TemplateRecommendScreen({ navigation, route }: Props) {
   const { width } = useWindowDimensions();
   const { draft, setTemplateId, setPhotoUris } = useCreateDraftContext();
@@ -88,10 +62,12 @@ export function TemplateRecommendScreen({ navigation, route }: Props) {
   const [needsPhotos, setNeedsPhotos] = useState<ShortFrame | null>(null);
 
   const occasionTheme = useMemo(() => {
+    // A festival colours its own card; an everyday moment uses its occasion's theme.
+    if (draft.templateType && holidayById(draft.templateType)) return getTemplateTheme(draft.templateType);
     const occasion = draft.occasion;
     if (!occasion) return getTemplateTheme('birthday');
     return getTemplateTheme(occasion as TemplateType);
-  }, [draft.occasion]);
+  }, [draft.occasion, draft.templateType]);
 
   const photoCount = draft.photoUris.filter(Boolean).length;
 
@@ -154,15 +130,16 @@ export function TemplateRecommendScreen({ navigation, route }: Props) {
     selectTemplate(templateId);
   };
 
-  const toneFor = (template: TemplateDefinition) => ({
-    ...STYLE_TONES[template.style],
+  /** The preview takes its colours from the occasion, so a card looks like the moment it is for. */
+  const toneFor = () => ({
+    ink: colors.ink,
     accent: occasionTheme.accent,
     wash: occasionTheme.softBackground,
     photo: occasionTheme.orbPrimary,
     photoAlt: occasionTheme.orbSecondary,
   });
 
-  const headline = occasionHeadline(draft.occasion) ?? 'Your words';
+  const headline = momentHeadline(draft.templateType, draft.occasion) ?? 'Your words';
   const cardWidth = (width - spacing.lg * 2 - spacing.sm) / 2;
 
   return (
@@ -191,7 +168,7 @@ export function TemplateRecommendScreen({ navigation, route }: Props) {
                 cue={TEMPLATE_CUES[template.id] ?? occasionTheme.emotionalCue}
                 headline={headline}
                 photoUris={draft.photoUris}
-                tone={toneFor(template)}
+                tone={toneFor()}
                 width={cardWidth}
                 recommended={index === 0 && photosNeeded === 0 && frames.length > 1}
                 needsNote={
@@ -225,7 +202,7 @@ export function TemplateRecommendScreen({ navigation, route }: Props) {
           template={arranging}
           photoUris={photos}
           headline={headline}
-          tone={toneFor(arranging)}
+          tone={toneFor()}
           onClose={() => setArranging(null)}
           onConfirm={confirmArrangement}
         />

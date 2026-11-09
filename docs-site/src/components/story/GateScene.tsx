@@ -55,7 +55,7 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
       if (leaving) return;
       setLeaving(true);
       // This tap is what lets the song start on its own at the end.
-      unlockMusic(theme.id);
+      unlockMusic(theme.songType ?? theme.id);
       playTada();
       buzz(20);
       const rect = event.currentTarget.getBoundingClientRect();
@@ -64,7 +64,7 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
       award('gate', 1, { x: at.x, y: at.y - 30 });
       window.setTimeout(onComplete, 1100);
     },
-    [award, leaving, onComplete, theme.id],
+    [award, leaving, onComplete, theme.id, theme.songType],
   );
 
   const no = useCallback(() => {

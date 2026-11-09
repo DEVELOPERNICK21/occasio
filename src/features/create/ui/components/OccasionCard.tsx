@@ -8,13 +8,13 @@ import { Text } from '../../../../shared/ui/Text';
 import { CardWashBackground } from '../../../../shared/ui/CardWashBackground';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 import type { TemplateTheme } from '../../domain/templateTheme';
-import type { TemplateType } from '../../domain/types';
+import type { Occasion } from '../../domain/templateSchema';
 import { TemplateOccasionIcon } from './TemplateOccasionIcon';
 
 const PRESS_SPRING = { damping: 20, stiffness: 520, mass: 0.6 };
 
 type Props = {
-  occasion: TemplateType;
+  occasion: Occasion;
   label: string;
   cue: string;
   theme: TemplateTheme;
@@ -63,7 +63,7 @@ export function OccasionCard({
           ]}
         >
           <CardWashBackground
-            variant={occasion === 'sorry' || occasion === 'proposal' ? 'upcoming' : occasion}
+            variant={occasion}
             primary={theme.orbPrimary}
             secondary={theme.orbSecondary}
           />

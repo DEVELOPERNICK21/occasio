@@ -1,4 +1,6 @@
+import { holidayById } from './holidays';
 import type { Occasion } from './templateSchema';
+import type { TemplateType } from './types';
 
 /**
  * Openers that stop the blank page. Each ends mid-sentence on purpose: the
@@ -38,6 +40,12 @@ const GENERIC: readonly string[] = [
   'Do you remember when we ',
 ];
 
-export function messageStarters(occasion: Occasion | null): readonly string[] {
+/** A festival gets its own openers; any other card gets its moment's. */
+export function messageStarters(
+  occasion: Occasion | null,
+  templateType: TemplateType | null = null,
+): readonly string[] {
+  const holiday = holidayById(templateType);
+  if (holiday) return holiday.starters;
   return occasion ? STARTERS[occasion] : GENERIC;
 }

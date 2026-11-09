@@ -1,4 +1,5 @@
-import type { SubscriptionTier } from './quota';
+import type { SubscriptionTier } from '../../billing/domain/types';
+import { holidayById } from './holidays';
 
 /** Public greeting links — guest and free manual cards. */
 export const SHARE_LINK_TTL_DAYS = {
@@ -76,6 +77,9 @@ export function storyCaption(
   shareUrl: string,
 ): string {
   const name = recipientName.trim() || 'them';
-  const line = (templateType && STORY_CAPTIONS[templateType]) || 'I made {name} something. Watch their reaction.';
+  const holiday = holidayById(templateType);
+  const line = holiday
+    ? `A ${holiday.label} wish for {name}. Watch their reaction.`
+    : (templateType && STORY_CAPTIONS[templateType]) || 'I made {name} something. Watch their reaction.';
   return `${line.replace('{name}', name)}\n${shareUrl}`;
 }

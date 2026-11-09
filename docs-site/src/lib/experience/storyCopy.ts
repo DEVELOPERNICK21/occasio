@@ -1,3 +1,5 @@
+import { webHolidayFor } from '../holidays';
+
 /**
  * Moment-aware story copy. Keep calm Occasio tone — no hype.
  */
@@ -100,7 +102,22 @@ const BY_MOMENT: Record<string, Partial<StoryCopy>> = {
   },
 };
 
+/** A festival's story copy: its name where a moment would use its own, nothing more. */
+function holidayCopy(label: string): Partial<StoryCopy> {
+  return {
+    balloonsTitle: `Pop for ${label}`,
+    giftTitle: (name, open) => (open ? `For you, ${name}` : `A ${label} gift for ${name}`),
+    giftSub: (open) => (open ? 'A little joy, just for you' : 'Tap to unwrap'),
+    reasonsTitle: 'Why I am thinking of you',
+    photosTitle: `${label} memories`,
+    photoCaptions: ['This one', 'Together', 'Remember this', 'Us'],
+    envelopeTitle: (name) => `A ${label} note for ${name}`,
+    letterWriteTitle: `A ${label} note`,
+  };
+}
+
 export function storyCopyFor(templateType: string): StoryCopy {
-  const overlay = BY_MOMENT[templateType] ?? {};
+  const holiday = webHolidayFor(templateType);
+  const overlay = holiday ? holidayCopy(holiday.label) : (BY_MOMENT[templateType] ?? {});
   return { ...DEFAULT, ...overlay };
 }

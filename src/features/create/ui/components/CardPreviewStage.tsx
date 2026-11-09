@@ -44,6 +44,7 @@ export function CardPreviewStage({
               key={replayKey}
               definition={definition}
               occasion={occasion}
+              templateType={templateType}
               photoUris={photoUris}
               recipientName={recipientName}
               message={message}
