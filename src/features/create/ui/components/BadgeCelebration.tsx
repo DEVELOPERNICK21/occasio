@@ -14,17 +14,37 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
+import { Lock } from 'lucide-react-native';
 import { Button } from '../../../../shared/ui/Button';
 import { Pip } from '../../../../shared/ui/Pip';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
-import { BADGE_DESCRIPTIONS, type WishBadge } from '../../domain/wishJourney';
-import { BADGE_STYLE } from './WishJourneyCard';
+import { colors, overlay, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import {
+  BADGE_DESCRIPTIONS,
+  badgeNextStep,
+  badgePipLine,
+  badgePipMood,
+  type WishBadge,
+} from '../../domain/wishJourney';
+import { BADGE_STYLE } from './badgeStyle';
 
 type Props = {
   badge: WishBadge | null;
+  /** First name of the person who got their first wish: Pip mentions them for the first badge. */
+  firstName?: string | null;
+  /** The badge to aim for after this one. */
+  next?: WishBadge | null;
+  /** The main button: carry on and make a wish. */
+  onCreate: () => void;
+  /** The main button when the next thing to do is in the Vault. */
+  onVault: () => void;
   onDismiss: () => void;
 };
+
+const NEXT_STEP_LABEL = {
+  create: 'Make another wish',
+  vault: 'Save another person',
+} as const;
 
 const CONFETTI_COLORS = [
   colors.accent,
@@ -83,6 +103,8 @@ function ConfettiPiece({
 
 /** One-time moment when a badge unlocks. */
 const EXIT_MS = 220;
+/** The reveal timeline runs 0 to this; each block fades in at its own point along it. */
+const REVEAL_END = 1.5;
 const SHEET_SPRING = { damping: 20, stiffness: 190, mass: 0.9 };
 const MEDAL_SPRING = { damping: 13, stiffness: 170, mass: 0.8 };
 
@@ -94,7 +116,7 @@ function useStaggerStyle(reveal: SharedValue<number>, start: number) {
   });
 }
 
-export function BadgeCelebration({ badge, onDismiss }: Props) {
+export function BadgeCelebration({ badge, firstName = null, next = null, onCreate, onVault, onDismiss }: Props) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [closing, setClosing] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -121,7 +143,7 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
       backdrop.value = withTiming(1, { duration: 160 });
       sheet.value = withTiming(1, { duration: 160 });
       medal.value = 1;
-      reveal.value = 1;
+      reveal.value = REVEAL_END;
       return;
     }
     backdrop.value = 0;
@@ -139,7 +161,7 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
     );
     reveal.value = withDelay(
       200,
-      withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }),
+      withTiming(REVEAL_END, { duration: 1300, easing: Easing.out(Easing.cubic) }),
     );
     glow.value = withDelay(
       400,
@@ -153,13 +175,17 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
     );
   }, [backdrop, badge, burst, glow, medal, reduceMotion, reveal, sheet]);
 
-  const close = () => {
+  /** Fades out, records the badge as seen, then does `then` (go on to make a wish, for instance). */
+  const close = (then?: () => void) => {
     if (closing) return;
     setClosing(true);
     const out = { duration: EXIT_MS, easing: Easing.in(Easing.cubic) };
     backdrop.value = withTiming(0, out);
     sheet.value = withTiming(0, out);
-    closeTimer.current = setTimeout(onDismiss, EXIT_MS);
+    closeTimer.current = setTimeout(() => {
+      onDismiss();
+      then?.();
+    }, EXIT_MS);
   };
 
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdrop.value }));
@@ -184,17 +210,27 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
   const eyebrowStyle = useStaggerStyle(reveal, 0.15);
   const titleStyle = useStaggerStyle(reveal, 0.3);
   const bodyStyle = useStaggerStyle(reveal, 0.45);
-  const ctaStyle = useStaggerStyle(reveal, 0.6);
+  const pipStyle = useStaggerStyle(reveal, 0.6);
+  const nextStyle = useStaggerStyle(reveal, 0.75);
+  const ctaStyle = useStaggerStyle(reveal, 0.9);
 
   if (!badge) return null;
 
   const tone = BADGE_STYLE[badge.id];
   const Icon = tone.icon;
+  const step = badgeNextStep(badge.id);
 
   return (
-    <Modal transparent visible animationType="none" onRequestClose={close} statusBarTranslucent>
+    <Modal
+      transparent
+      visible
+      animationType="none"
+      onRequestClose={() => close()}
+      statusBarTranslucent
+      accessibilityViewIsModal
+    >
       <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, backdropStyle]} />
-      <Pressable style={styles.backdrop} onPress={close} accessibilityLabel="Close">
+      <Pressable style={styles.backdrop} onPress={() => close()} accessibilityLabel="Close">
         <Animated.View style={[styles.sheet, sheetStyle]}>
           {/* Swallow taps so tapping the sheet doesn't dismiss. */}
           <Pressable style={styles.sheetInner} onPress={() => undefined}>
@@ -204,7 +240,7 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
                 : null}
               <Animated.View style={[styles.glow, { backgroundColor: tone.soft }, glowStyle]} />
               <Animated.View pointerEvents="none" style={[styles.pip, medalStyle]}>
-                <Pip mood="joy" size={PIP_CHEER} bob={false} />
+                <Pip mood={badgePipMood(badge.id)} size={PIP_CHEER} bob={false} />
               </Animated.View>
               <Animated.View
                 style={[
@@ -236,8 +272,28 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
               <Text style={styles.body}>{BADGE_DESCRIPTIONS[badge.id]}</Text>
             </Animated.View>
 
+            {/* Pip says what it means, in his own words. */}
+            <Animated.View style={[styles.bubble, pipStyle]}>
+              <Text style={styles.bubbleName}>Pip</Text>
+              <Text style={styles.bubbleLine}>{badgePipLine(badge.id, firstName)}</Text>
+            </Animated.View>
+
+            {next ? (
+              <Animated.View style={[styles.next, nextStyle]}>
+                <Lock size={14} color={colors.muted} strokeWidth={2} absoluteStrokeWidth />
+                <Text style={styles.nextText}>
+                  Next badge: {next.label}. {next.hint}
+                </Text>
+              </Animated.View>
+            ) : null}
+
             <Animated.View style={[styles.cta, ctaStyle]}>
-              <Button label="Keep going" onPress={close} disabled={closing} />
+              <Button
+                label={NEXT_STEP_LABEL[step]}
+                onPress={() => close(step === 'vault' ? onVault : onCreate)}
+                disabled={closing}
+              />
+              <Button label="Maybe later" variant="ghost" onPress={() => close()} disabled={closing} />
             </Animated.View>
           </Pressable>
         </Animated.View>
@@ -247,11 +303,11 @@ export function BadgeCelebration({ badge, onDismiss }: Props) {
 }
 
 const MEDAL = 96;
-const PIP_CHEER = 76;
+const PIP_CHEER = 92;
 
 const styles = StyleSheet.create({
   scrim: {
-    backgroundColor: 'rgba(28, 25, 20, 0.45)',
+    backgroundColor: overlay.scrim,
   },
   backdrop: {
     flex: 1,
@@ -342,8 +398,43 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
   },
+  bubble: {
+    alignSelf: 'stretch',
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.sidebar,
+    gap: 2,
+  },
+  bubbleName: {
+    fontSize: typography.sizeXs,
+    fontWeight: typography.weightSemibold,
+    color: colors.accent,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  bubbleLine: {
+    fontSize: typography.sizeSm,
+    lineHeight: typography.sizeSm * 1.5,
+    color: colors.ink,
+  },
+  next: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  nextText: {
+    flex: 1,
+    fontSize: typography.sizeXs,
+    lineHeight: typography.sizeXs * 1.4,
+    color: colors.muted,
+  },
   cta: {
     alignSelf: 'stretch',
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
+    gap: spacing.xs,
   },
 });

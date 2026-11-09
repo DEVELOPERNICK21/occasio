@@ -1,9 +1,12 @@
-export type SubscriptionTier = 'free' | 'personal' | 'family';
+import type { SubscriptionTier } from '../../billing/domain/types';
 
-/** One free card per account, ever — it earns a first recipient, not a monthly habit. */
-export const FREE_CARD_LIMIT = 1;
-/** Pro includes this many cards per rolling year; the server counts, beyond it single wishes work. */
-export const PRO_YEARLY_CARD_LIMIT = 24;
+import { FREE_CARD_LIMIT, PRO_YEARLY_CARD_LIMIT } from '../../billing/domain/wishBalance';
+
+/**
+ * One free card per account, ever, and 24 Pro cards per rolling year (beyond that single wishes work).
+ * Billing owns the numbers, since it also shows what is left; they are the same ones the server enforces.
+ */
+export { FREE_CARD_LIMIT, PRO_YEARLY_CARD_LIMIT };
 
 type QuotaOptions = {
   /** Dev builds only — unlimited generates for testing. */

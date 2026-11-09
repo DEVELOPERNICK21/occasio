@@ -1,97 +1,26 @@
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  BookHeart,
-  Flame,
-  Heart,
-  Lock,
-  Sparkles,
-  Trophy,
-  Users,
-  type LucideIcon,
-} from 'lucide-react-native';
+import { ChevronRight, Flame, Lock, Trophy } from 'lucide-react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
-import type { WishBadgeId, WishJourney } from '../../domain/wishJourney';
+import type { WishJourney } from '../../domain/wishJourney';
+import { BadgeMedal } from './BadgeMedal';
 
 type Props = {
   journey: WishJourney;
+  /** Opens the screen with every badge and how to earn it. */
+  onSeeAll?: () => void;
 };
 
-export const BADGE_STYLE: Record<WishBadgeId, { icon: LucideIcon; color: string; soft: string }> = {
-  first_wish: { icon: Heart, color: colors.accent, soft: colors.accentSoft },
-  three_wishes: { icon: Sparkles, color: colors.secondary, soft: colors.amberSoft },
-  vault_saved: { icon: BookHeart, color: colors.sage, soft: colors.sageSoft },
-  streak_two: { icon: Flame, color: colors.rose, soft: colors.roseSoft },
-  five_people: { icon: Users, color: colors.accentHover, soft: colors.butterSoft },
-};
-
-function Badge({
-  id,
-  label,
-  unlocked,
-  index,
-}: {
-  id: WishBadgeId;
-  label: string;
-  unlocked: boolean;
-  index: number;
-}) {
-  const pop = useSharedValue(0);
-  const tone = BADGE_STYLE[id];
-  const Icon = unlocked ? tone.icon : Lock;
-
-  useEffect(() => {
-    pop.value = withDelay(260 + index * 90, withSpring(1, { damping: 10, stiffness: 160 }));
-  }, [index, pop]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: pop.value,
-    transform: [{ scale: 0.6 + pop.value * 0.4 }],
-  }));
-
-  return (
-    <Animated.View
-      style={[styles.badge, style]}
-      accessible
-      accessibilityLabel={`${label} badge, ${unlocked ? 'earned' : 'locked'}`}
-    >
-      <View
-        style={[
-          styles.badgeCircle,
-          unlocked
-            ? { backgroundColor: tone.soft, borderColor: tone.color }
-            : styles.badgeLocked,
-        ]}
-      >
-        <Icon
-          size={unlocked ? 18 : 14}
-          color={unlocked ? tone.color : colors.muted}
-          fill={unlocked && id === 'first_wish' ? tone.color : 'transparent'}
-          strokeWidth={2}
-          absoluteStrokeWidth
-        />
-      </View>
-      <Text
-        style={[styles.badgeLabel, !unlocked && styles.badgeLabelLocked]}
-        numberOfLines={2}
-      >
-        {label}
-      </Text>
-    </Animated.View>
-  );
-}
-
-/** Level, streak and badges — real History/Vault counts only. */
-export function WishJourneyCard({ journey }: Props) {
+/** Level, streak, the badges, and the one to aim for next: real History/Vault counts only. */
+export function WishJourneyCard({ journey, onSeeAll }: Props) {
   const fill = useSharedValue(0);
 
   useEffect(() => {
@@ -106,6 +35,7 @@ export function WishJourneyCard({ journey }: Props) {
   }));
 
   const earned = journey.badges.filter((b) => b.unlocked).length;
+  const next = journey.nextBadge;
 
   return (
     <View style={styles.shadowShell}>
@@ -151,17 +81,48 @@ export function WishJourneyCard({ journey }: Props) {
           </Text>
         </View>
 
-        <View style={styles.badges}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.badges}
+          accessibilityLabel="Badges"
+        >
           {journey.badges.map((badge, index) => (
-            <Badge
+            <BadgeMedal
               key={badge.id}
               id={badge.id}
               label={badge.label}
               unlocked={badge.unlocked}
               index={index}
+              onPress={onSeeAll}
             />
           ))}
-        </View>
+        </ScrollView>
+
+        {next ? (
+          <View style={styles.next} accessibilityLabel={`Next badge: ${next.label}. ${next.hint}`}>
+            <View style={styles.nextIcon}>
+              <Lock size={14} color={colors.muted} strokeWidth={2} absoluteStrokeWidth />
+            </View>
+            <View style={styles.nextCopy}>
+              <Text style={styles.nextTitle}>Next badge: {next.label}</Text>
+              <Text style={styles.nextHint}>{next.hint}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {onSeeAll ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="See all badges"
+            onPress={onSeeAll}
+            hitSlop={8}
+            style={styles.seeAll}
+          >
+            <Text style={styles.seeAllText}>See all badges</Text>
+            <ChevronRight size={16} color={colors.accent} strokeWidth={2} absoluteStrokeWidth />
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -258,35 +219,51 @@ const styles = StyleSheet.create({
   },
   badges: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.xs,
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
   },
-  badge: {
-    width: '19%',
+  next: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.bg,
   },
-  badgeCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
+  nextIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeLocked: {
-    backgroundColor: colors.bg,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
+  nextCopy: {
+    flex: 1,
+    minWidth: 0,
   },
-  badgeLabel: {
-    fontSize: 10,
-    lineHeight: 12,
+  nextTitle: {
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightSemibold,
-    color: colors.inkSoft,
-    textAlign: 'center',
+    color: colors.ink,
   },
-  badgeLabelLocked: {
+  nextHint: {
+    fontSize: typography.sizeXs,
+    lineHeight: typography.sizeXs * 1.4,
     color: colors.muted,
+  },
+  seeAll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    gap: 2,
+    minHeight: 32,
+  },
+  seeAllText: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.accent,
   },
 });
