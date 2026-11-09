@@ -26,7 +26,7 @@ import {
   formatReviewDeadline,
   occasionLabel,
 } from '../../domain/scheduledSend';
-import { getVaultCardTheme } from '../../domain/vaultCardTheme';
+import { getVaultCardTheme } from '../vaultCardTheme';
 import {
   filterVaultPeople,
   getPersonNextOccasion,

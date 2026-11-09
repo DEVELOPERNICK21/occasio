@@ -29,7 +29,7 @@ Everything that lives in `functions/` is therefore **dead in production**:
 
 **Fix:** upgrade to Blaze with a budget alert, enable the APIs, deploy `functions/`, set the secrets
 (`REVENUECAT_SECRET_KEY`, `OCCASIO_RC_WEBHOOK_AUTH`, `OCCASIO_CRON_SECRET`, `RESEND_API_KEY`, `OCCASIO_EMAIL_FROM`,
-`OCCASIO_AUTOSEND_DISPATCH=true`), point the RevenueCat webhook at `/v1/billing/webhook`, then re-run the probes in
+`OCCASIO_AUTOSEND_DISPATCH=true`; for WhatsApp also `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, see `docs/whatsapp-delivery.md`), point the RevenueCat webhook at `/v1/billing/webhook`, then re-run the probes in
 "How to re-verify" below. Until then, **don't advertise or sell auto-send** (see "Copy that is currently untrue").
 
 ### 2. Deploy the current Firestore rules (Needs console)

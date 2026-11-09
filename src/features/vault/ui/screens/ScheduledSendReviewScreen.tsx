@@ -18,6 +18,8 @@ import {
   formatReviewDeadline,
   occasionLabel,
   resolveReviewPhotoCount,
+  whatsappChatUrl,
+  wishMessage,
 } from '../../domain/scheduledSend';
 
 type Props = NativeStackScreenProps<VaultStackParamList, 'ScheduledSendReview'>;
@@ -113,6 +115,18 @@ export function ScheduledSendReviewScreen({ navigation, route }: Props) {
     await openShareSheet(send.shareUrl);
   };
 
+  // From the owner's own number: nothing is sent until they tap Send in WhatsApp.
+  const chatUrl = send.shareUrl
+    ? whatsappChatUrl(person?.whatsapp, wishMessage(send.occasionType, send.shareUrl))
+    : null;
+
+  const handleOpenWhatsApp = () => {
+    if (!chatUrl) return;
+    void Linking.openURL(chatUrl).catch(() => {
+      // WhatsApp is not installed; the share sheet still works.
+    });
+  };
+
   const handleOpenCard = () => {
     if (!send.shareUrl) return;
     void Linking.openURL(send.shareUrl);
@@ -150,7 +164,7 @@ export function ScheduledSendReviewScreen({ navigation, route }: Props) {
       {send.status === 'review' ? (
         <Text style={[styles.hint, styles.hintBlock]}>
           {send.autoDeliver
-            ? `We email this card to ${personName} when you approve it, or when the review window ends. Cancel to stop it.`
+            ? `We send this card to ${personName} when you approve it, or when the review window ends. Cancel to stop it.`
             : `Nothing is sent automatically. After you approve, share the link with ${personName} yourself.`}
         </Text>
       ) : null}
@@ -174,11 +188,20 @@ export function ScheduledSendReviewScreen({ navigation, route }: Props) {
             />
           </>
         ) : (
-          <Button
-            label="Send the link"
-            onPress={() => void handleShareApproved()}
-            disabled={!send.shareUrl}
-          />
+          <>
+            <Button
+              label="Send the link"
+              onPress={() => void handleShareApproved()}
+              disabled={!send.shareUrl}
+            />
+            {chatUrl ? (
+              <Button
+                label={`Open WhatsApp chat with ${personName}`}
+                variant="secondary"
+                onPress={handleOpenWhatsApp}
+              />
+            ) : null}
+          </>
         )}
       </ScreenActions>
     </Screen>

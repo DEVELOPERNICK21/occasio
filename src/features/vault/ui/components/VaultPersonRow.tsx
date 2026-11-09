@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ChevronRight, Ellipsis } from 'lucide-react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import type { VaultCardTheme } from '../../domain/vaultCardTheme';
-import { personInitials } from '../../domain/vaultCardTheme';
+import type { VaultCardTheme } from '../vaultCardTheme';
+import { personInitials } from '../vaultCardTheme';
 import { formatArmedOccasions, type PersonNextOccasion } from '../../domain/vaultOccasion';
 import type { VaultPerson } from '../../domain/types';
 

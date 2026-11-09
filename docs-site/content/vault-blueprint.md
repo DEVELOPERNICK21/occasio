@@ -23,6 +23,7 @@ Save the people who matter (name, relationship, birthday, anniversary, WhatsApp/
 | `dates.anniversary` | `{ month, day }` optional |
 | `contactChannel.whatsapp` | E.164 optional |
 | `contactChannel.email` | string optional |
+| `deliveryConsent.whatsapp`, `deliveryConsent.email` | boolean; the sender's record that this person agreed to get cards on that channel. The server delivers only where it is `true` |
 | `autoSendEnabled.birthday` | boolean (paid only) |
 | `autoSendEnabled.anniversary` | boolean (paid only) |
 | `preferredTemplateId`, `preferredTemplateType` | pack optional |
@@ -113,7 +114,7 @@ src/features/vault/
     ScheduledSendReviewScreen.tsx
   ui/components/ScheduledSendInboxCard.tsx, AutoSendPackCard.tsx, …
 functions/src/autosend/   ← cron, dispatch, review, providers, fcm
-src/shared/navigation/VaultNavigator.tsx
+src/app/navigation/VaultNavigator.tsx
 ```
 
 ## Dev without SMS / offline

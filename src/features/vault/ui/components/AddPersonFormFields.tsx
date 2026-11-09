@@ -21,6 +21,26 @@ export function AddPersonNameField({
   );
 }
 
+export function AddPersonWhatsAppField({
+  value,
+  onChangeText,
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+}) {
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder="Their WhatsApp number (optional)"
+      placeholderTextColor={colors.muted}
+      keyboardType="phone-pad"
+      autoCorrect={false}
+      style={styles.nameInput}
+    />
+  );
+}
+
 export function AddPersonEmailField({
   value,
   onChangeText,

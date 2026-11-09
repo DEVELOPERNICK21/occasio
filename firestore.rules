@@ -39,7 +39,7 @@ service cloud.firestore {
         && (!('email' in d.contactChannel)
           || (d.contactChannel.email is string && d.contactChannel.email.size() <= 254))
         && (!('deliveryConsent' in d)
-          || (d.deliveryConsent is map && d.deliveryConsent.keys().hasOnly(['email'])))
+          || (d.deliveryConsent is map && d.deliveryConsent.keys().hasOnly(['email', 'whatsapp'])))
         && d.autoSendEnabled is map
         && d.autoSendEnabled.keys().hasOnly(['birthday', 'anniversary'])
         && (!('photoRefs' in d) || (d.photoRefs is list && d.photoRefs.size() <= 5))
@@ -85,6 +85,9 @@ service cloud.firestore {
     match /email_suppressions/{id} { allow read, write: if false; }
     match /email_receipts/{id} { allow read, write: if false; }
     match /takedowns/{id} { allow read, write: if false; }
+    // Server-only: wishes sent on WhatsApp per user per year, and numbers that replied STOP (hashes).
+    match /whatsapp_usage/{id} { allow read, write: if false; }
+    match /whatsapp_optouts/{id} { allow read, write: if false; }
 
     match /scheduled_sends/{sendId} {
       allow read: if request.auth != null

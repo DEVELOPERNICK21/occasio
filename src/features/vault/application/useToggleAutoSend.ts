@@ -5,7 +5,8 @@ import {
 } from '../data/relationshipRepository';
 import { VaultError } from '../data/vaultErrors';
 import { canEnableAutoSend } from '../domain/tierLimits';
-import type { OccasionType, SubscriptionTier } from '../domain/types';
+import type { SubscriptionTier } from '../../billing/domain/types';
+import type { OccasionType } from '../domain/types';
 
 export function useToggleAutoSend(tier: SubscriptionTier = 'free') {
   const [pendingId, setPendingId] = useState<string | null>(null);

@@ -14,7 +14,7 @@ type RelationshipDoc = {
   };
   contactChannel: { whatsapp?: string; email?: string };
   /** Channels this person agreed to; the server only delivers where this is true. */
-  deliveryConsent?: { email?: boolean };
+  deliveryConsent?: { email?: boolean; whatsapp?: boolean };
   autoSendEnabled: { birthday?: boolean; anniversary?: boolean };
   preferredTemplateId?: string | null;
   preferredTemplateType?: string | null;
@@ -117,6 +117,7 @@ function mapDoc(id: string, data: RelationshipDoc): VaultPerson {
     anniversary: data.dates?.anniversary ?? null,
     whatsapp: data.contactChannel?.whatsapp ?? null,
     email: data.contactChannel?.email ?? null,
+    whatsappConsent: data.deliveryConsent?.whatsapp === true,
     emailConsent: data.deliveryConsent?.email === true,
     autoSendBirthday: Boolean(data.autoSendEnabled?.birthday),
     autoSendAnniversary: Boolean(data.autoSendEnabled?.anniversary),
@@ -145,7 +146,10 @@ function toFirestorePayload(
     relationshipType: input.relationshipType,
     dates,
     contactChannel,
-    deliveryConsent: { email: Boolean(input.email) && input.emailConsent },
+    deliveryConsent: {
+      email: Boolean(input.email) && input.emailConsent,
+      whatsapp: Boolean(input.whatsapp) && input.whatsappConsent,
+    },
     autoSendEnabled: {
       birthday: input.autoSendBirthday,
       anniversary: input.autoSendAnniversary,
@@ -168,6 +172,7 @@ function vaultPersonFromInput(
     anniversary: input.anniversary,
     whatsapp: input.whatsapp,
     email: input.email,
+    whatsappConsent: input.whatsappConsent,
     emailConsent: input.emailConsent,
     autoSendBirthday: input.autoSendBirthday,
     autoSendAnniversary: input.autoSendAnniversary,

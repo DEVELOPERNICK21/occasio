@@ -9,6 +9,8 @@ import {
   occasionLabel,
   resolveReviewPhotoCount,
   shouldAutoDispatchOnDeadline,
+  whatsappChatUrl,
+  wishMessage,
 } from '../../src/features/vault/domain/scheduledSend';
 import {
   packFromLinkedCreation,
@@ -233,5 +235,30 @@ describe('contentFallback', () => {
       defaultMessage: 'Happy birthday',
       fromName: 'Nick',
     });
+  });
+});
+
+describe('one-tap WhatsApp chat', () => {
+  it('writes the wish for the occasion with the card link', () => {
+    expect(wishMessage('birthday', 'https://occasio-greetings.vercel.app/c/abc')).toBe(
+      'Happy birthday! I made this for you: https://occasio-greetings.vercel.app/c/abc',
+    );
+    expect(wishMessage('anniversary', 'https://occasio-greetings.vercel.app/c/abc')).toContain(
+      'Happy anniversary!',
+    );
+  });
+
+  it('opens a chat with the number and the wish ready to send', () => {
+    const url = whatsappChatUrl('+91 98765 43210', 'Happy birthday! https://x.test/c/a?b=1');
+    expect(url).toBe(
+      'https://wa.me/919876543210?text=Happy%20birthday!%20https%3A%2F%2Fx.test%2Fc%2Fa%3Fb%3D1',
+    );
+  });
+
+  it('gives no chat without a usable number', () => {
+    expect(whatsappChatUrl(null, 'hi')).toBeNull();
+    expect(whatsappChatUrl(undefined, 'hi')).toBeNull();
+    expect(whatsappChatUrl('', 'hi')).toBeNull();
+    expect(whatsappChatUrl('12345', 'hi')).toBeNull();
   });
 });

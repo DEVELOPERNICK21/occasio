@@ -4,7 +4,8 @@ import { createVaultPerson } from '../data/relationshipRepository';
 import { VaultError } from '../data/vaultErrors';
 import { validatePersonDraft } from '../domain/personRules';
 import { canAddPerson, canEnableAutoSend } from '../domain/tierLimits';
-import type { PersonDraft, SubscriptionTier, VaultPerson } from '../domain/types';
+import type { SubscriptionTier } from '../../billing/domain/types';
+import type { PersonDraft, VaultPerson } from '../domain/types';
 
 type State = {
   isSaving: boolean;

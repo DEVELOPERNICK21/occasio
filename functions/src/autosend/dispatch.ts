@@ -51,6 +51,8 @@ export async function attemptChannels(
     shareUrl: string | null;
     personName: string;
     occasionType: string;
+    userId?: string;
+    fromName?: string | null;
   },
 ): Promise<ChannelAttemptResult> {
   const attempted: DeliveryChannel[] = [];
@@ -72,6 +74,8 @@ export async function attemptChannels(
       shareUrl: payload.shareUrl,
       personName: payload.personName,
       occasionType: payload.occasionType,
+      userId: payload.userId,
+      fromName: payload.fromName,
     });
     if (result.ok) {
       return { used: provider.channel, attempted, lastError: null };
@@ -101,6 +105,22 @@ export async function loadDeliveryDestinations(
       ? (contactRaw as { whatsapp?: unknown; phone?: unknown; email?: unknown })
       : {};
   return applyDeliveryConsent(channelDestinations(contact), relData?.deliveryConsent);
+}
+
+/** Who the card says it is from. Best effort: a wish still goes out without it. */
+async function loadFromName(
+  db: FirebaseFirestore.Firestore,
+  creationId: string,
+): Promise<string | null> {
+  if (!creationId) {
+    return null;
+  }
+  try {
+    const value = (await db.collection('creations').doc(creationId).get()).data()?.fromName;
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  } catch {
+    return null;
+  }
 }
 
 async function notifySent(
@@ -284,6 +304,8 @@ export async function dispatchScheduledSend(
     shareUrl,
     personName,
     occasionType,
+    userId,
+    fromName: await loadFromName(db, asString(data.generatedCreationId)),
   });
 
   if (attempt.attempted.length > 0) {

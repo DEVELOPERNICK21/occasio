@@ -53,6 +53,22 @@ export function occasionLabel(type: OccasionType): string {
   return type === 'birthday' ? 'Birthday' : 'Anniversary';
 }
 
+/** What goes in the chat when the owner sends the card from their own WhatsApp. */
+export function wishMessage(type: OccasionType, shareUrl: string): string {
+  const greeting = type === 'birthday' ? 'Happy birthday!' : 'Happy anniversary!';
+  return `${greeting} I made this for you: ${shareUrl}`;
+}
+
+/**
+ * A WhatsApp chat with this person with the wish already written, so sending it is one tap from the
+ * owner's own number. Null when there is no usable number.
+ */
+export function whatsappChatUrl(phone: string | null | undefined, text: string): string | null {
+  const digits = (phone ?? '').replace(/\D/g, '');
+  if (!/^\d{8,15}$/.test(digits)) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
 export function formatReviewDeadline(
   reviewDeadlineIso: string,
   now = new Date(),

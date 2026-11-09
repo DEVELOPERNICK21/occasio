@@ -10,6 +10,11 @@ import {
   handleConsumeCredit,
   handleRevenueCatWebhook,
 } from './billing';
+import {
+  firestoreWhatsAppOptOuts,
+  handleWhatsAppWebhook,
+  type RawBodyRequest,
+} from './autosend/whatsapp';
 import { purgeExpiredCards } from './purgeExpired';
 import { purgeOrphanUploads } from './purgeOrphanUploads';
 import { enforceVaultCap } from './vaultCap';
@@ -23,7 +28,17 @@ admin.initializeApp();
 
 const db = admin.firestore();
 const app = express();
-app.use(express.json({ limit: '32kb' }));
+app.use(
+  express.json({
+    limit: '32kb',
+    // Meta signs the exact bytes of a webhook delivery, so keep them for that one route.
+    verify: (req, _res, buf) => {
+      if (req.url?.startsWith('/v1/whatsapp/webhook')) {
+        (req as RawBodyRequest).rawBody = buf;
+      }
+    },
+  }),
+);
 
 /** Express 4 does not catch async rejections; without this a throw hangs the request. */
 function safe(
@@ -84,6 +99,13 @@ app.post(
   '/v1/billing/webhook',
   safe(async (req, res) => {
     await handleRevenueCatWebhook(req, res, db, admin.auth());
+  }),
+);
+
+app.all(
+  '/v1/whatsapp/webhook',
+  safe(async (req, res) => {
+    await handleWhatsAppWebhook(req, res, firestoreWhatsAppOptOuts(db));
   }),
 );
 

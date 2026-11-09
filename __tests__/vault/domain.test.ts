@@ -11,7 +11,7 @@ import {
   personCapForTier,
 } from '../../src/features/vault/domain/tierLimits';
 import { EMPTY_PERSON_DRAFT } from '../../src/features/vault/domain/types';
-import { getVaultCardTheme, personInitials } from '../../src/features/vault/domain/vaultCardTheme';
+import { getVaultCardTheme, personInitials } from '../../src/features/vault/ui/vaultCardTheme';
 import {
   AUTO_SEND_DELIVERY_COPY,
   filterVaultPeople,
@@ -98,6 +98,33 @@ describe('personRules', () => {
 
     const noEmail = validatePersonDraft({ ...base, emailConsent: true }, options);
     expect(noEmail.ok && noEmail.input.emailConsent).toBe(false);
+  });
+
+  it('keeps a WhatsApp number without their agreement, but only sends to it with it', () => {
+    const base = {
+      ...EMPTY_PERSON_DRAFT,
+      personName: 'Mom',
+      relationshipType: 'parent' as const,
+    };
+    const options = { autoSendBirthday: false };
+
+    // The number alone is fine: the owner can still open a chat from their own phone.
+    const alone = validatePersonDraft({ ...base, whatsapp: '98765 43210' }, options);
+    expect(alone.ok && alone.input.whatsapp).toBe('+919876543210');
+    expect(alone.ok && alone.input.whatsappConsent).toBe(false);
+    expect(validatePersonDraft({ ...base, whatsapp: '123', whatsappConsent: true }, options).ok).toBe(
+      false,
+    );
+
+    const agreed = validatePersonDraft(
+      { ...base, whatsapp: '98765 43210', whatsappConsent: true },
+      options,
+    );
+    expect(agreed.ok && agreed.input.whatsapp).toBe('+919876543210');
+    expect(agreed.ok && agreed.input.whatsappConsent).toBe(true);
+
+    const noNumber = validatePersonDraft({ ...base, whatsappConsent: true }, options);
+    expect(noNumber.ok && noNumber.input.whatsappConsent).toBe(false);
   });
 
   it('formats dates and computes days until birthday', () => {
@@ -298,7 +325,7 @@ describe('armed occasions copy', () => {
 
   it('uses honest delivery copy instead of coming soon', () => {
     expect(AUTO_SEND_DELIVERY_COPY).toBe(
-      'We prepare the card on the day and ask you to review it. We email it only if they agreed; otherwise you share the link.',
+      'We prepare the card on the day and ask you to review it. We send it on WhatsApp or by email only where they agreed; otherwise you share the link.',
     );
     expect(AUTO_SEND_DELIVERY_COPY.toLowerCase()).not.toContain('delivery');
     expect(AUTO_SEND_DELIVERY_COPY.toLowerCase()).not.toContain('coming soon');

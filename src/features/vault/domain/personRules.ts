@@ -136,6 +136,7 @@ export function validatePersonDraft(
       birthday,
       anniversary,
       whatsapp,
+      whatsappConsent: whatsapp !== null && draft.whatsappConsent,
       email,
       emailConsent: email !== null && draft.emailConsent,
       autoSendBirthday: options.autoSendBirthday,

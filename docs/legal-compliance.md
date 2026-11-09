@@ -248,11 +248,28 @@ Everything below was checked against the real code and, where possible, the live
 | Area | Files |
 | --- | --- |
 | Age gate (server) | `docs-site/src/lib/age/{ageGate,attestation,purgeUser}.ts`, `src/app/api/v1/age/check/route.ts`, `src/app/api/v1/account/age/route.ts` |
-| Age gate (app) | `src/features/age/**`, `src/shared/navigation/AppNavigator.tsx`, `src/features/auth/data/authRepository.ts`, `src/features/auth/application/AuthProvider.tsx`, `src/shared/api/{errors,httpClient}.ts`, create repositories (error mapping) |
+| Age gate (app) | `src/features/age/**`, `src/app/navigation/AppNavigator.tsx`, `src/app/{accountGates,SessionEffects}.ts(x)` (the age check is installed as the new-account gate; with none installed a new account is refused and deleted), `src/features/auth/data/{authRepository,newAccountGate}.ts`, `src/shared/api/{errors,httpClient}.ts`, create repositories (error mapping) |
 | Email | `functions/src/email/**`, `functions/src/subscriptionEmail.ts`, `functions/src/autosend/providers.ts`, `dispatch.ts`, `billing.ts`, `index.ts`; `docs-site/src/lib/email/unsubscribe.ts`, `app/api/v1/email/unsubscribe/route.ts`, `app/(public)/unsubscribe/*` |
-| Subscriptions | `src/features/billing/domain/renewalTerms.ts`, `data/revenueCatClient.ts`, `application/BillingProvider.tsx`, `src/features/create/ui/components/PaywallModal.tsx`, `src/features/auth/ui/{screens/AccountScreen,components/AccountSettingsCards}.tsx` |
+| Subscriptions | `src/features/billing/domain/renewalTerms.ts`, `data/revenueCatClient.ts`, `application/BillingProvider.tsx`, `src/features/create/ui/components/PaywallModal.tsx`, `src/features/account/ui/{screens/AccountScreen,components/AccountSettingsCards}.tsx` |
 | DMCA / retention | `docs-site/content/dmca.md`, `app/(public)/dmca/page.tsx`, `components/{ReportCardLink,PublicShell}.tsx`, `lib/legal.ts`, `globals.css`, `scripts/takedown.mjs`, `functions/src/purgeExpired.ts` |
 | Analytics consent | `src/shared/analytics/{consent,events}.ts`, `App.tsx` |
 | Third parties / secrets | `docs-site/public/demo/*`, `docs-site/src/lib/recipientCard.ts`, `src/shared/config/revenueCat.ts`, `sparkCreationRepository.ts` |
 | Legal text | `docs-site/content/{privacy-policy,terms-of-service}.md`, `.env.example`, `firestore.rules` |
 | Tests added | `__tests__/{age,email,analytics,compliance}/*`, `docs-site/src/lib/age/age.test.ts`, `__tests__/functions/purgeExpired.test.ts` |
+
+## WhatsApp delivery
+
+Auto-send can deliver a card on WhatsApp from Occasio's own business number (`functions/src/autosend/whatsapp.ts`, setup in
+[`whatsapp-delivery.md`](./whatsapp-delivery.md)). It is OFF until the Meta credentials are set.
+
+* **Only the official route.** Meta's WhatsApp Cloud API, an approved template, a verified business number. Never a user's
+  own WhatsApp linked to a server (Baileys, Evolution API in its web mode): that breaks WhatsApp's terms and can get
+  that person's number banned.
+* **Consent.** A number is messaged only when the sender ticked "They agreed to get cards on WhatsApp"
+  (`deliveryConsent.whatsapp`). The sender is the one attesting, as with email; Meta's own opt-in rules apply to us as the business.
+* **STOP.** The template footer says "Reply STOP to stop these messages". A reply is recorded by the webhook as a hash of
+  the number in `whatsapp_optouts`, and that number is never sent a wish again.
+* **Data.** `whatsapp_usage` holds a count per user per year (deleted with the account). `whatsapp_optouts` holds hashes
+  only. Neither is readable from the app (`firestore.rules`). Numbers and the access token are never logged.
+* **Cost ceiling.** At most 100 WhatsApp wishes per user per year (`WHATSAPP_YEARLY_CAP`); past it the card goes by email
+  or the owner shares the link.

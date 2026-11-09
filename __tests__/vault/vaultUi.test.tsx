@@ -4,7 +4,7 @@ import { AddPersonAutoSendCard } from '../../src/features/vault/ui/components/Ad
 import { AutoSendPackCard } from '../../src/features/vault/ui/components/AutoSendPackCard';
 import { ScheduledSendInboxCard } from '../../src/features/vault/ui/components/ScheduledSendInboxCard';
 import { VaultPersonCard } from '../../src/features/vault/ui/components/VaultPersonCard';
-import { getVaultCardTheme } from '../../src/features/vault/domain/vaultCardTheme';
+import { getVaultCardTheme } from '../../src/features/vault/ui/vaultCardTheme';
 import { AUTO_SEND_DELIVERY_COPY } from '../../src/features/vault/domain/vaultOccasion';
 import type { VaultPerson } from '../../src/features/vault/domain/types';
 

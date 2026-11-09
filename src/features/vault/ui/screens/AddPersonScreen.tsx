@@ -21,7 +21,11 @@ import { useSavePerson } from '../../application/useSavePerson';
 import { parseBirthdayInput } from '../../domain/personRules';
 import { EMPTY_PERSON_DRAFT, type PersonDraft } from '../../domain/types';
 import { AddPersonAutoSendCard } from '../components/AddPersonAutoSendCard';
-import { AddPersonEmailField, AddPersonNameField } from '../components/AddPersonFormFields';
+import {
+  AddPersonEmailField,
+  AddPersonNameField,
+  AddPersonWhatsAppField,
+} from '../components/AddPersonFormFields';
 import { AddPersonHero } from '../components/AddPersonHero';
 import { AddPersonDivider, AddPersonSection } from '../components/AddPersonSection';
 import { RelationshipChipGrid } from '../components/RelationshipChipGrid';
@@ -102,6 +106,7 @@ export function AddPersonScreen({ navigation, route }: Props) {
   const hasBirthday = Boolean(draft.birthdayMonth && draft.birthdayDay);
   const hasAnniversary = Boolean(draft.anniversaryMonth && draft.anniversaryDay);
   const hasEmail = draft.email.trim().length > 0;
+  const hasWhatsApp = draft.whatsapp.trim().length > 0;
 
   const freeTierBody = canEnableAutoSend
     ? undefined
@@ -190,6 +195,26 @@ export function AddPersonScreen({ navigation, route }: Props) {
               maximumDate={new Date()}
             />
           </AddPersonSection>
+
+          <AddPersonSection label="WhatsApp">
+            <AddPersonWhatsAppField
+              value={draft.whatsapp}
+              onChangeText={(whatsapp) =>
+                updateDraft({
+                  whatsapp,
+                  whatsappConsent: whatsapp.trim() ? draft.whatsappConsent : false,
+                })
+              }
+            />
+          </AddPersonSection>
+
+          <AddPersonAutoSendCard
+            title="They agreed to get cards on WhatsApp"
+            enabled={hasWhatsApp && draft.whatsappConsent}
+            disabled={!hasWhatsApp}
+            onToggle={() => updateDraft({ whatsappConsent: !draft.whatsappConsent })}
+            body="Only with their number and their OK can we send a card on WhatsApp for you after you approve it, up to 100 a year. Otherwise you share the link yourself."
+          />
 
           <AddPersonSection label="Email">
             <AddPersonEmailField

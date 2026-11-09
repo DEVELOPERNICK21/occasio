@@ -1,9 +1,9 @@
 import { daysUntilPersonDate } from './personRules';
 import type { AutoSendPack, VaultPerson } from './types';
 
-/** What arming really does. WhatsApp and SMS are not sent by us. */
+/** What arming really does. SMS is not sent by us. */
 export const AUTO_SEND_DELIVERY_COPY =
-  'We prepare the card on the day and ask you to review it. We email it only if they agreed; otherwise you share the link.';
+  'We prepare the card on the day and ask you to review it. We send it on WhatsApp or by email only where they agreed; otherwise you share the link.';
 
 export function formatArmedOccasions(person: {
   autoSendBirthday: boolean;

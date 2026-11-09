@@ -1,4 +1,4 @@
-import type { SubscriptionTier } from './types';
+import type { SubscriptionTier } from '../../billing/domain/types';
 
 export function personCapForTier(tier: SubscriptionTier): number {
   switch (tier) {

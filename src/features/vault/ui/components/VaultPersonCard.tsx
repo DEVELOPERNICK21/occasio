@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { CalendarPlus, Cake, ChevronRight, Ellipsis, Heart } from 'lucide-react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import type { VaultCardTheme } from '../../domain/vaultCardTheme';
-import { personInitials } from '../../domain/vaultCardTheme';
+import type { VaultCardTheme } from '../vaultCardTheme';
+import { personInitials } from '../vaultCardTheme';
 import {
   AUTO_SEND_DELIVERY_COPY,
   formatArmedOccasions,

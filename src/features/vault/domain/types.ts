@@ -1,5 +1,3 @@
-export type SubscriptionTier = 'free' | 'personal' | 'family';
-
 export type OccasionType = 'birthday' | 'anniversary';
 
 export type ScheduledSendStatus =
@@ -42,6 +40,8 @@ export type VaultPerson = {
   anniversary: PersonDate | null;
   whatsapp: string | null;
   email: string | null;
+  /** The sender recorded that this person agreed to get cards on WhatsApp. */
+  whatsappConsent?: boolean;
   /** The sender recorded that this person agreed to get cards by email. */
   emailConsent?: boolean;
   autoSendBirthday: boolean;
@@ -60,6 +60,7 @@ export type PersonDraft = {
   anniversaryMonth: string;
   anniversaryDay: string;
   whatsapp: string;
+  whatsappConsent: boolean;
   email: string;
   emailConsent: boolean;
 };
@@ -70,6 +71,7 @@ export type CreatePersonInput = {
   birthday: PersonDate | null;
   anniversary: PersonDate | null;
   whatsapp: string | null;
+  whatsappConsent: boolean;
   email: string | null;
   emailConsent: boolean;
   autoSendBirthday: boolean;
@@ -84,6 +86,7 @@ export const EMPTY_PERSON_DRAFT: PersonDraft = {
   anniversaryMonth: '',
   anniversaryDay: '',
   whatsapp: '',
+  whatsappConsent: false,
   email: '',
   emailConsent: false,
 };

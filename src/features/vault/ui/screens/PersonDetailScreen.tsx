@@ -164,6 +164,16 @@ export function PersonDetailScreen({ navigation, route }: Props) {
           />
         ) : null}
         <DetailRow
+          label="WhatsApp"
+          value={
+            person.whatsapp
+              ? person.whatsappConsent
+                ? person.whatsapp
+                : `${person.whatsapp} (not confirmed, we will not send to it)`
+              : 'Not set'
+          }
+        />
+        <DetailRow
           label="Email"
           value={
             person.email

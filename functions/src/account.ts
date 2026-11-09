@@ -40,6 +40,10 @@ export async function deleteAccountData(
     .collection('user_creations')
     .where('userId', '==', uid)
     .get();
+  const whatsappUsage = await db
+    .collection('whatsapp_usage')
+    .where('userId', '==', uid)
+    .get();
   const owned = await db.collection('creations').where('userId', '==', uid).get();
 
   // Only cards this user owns are deleted; a History row is just a pointer.
@@ -81,6 +85,7 @@ export async function deleteAccountData(
     ...relationships.docs.map((d) => d.ref),
     ...sends.docs.map((d) => d.ref),
     ...history.docs.map((d) => d.ref),
+    ...whatsappUsage.docs.map((d) => d.ref),
     ...creationRefs.values(),
     db.collection('users').doc(uid),
   ]);

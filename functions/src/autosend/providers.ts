@@ -4,12 +4,22 @@ import { sendViaResend } from '../email/resend';
 import { cardDeliveryEmail } from '../email/templates';
 import { createUnsubscribeToken, isSuppressed } from '../email/unsubscribe';
 import type { DeliveryChannel } from './types';
+import {
+  createWhatsAppCloudProvider,
+  firestoreWhatsAppOptOuts,
+  firestoreWhatsAppUsage,
+  whatsappConfigFromEnv,
+} from './whatsapp';
 
 export type DeliverySendInput = {
   to: string;
   shareUrl: string;
   personName: string;
   occasionType: string;
+  /** The Occasio user the wish is sent for. Delivery that costs money is counted against them. */
+  userId?: string;
+  /** Who the card is from, as the person it is for will see it. */
+  fromName?: string | null;
 };
 
 export interface DeliveryProvider {
@@ -116,6 +126,18 @@ export function deliveryProviders(
     return mockDeliveryProviders();
   }
   const providers: DeliveryProvider[] = [];
+  // Order is the order they are tried: WhatsApp first, email when it cannot be delivered there.
+  const whatsapp = whatsappConfigFromEnv();
+  // No database means no way to count wishes or honour a STOP, so WhatsApp stays off.
+  if (whatsapp && db) {
+    providers.push(
+      createWhatsAppCloudProvider(
+        whatsapp,
+        firestoreWhatsAppUsage(db),
+        firestoreWhatsAppOptOuts(db),
+      ),
+    );
+  }
   const email = emailConfigFromEnv();
   // No database means no way to honour unsubscribes, so email stays off.
   if (email && db) {
