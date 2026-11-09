@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View, type TextInput as RNTextInput } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Check, Lock, Mail } from 'lucide-react-native';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
 import { Text } from '../../../../shared/ui/Text';
 import { TextField } from '../../../../shared/ui/TextField';
+import type { TextInputHandle } from '../../../../shared/ui/TextInput';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import {
   emailFieldError,
@@ -88,8 +89,8 @@ export function EmailAuthForm({
   onForgotPassword,
   onSwitchMode,
 }: Props) {
-  const passwordRef = useRef<RNTextInput>(null);
-  const emailRef = useRef<RNTextInput>(null);
+  const passwordRef = useRef<TextInputHandle>(null);
+  const emailRef = useRef<TextInputHandle>(null);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitted, setSubmitted] = useState(false);

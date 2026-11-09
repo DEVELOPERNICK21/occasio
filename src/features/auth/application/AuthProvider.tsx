@@ -19,8 +19,6 @@ import {
   deleteAccount,
   subscribeAuthState,
 } from '../data/authRepository';
-import { ensureAccountStamped } from '../../age/data/ageRepository';
-import { syncPendingHistoryEntries } from '../../history/application/useHistory';
 import { configureGoogleSignIn } from '../data/googleSignIn';
 import { AuthError } from '../data/authErrors';
 import { env } from '../../../shared/config/env';
@@ -79,13 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return unsubscribe;
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    void syncPendingHistoryEntries();
-    // Accounts made before the age check existed get it recorded once, quietly.
-    void ensureAccountStamped(user.uid);
-  }, [user]);
 
   const requestAuth = useCallback((action: GatedAction, onSuccess: () => void) => {
     if (user) {

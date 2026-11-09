@@ -5,13 +5,11 @@ import { httpClient } from '../../../shared/api/httpClient';
 import { env } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
 import type { AuthUser } from '../domain/types';
-import {
-  AccountAgeError,
-  enforceAgeForNewAccount,
-} from '../../age/data/ageRepository';
 import { deleteAccountFailureMessage } from '../domain/deleteAccountError';
+import { NewAccountRefusedError } from '../domain/newAccountGate';
 import { AuthError, mapFirebaseAuthError, mapGoogleSignInError } from './authErrors';
 import { configureGoogleSignIn } from './googleSignIn';
+import { requireNewAccountApproval } from './newAccountGate';
 
 type Unsubscribe = () => void;
 
@@ -36,14 +34,14 @@ function mapUser(firebaseUser: FirebaseAuthTypes.User): AuthUser {
 }
 
 /**
- * COPPA: a brand-new account only stays if the server accepts the age check.
- * Otherwise the account is deleted again on the spot and nothing is kept.
+ * COPPA: a brand-new account only stays if the gate approves it (the age check, installed by the
+ * app shell). Otherwise the account is deleted again on the spot and nothing is kept.
  */
 async function requireAgeForNewAccount(user: FirebaseAuthTypes.User): Promise<void> {
   try {
-    await enforceAgeForNewAccount(user);
+    await requireNewAccountApproval(user);
   } catch (error) {
-    if (error instanceof AccountAgeError) {
+    if (error instanceof NewAccountRefusedError) {
       if (error.reason === 'network') {
         throw new AuthError(
           'NETWORK',
