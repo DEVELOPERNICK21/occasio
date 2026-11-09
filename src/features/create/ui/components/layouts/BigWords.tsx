@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { colors, radius, shadow, typography } from '../../../../../shared/theme/tokens';
+import { colors, overlay, radius, shadow, typography } from '../../../../../shared/theme/tokens';
 import { Text } from '../../../../../shared/ui/Text';
 import type { LayoutProps } from '../TemplateRenderer';
 import { useCardReveal } from '../useCardReveal';
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontDisplay,
     fontWeight: '800',
     letterSpacing: -1.5,
-    textShadowColor: 'rgba(42, 34, 32, 0.45)',
+    textShadowColor: overlay.textShadow,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
   },

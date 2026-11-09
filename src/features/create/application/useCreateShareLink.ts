@@ -13,7 +13,7 @@ import {
   framePhotosMessage,
   framePhotosShort,
 } from '../domain/creationRules';
-import type { SubscriptionTier } from '../../vault/domain/types';
+import type { SubscriptionTier } from '../../billing/domain/types';
 import type { ExtraWishAccess } from '../../billing/domain/types';
 import type { CreationDraft } from '../domain/types';
 import type { CreateCreationResponse } from '../data/types';

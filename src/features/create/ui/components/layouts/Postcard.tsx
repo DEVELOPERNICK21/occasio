@@ -1,6 +1,6 @@
 import { Image, StyleSheet, View } from 'react-native';
 import { Heart } from 'lucide-react-native';
-import { colors, frameArt, radius, shadow, spacing, typography } from '../../../../../shared/theme/tokens';
+import { colors, frameArt, overlay, radius, shadow, spacing, typography } from '../../../../../shared/theme/tokens';
 import { fontHand } from '../../../../../shared/theme/artFonts';
 import { Text } from '../../../../../shared/ui/Text';
 import type { LayoutProps } from '../TemplateRenderer';
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: fontHand,
     fontSize: GREETING_SIZE,
-    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowColor: overlay.textShadow,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6,
   },

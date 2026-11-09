@@ -1,7 +1,9 @@
-import type { HistoryEntry } from '../../history/domain/types';
 import { daysUntilPersonDate } from '../../vault/domain/personRules';
 import { relationshipLabel } from '../../vault/domain/relationshipTypes';
 import type { VaultPerson } from '../../vault/domain/types';
+
+/** All the month count needs from a saved card: when it was made. */
+type DatedEntry = { createdAt: string };
 
 export type UpcomingOccasion = {
   personId: string;
@@ -62,7 +64,7 @@ export function getUpcomingOccasionsFromVault(
     .slice(0, max);
 }
 
-export function countWishesThisMonth(entries: HistoryEntry[], now = new Date()): number {
+export function countWishesThisMonth<T extends DatedEntry>(entries: readonly T[], now = new Date()): number {
   const month = now.getMonth();
   const year = now.getFullYear();
 

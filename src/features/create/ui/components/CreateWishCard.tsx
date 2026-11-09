@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, overlay, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
 type Props = {
   onPress: () => void;
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: overlay.whiteSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: typography.sizeXs,
-    color: 'rgba(255,255,255,0.85)',
+    color: overlay.whiteText,
   },
   chevron: {
     fontSize: typography.sizeXl,

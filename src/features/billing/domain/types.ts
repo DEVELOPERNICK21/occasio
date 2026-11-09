@@ -1,3 +1,6 @@
+/** The plan a person is on. Billing owns it; every other feature imports it from here. */
+export type SubscriptionTier = 'free' | 'personal' | 'family';
+
 export type BillingPlan = {
   id: string;
   title: string;
@@ -11,7 +14,7 @@ export type BillingPlan = {
 
 export type BillingCustomerSnapshot = {
   appUserId: string;
-  tier: import('../../vault/domain/types').SubscriptionTier;
+  tier: SubscriptionTier;
   hasPro: boolean;
   activeEntitlements: string[];
   originalAppUserId: string | null;

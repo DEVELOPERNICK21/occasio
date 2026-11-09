@@ -1,4 +1,4 @@
-import type { SubscriptionTier } from '../../vault/domain/types';
+import type { SubscriptionTier } from './types';
 import { ENTITLEMENT_PRO } from './entitlements';
 
 /**

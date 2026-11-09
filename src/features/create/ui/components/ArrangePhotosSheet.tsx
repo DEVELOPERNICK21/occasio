@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, overlay, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { Button } from '../../../../shared/ui/Button';
 import { ModalCloseButton } from '../../../../shared/ui/ModalCloseButton';
 import { Text } from '../../../../shared/ui/Text';
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   scrim: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(28, 25, 20, 0.45)',
+    backgroundColor: overlay.scrim,
   },
   sheet: {
     backgroundColor: colors.bg,

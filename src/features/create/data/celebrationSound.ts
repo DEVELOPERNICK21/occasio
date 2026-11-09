@@ -1,6 +1,5 @@
-// eslint-disable-next-line no-restricted-imports -- native audio has no RN-free equivalent; kept out of ui/ on purpose
-import { Image, Platform } from 'react-native';
 import Sound from 'react-native-sound';
+import { appPlatform, resolveAssetUri } from '../../../shared/platform/runtime';
 import type { ScreenEffectId } from '../domain/occasionEffects';
 import { soundForEffect } from '../domain/occasionSounds';
 
@@ -84,8 +83,8 @@ function playFromAndroidRaw(effectId: ScreenEffectId): void {
 
 function playFromResolvedAsset(effectId: ScreenEffectId): void {
   const asset = BUNDLE[effectId];
-  const uri = Image.resolveAssetSource(asset)?.uri;
-  if (!uri || typeof uri !== 'string') {
+  const uri = resolveAssetUri(asset);
+  if (!uri) {
     return;
   }
   playWithFilename(uri, undefined, effectId);
@@ -96,7 +95,7 @@ export function playCelebrationSound(effectId: ScreenEffectId): void {
   try {
     releaseActive();
     const id = soundForEffect(effectId);
-    if (Platform.OS === 'android') {
+    if (appPlatform() === 'android') {
       playFromAndroidRaw(id);
       return;
     }

@@ -1,5 +1,5 @@
 import { ImageBackground, StyleSheet, View } from 'react-native';
-import { colors, radius, shadow, spacing, typography } from '../../../../../shared/theme/tokens';
+import { colors, overlay, radius, shadow, spacing, typography } from '../../../../../shared/theme/tokens';
 import { Text } from '../../../../../shared/ui/Text';
 import type { LayoutProps } from '../TemplateRenderer';
 import { useCardReveal } from '../useCardReveal';
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   scrim: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(42, 34, 32, 0.28)',
+    backgroundColor: overlay.photoShade,
   },
   fallback: {
     flex: 1,

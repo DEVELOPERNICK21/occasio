@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { colors, frameArt, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, frameArt, overlay, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { Text } from '../../../../shared/ui/Text';
 import type { LayoutId } from '../../domain/templateSchema';
 
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeXl,
     fontWeight: '800',
     letterSpacing: -1,
-    textShadowColor: 'rgba(42, 34, 32, 0.45)',
+    textShadowColor: overlay.textShadow,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
