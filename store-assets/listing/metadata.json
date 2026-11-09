@@ -1,7 +1,7 @@
 {
   "_note": "Source of truth for every length-limited store field. Run: python3 ../tools/check-listing.py",
   "en-US": {
-    "title": "Occasio",
+    "title": "Occasio: Birthday Wish Cards",
     "play_short": "Never miss a birthday. Send interactive cards they'll love to open.",
     "ios_subtitle": "Reminders & Surprise Greetings",
     "ios_promo": "Send a card they'll want to open: pop balloons, blow out the candles, unwrap a 3D gift, read your letter. Save the people you love and never miss a date.",
