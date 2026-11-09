@@ -6,9 +6,8 @@ import { Text } from '../../../../shared/ui/Text';
 import { renewalTerms } from '../../../billing/domain/renewalTerms';
 import { Button } from '../../../../shared/ui/Button';
 import { ModalCloseButton } from '../../../../shared/ui/ModalCloseButton';
-import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import { colors, overlay, radius, spacing, typography } from '../../../../shared/theme/tokens';
 
-const OVERLAY = 'rgba(42, 34, 32, 0.45)';
 
 type Props = {
   visible: boolean;
@@ -135,7 +134,7 @@ export function PaywallModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: OVERLAY,
+    backgroundColor: overlay.scrim,
     justifyContent: 'flex-end',
     padding: spacing.lg,
   },

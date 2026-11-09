@@ -202,7 +202,7 @@ export function OnboardingScreen({ navigation, onComplete }: Props) {
               isLoading={plan.isLoading}
               isPaid={plan.isPaid}
               isPurchasing={plan.isPurchasing}
-              error={plan.error}
+              notice={plan.notice}
               onBuy={(selected) => void plan.buy(selected)}
               onRestore={() => void plan.restore()}
             />

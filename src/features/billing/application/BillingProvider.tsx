@@ -4,12 +4,21 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { AnalyticsEvents, trackEvent } from '../../../shared/analytics/events';
+import { appPlatform } from '../../../shared/platform/runtime';
 import { useAuth } from '../../auth/application/useAuth';
-import type { SubscriptionTier } from '../../vault/domain/types';
+import {
+  describeBillingNotice,
+  plansUnavailableNotice,
+  type BillingNotice,
+  type BillingSubject,
+} from '../domain/billingNotice';
+import { PACKAGE_SINGLE_WISH } from '../domain/entitlements';
+import type { SubscriptionTier } from '../domain/types';
 import {
   addCustomerInfoListener,
   canUseRevenueCat,
@@ -19,6 +28,7 @@ import {
   fetchPurchasedWishCredits,
   fetchSubscriptionTier,
   purchaseBillingPlan,
+  refreshCustomerInfo,
   restoreBillingPurchases,
   syncRevenueCatUser,
 } from '../data/revenueCatClient';
@@ -27,7 +37,7 @@ import {
   presentProPaywall,
   presentProPaywallIfNeeded,
 } from '../data/revenueCatUi';
-import { isBillingError, isPurchaseCancelled } from '../data/billingErrors';
+import { billingErrorFromSdk, isPurchaseCancelled } from '../data/billingErrors';
 import { syncSubscriptionTier } from '../data/userTierMirror';
 import { readWishCreditsUsed } from '../data/wishCreditStore';
 import { availableWishCredits } from '../domain/wishCredits';
@@ -40,14 +50,23 @@ type BillingContextValue = {
   isConfigured: boolean;
   isPurchasing: boolean;
   plans: BillingPlan[];
-  error: string | null;
+  /** What to tell the person about the last purchase, restore or paywall attempt, if anything. */
+  notice: BillingNotice | null;
   purchase: (planId: string) => Promise<boolean>;
-  restore: () => Promise<boolean>;
+  /** `restored` is true when a plan came back; otherwise `notice` says why not. */
+  restore: () => Promise<{ restored: boolean; notice: BillingNotice | null }>;
+  /**
+   * Asks the store again about a payment that was pending. `true` once it has gone through (and the
+   * notice is gone); `false` while the store is still working on it.
+   */
+  recheckPending: () => Promise<boolean>;
   presentPaywall: (options?: { force?: boolean }) => Promise<PaywallPresentResult>;
   /** Resolves `true` once Customer Center was shown, `false` if it could not open. */
   openCustomerCenter: () => Promise<boolean>;
   refresh: () => Promise<void>;
   clearError: () => void;
+  /** Clears a notice that only mattered on the screen being left. A pending payment stays. */
+  dismissTransient: () => void;
   /** Fresh check (not cached state) for a wish beyond the free monthly allowance. */
   resolveExtraWish: () => Promise<ExtraWishAccess>;
 };
@@ -61,9 +80,12 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [plans, setPlans] = useState<BillingPlan[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<BillingNotice | null>(null);
+  /** What the pending payment was for, so "check again" can look in the right place. */
+  const pendingSubject = useRef<BillingSubject>('other');
 
   const isConfigured = canUseRevenueCat();
+  const userId = user?.uid ?? null;
 
   const refresh = useCallback(async () => {
     if (!canUseRevenueCat()) {
@@ -85,7 +107,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       setTier(nextTier);
       setHasPro(nextHasPro);
       setPlans(nextPlans);
-      setError(null);
+      setNotice((current) => (current?.code === 'PENDING' ? current : null));
     } catch (e) {
       if (__DEV__) {
         console.warn('[Occasio] Billing refresh failed', e);
@@ -108,6 +130,10 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     return addCustomerInfoListener((snapshot) => {
       setTier(snapshot.tier);
       setHasPro(snapshot.hasPro);
+      // The store confirmed a payment that was pending: there is nothing left to wait for.
+      if (snapshot.hasPro) {
+        setNotice((current) => (current?.code === 'PENDING' ? null : current));
+      }
     });
   }, [isConfigured]);
 
@@ -124,8 +150,11 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   }, [isReady, tier, user?.uid]);
 
   const purchase = useCallback(async (planId: string) => {
+    const subject: BillingSubject = planId.toLowerCase().includes(PACKAGE_SINGLE_WISH)
+      ? 'wish'
+      : 'pro';
     setIsPurchasing(true);
-    setError(null);
+    setNotice(null);
     trackEvent(AnalyticsEvents.purchaseStarted, { planId });
 
     try {
@@ -136,11 +165,14 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (e) {
       if (!isPurchaseCancelled(e)) {
-        const message = isBillingError(e)
-          ? e.message
-          : 'Could not complete purchase. Try again.';
-        setError(message);
-        trackEvent(AnalyticsEvents.subscribeFailed, { planId, message });
+        const { code } = billingErrorFromSdk(e);
+        if (code === 'PENDING') {
+          pendingSubject.current = subject;
+          trackEvent(AnalyticsEvents.purchasePending, { planId });
+        } else {
+          trackEvent(AnalyticsEvents.subscribeFailed, { planId, code });
+        }
+        setNotice(describeBillingNotice(code, { platform: appPlatform(), subject }));
       }
       return false;
     } finally {
@@ -150,7 +182,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
 
   const restore = useCallback(async () => {
     setIsPurchasing(true);
-    setError(null);
+    setNotice(null);
+    const platform = appPlatform();
 
     try {
       const nextTier = await restoreBillingPurchases();
@@ -158,22 +191,65 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       setHasPro(nextTier !== 'free');
       if (nextTier !== 'free') {
         trackEvent(AnalyticsEvents.restoreSuccess, { tier: nextTier });
+        return { restored: true, notice: null };
       }
-      return nextTier !== 'free';
+      const empty = describeBillingNotice('NOTHING_TO_RESTORE', { platform });
+      setNotice(empty);
+      return { restored: false, notice: empty };
     } catch (e) {
-      const message = isBillingError(e)
-        ? e.message
-        : 'Could not restore purchases.';
-      setError(message);
-      return false;
+      const failed = describeBillingNotice(billingErrorFromSdk(e).code, { platform });
+      setNotice(failed);
+      return { restored: false, notice: failed };
     } finally {
       setIsPurchasing(false);
     }
   }, []);
 
+  const recheckPending = useCallback(async (): Promise<boolean> => {
+    if (!canUseRevenueCat()) {
+      return false;
+    }
+    setIsPurchasing(true);
+    try {
+      await refreshCustomerInfo();
+      const [nextTier, nextHasPro] = await Promise.all([fetchSubscriptionTier(), fetchHasPro()]);
+      setTier(nextTier);
+      setHasPro(nextHasPro);
+
+      let arrived = nextHasPro;
+      if (!arrived && pendingSubject.current === 'wish' && userId) {
+        const [purchased, used] = await Promise.all([
+          fetchPurchasedWishCredits(),
+          readWishCreditsUsed(userId),
+        ]);
+        arrived = availableWishCredits(purchased, used) > 0;
+      }
+
+      if (arrived) {
+        setNotice(null);
+        trackEvent(AnalyticsEvents.subscribeSuccess, { source: 'pending_resolved' });
+        return true;
+      }
+      setNotice(
+        describeBillingNotice('PENDING', {
+          platform: appPlatform(),
+          subject: pendingSubject.current,
+          rechecked: true,
+        }),
+      );
+      return false;
+    } catch (e) {
+      // Could not even ask: say so, and leave the pending wording alone so nothing is lost.
+      setNotice(describeBillingNotice(billingErrorFromSdk(e).code, { platform: appPlatform() }));
+      return false;
+    } finally {
+      setIsPurchasing(false);
+    }
+  }, [userId]);
+
   const presentPaywall = useCallback(
     async (options?: { force?: boolean }): Promise<PaywallPresentResult> => {
-      setError(null);
+      setNotice(null);
       trackEvent(AnalyticsEvents.paywallShown);
 
       try {
@@ -186,16 +262,13 @@ export function BillingProvider({ children }: { children: ReactNode }) {
           await refresh();
           trackEvent(AnalyticsEvents.subscribeSuccess, { source: 'paywall', result });
         } else if (result === 'error') {
-          setError('Could not open the plans right now. Please try again.');
+          setNotice(plansUnavailableNotice(appPlatform()));
           trackEvent(AnalyticsEvents.subscribeFailed, { source: 'paywall' });
         }
 
         return result;
       } catch (e) {
-        const message = isBillingError(e)
-          ? e.message
-          : 'Could not open the paywall.';
-        setError(message);
+        setNotice(describeBillingNotice(billingErrorFromSdk(e).code, { platform: appPlatform() }));
         return 'error';
       } finally {
         setIsPurchasing(false);
@@ -205,25 +278,23 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   );
 
   const openCustomerCenter = useCallback(async (): Promise<boolean> => {
-    setError(null);
     try {
       await presentCustomerCenter();
       await refresh();
       return true;
-    } catch (e) {
-      const message = isBillingError(e)
-        ? e.message
-        : 'Could not open subscription management.';
-      setError(message);
+    } catch {
+      // The caller sends the person to the store's own page, so there is nothing to show here.
       return false;
     }
   }, [refresh]);
 
   const clearError = useCallback(() => {
-    setError(null);
+    setNotice(null);
   }, []);
 
-  const userId = user?.uid ?? null;
+  const dismissTransient = useCallback(() => {
+    setNotice((current) => (current?.code === 'PENDING' ? current : null));
+  }, []);
 
   const resolveExtraWish = useCallback(async (): Promise<ExtraWishAccess> => {
     if (!canUseRevenueCat()) {
@@ -257,13 +328,15 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       isConfigured,
       isPurchasing,
       plans,
-      error,
+      notice,
       purchase,
       restore,
+      recheckPending,
       presentPaywall,
       openCustomerCenter,
       refresh,
       clearError,
+      dismissTransient,
       resolveExtraWish,
     }),
     [
@@ -273,13 +346,15 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       isConfigured,
       isPurchasing,
       plans,
-      error,
+      notice,
       purchase,
       restore,
+      recheckPending,
       presentPaywall,
       openCustomerCenter,
       refresh,
       clearError,
+      dismissTransient,
       resolveExtraWish,
     ],
   );

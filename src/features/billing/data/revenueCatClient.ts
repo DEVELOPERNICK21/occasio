@@ -1,6 +1,5 @@
 import Purchases, {
   LOG_LEVEL,
-  PURCHASES_ERROR_CODE,
   type CustomerInfo,
   type PurchasesOfferings,
   type PurchasesPackage,
@@ -9,7 +8,7 @@ import { isRevenueCatConfigured, revenueCatConfig } from '../../../shared/config
 import { env } from '../../../shared/config/env';
 import { appPlatform } from '../../../shared/platform/runtime';
 import type { BillingCustomerSnapshot, BillingPlan } from '../domain/types';
-import type { SubscriptionTier } from '../../vault/domain/types';
+import type { SubscriptionTier } from '../domain/types';
 import {
   PACKAGE_MONTHLY,
   PACKAGE_SINGLE_WISH,
@@ -17,12 +16,13 @@ import {
 } from '../domain/entitlements';
 import { renewalPeriodLabel } from '../domain/renewalTerms';
 import { countPurchasedWishCredits } from '../domain/wishCredits';
+import { NO_PURCHASES, purchaseSummaryFrom, type PurchaseSummary } from '../domain/wishBalance';
 import {
   activeEntitlementIdsFromRecord,
   hasProEntitlement,
   tierFromEntitlements,
 } from '../domain/mapTier';
-import { BillingError, isPurchaseCancelled } from './billingErrors';
+import { BillingError, billingErrorFromSdk } from './billingErrors';
 
 let configured = false;
 
@@ -125,34 +125,6 @@ function packagesFromOfferings(offerings: PurchasesOfferings): PurchasesPackage[
   return first?.availablePackages ?? [];
 }
 
-function toBillingError(error: unknown): BillingError {
-  if (isPurchaseCancelled(error)) {
-    return new BillingError('CANCELLED', 'Purchase cancelled.');
-  }
-
-  if (error && typeof error === 'object' && 'code' in error) {
-    const code = String((error as { code?: string }).code);
-    if (code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
-      return new BillingError('CANCELLED', 'Purchase cancelled.');
-    }
-    if (
-      code === PURCHASES_ERROR_CODE.NETWORK_ERROR ||
-      code === PURCHASES_ERROR_CODE.OFFLINE_CONNECTION_ERROR
-    ) {
-      return new BillingError('NETWORK', 'Check your connection and try again.');
-    }
-    if (code === PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR) {
-      return new BillingError('STORE', 'Store is unavailable right now.');
-    }
-  }
-
-  if (error instanceof Error) {
-    return new BillingError('INTERNAL', error.message);
-  }
-
-  return new BillingError('INTERNAL', 'Something went wrong with billing.');
-}
-
 export async function configureRevenueCat(appUserId?: string | null): Promise<boolean> {
   if (!canUseRevenueCat()) {
     configured = false;
@@ -231,6 +203,14 @@ export async function fetchHasPro(): Promise<boolean> {
   return hasProFromCustomerInfo(info);
 }
 
+/** What the store says this person has bought: the Pro plan and how many single wishes. */
+export async function fetchPurchaseSummary(): Promise<PurchaseSummary> {
+  if (!configured) {
+    return NO_PURCHASES;
+  }
+  return purchaseSummaryFrom(await Purchases.getCustomerInfo());
+}
+
 export async function fetchPurchasedWishCredits(): Promise<number> {
   if (!configured) {
     return 0;
@@ -240,6 +220,22 @@ export async function fetchPurchasedWishCredits(): Promise<number> {
   return countPurchasedWishCredits(
     info.nonSubscriptionTransactions.map((t) => t.productIdentifier),
   );
+}
+
+/**
+ * Asks the store and RevenueCat again, instead of answering from what the phone remembers. "Check again"
+ * on a pending payment needs this: the cached answer is the one from before the payment went through.
+ */
+export async function refreshCustomerInfo(): Promise<void> {
+  if (!configured) {
+    return;
+  }
+  try {
+    await Purchases.invalidateCustomerInfoCache();
+    await Purchases.syncPurchases();
+  } catch {
+    // Not being able to refresh just means the next read is from the cache.
+  }
 }
 
 export async function fetchBillingPlans(): Promise<BillingPlan[]> {
@@ -266,7 +262,7 @@ export async function purchaseBillingPlan(planId: string): Promise<SubscriptionT
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return tierFromCustomerInfo(customerInfo);
   } catch (error) {
-    throw toBillingError(error);
+    throw billingErrorFromSdk(error);
   }
 }
 
@@ -279,7 +275,7 @@ export async function restoreBillingPurchases(): Promise<SubscriptionTier> {
     const info = await Purchases.restorePurchases();
     return tierFromCustomerInfo(info);
   } catch (error) {
-    throw toBillingError(error);
+    throw billingErrorFromSdk(error);
   }
 }
 

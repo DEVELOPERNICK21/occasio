@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { AnalyticsEvents, trackEvent } from '../../../shared/analytics/events';
 import { triggerSuccessHaptic } from '../../../shared/platform/haptics';
+import { useBillingNotice } from '../../billing/application/useBillingNotice';
 import { useSubscription } from '../../billing/application/useSubscription';
 import type { BillingPlan } from '../../billing/domain/types';
 import { hasSubscriptionPlans, pickSubscriptionPlans } from '../domain/onboardingPlans';
@@ -9,6 +10,7 @@ import { hasSubscriptionPlans, pickSubscriptionPlans } from '../domain/onboardin
 export function useOnboardingPlans(active: boolean) {
   const subscription = useSubscription();
   const { plans: allPlans, purchase, restore, clearError } = subscription;
+  const notice = useBillingNotice();
   const plans = useMemo(() => pickSubscriptionPlans(allPlans), [allPlans]);
 
   useEffect(() => {
@@ -31,11 +33,11 @@ export function useOnboardingPlans(active: boolean) {
 
   const restorePurchases = useCallback(async () => {
     trackEvent(AnalyticsEvents.onboardingRestoreTapped);
-    const ok = await restore();
-    if (ok) {
+    const { restored } = await restore();
+    if (restored) {
       triggerSuccessHaptic();
     }
-    return ok;
+    return restored;
   }, [restore]);
 
   return {
@@ -44,7 +46,7 @@ export function useOnboardingPlans(active: boolean) {
     isLoading: subscription.isConfigured && !subscription.isReady,
     isPaid: subscription.isPaid,
     isPurchasing: subscription.isPurchasing,
-    error: subscription.error,
+    notice,
     clearError,
     buy,
     restore: restorePurchases,

@@ -12,13 +12,15 @@ export function useSubscription() {
     isPaid: billing.hasPro || billing.tier !== 'free',
     isPurchasing: billing.isPurchasing,
     plans: billing.plans,
-    error: billing.error,
+    notice: billing.notice,
     purchase: billing.purchase,
     restore: billing.restore,
+    recheckPending: billing.recheckPending,
     presentPaywall: billing.presentPaywall,
     openCustomerCenter: billing.openCustomerCenter,
     refresh: billing.refresh,
     clearError: billing.clearError,
+    dismissTransient: billing.dismissTransient,
     resolveExtraWish: billing.resolveExtraWish,
   };
 }

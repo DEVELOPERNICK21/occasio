@@ -1,8 +1,10 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { env } from '../../../../shared/config/env';
 import { appPlatform } from '../../../../shared/platform/runtime';
+import { NoticeCard } from '../../../../shared/ui/NoticeCard';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
+import type { BillingNoticeView } from '../../../billing/application/useBillingNotice';
 import type { BillingPlan } from '../../../billing/domain/types';
 import {
   COMPARE_ROWS,
@@ -26,7 +28,7 @@ type Props = {
   isLoading: boolean;
   isPaid: boolean;
   isPurchasing: boolean;
-  error: string | null;
+  notice: BillingNoticeView | null;
   onBuy: (plan: BillingPlan) => void;
   onRestore: () => void;
 };
@@ -60,7 +62,7 @@ export function PlanStep({
   isLoading,
   isPaid,
   isPurchasing,
-  error,
+  notice,
   onBuy,
   onRestore,
 }: Props) {
@@ -102,7 +104,7 @@ export function PlanStep({
         </Text>
       )}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {notice ? <NoticeCard {...notice} /> : null}
 
       <CompareTable />
 
@@ -175,7 +177,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: spacing.md,
   },
-  error: { fontSize: typography.sizeSm, color: colors.error, textAlign: 'center' },
   notice: {
     fontSize: typography.sizeXs,
     lineHeight: typography.sizeXs * 1.5,
