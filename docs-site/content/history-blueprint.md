@@ -75,7 +75,7 @@ src/features/history/
   data/historyRepository.ts, pendingHistoryStorage.ts, syncPendingHistory.ts
   application/useHistory.ts
   ui/screens/HistoryListScreen.tsx, HistoryDetailScreen.tsx
-src/shared/navigation/HistoryNavigator.tsx
+src/app/navigation/HistoryNavigator.tsx
 ```
 
 Recorded from `ShareSuccessScreen` when `isSignedIn`.

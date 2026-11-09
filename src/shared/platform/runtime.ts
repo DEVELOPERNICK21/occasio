@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Image, Platform } from 'react-native';
 
 export type AppPlatform = 'ios' | 'android' | 'other';
 
@@ -10,4 +10,10 @@ export function appPlatform(): AppPlatform {
     return 'android';
   }
   return 'other';
+}
+
+/** The file or URL a bundled asset (`require('./x.png')`) is served from, or null if it has none. */
+export function resolveAssetUri(asset: number): string | null {
+  const uri = Image.resolveAssetSource(asset)?.uri;
+  return typeof uri === 'string' && uri ? uri : null;
 }

@@ -9,10 +9,7 @@ import Animated, {
 import { useEffect } from 'react';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import {
-  AUDIENCE_ICONS,
-  AUDIENCE_TONES,
-} from '../../../create/ui/components/AudienceCard';
+import { audienceIcon, audienceTone } from '../../../../shared/ui/audienceStyle';
 import type { Audience } from '../../../create/domain/templateSchema';
 
 const SPRING = { damping: 18, stiffness: 420, mass: 0.6 };
@@ -30,8 +27,8 @@ type Props = {
 
 /** A selectable twin of the Create-home audience card: same colours and icons, with a chosen state. */
 export function AudienceChoiceTile({ audience, label, cue, index, selected, onPress }: Props) {
-  const tone = AUDIENCE_TONES[audience];
-  const Icon = AUDIENCE_ICONS[audience];
+  const tone = audienceTone(audience);
+  const Icon = audienceIcon(audience);
   const scale = useSharedValue(1);
   const check = useSharedValue(selected ? 1 : 0);
 

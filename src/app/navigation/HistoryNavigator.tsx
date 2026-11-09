@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HistoryDetailScreen } from '../../features/history/ui/screens/HistoryDetailScreen';
 import { HistoryListScreen } from '../../features/history/ui/screens/HistoryListScreen';
-import type { HistoryStackParamList } from './types';
+import type { HistoryStackParamList } from '../../shared/navigation/types';
 
 const Stack = createNativeStackNavigator<HistoryStackParamList>();
 

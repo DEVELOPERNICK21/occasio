@@ -55,13 +55,18 @@ Top-level features aligned to MVP IA:
 
 | Feature | Owns |
 |---|---|
-| `auth` | Sign-in, OTP, soft-auth modal, session |
+| `age` | Date-of-birth gate, server age check, stamping accounts |
+| `auth` | Sign-in, soft-auth modal, session, password reset |
+| `account` | Signed-in account screen: profile, plan, restore, sign out, delete |
+| `onboarding` | First-run flow that hands off into create |
+| `widgets` | Home-screen widget data and host |
 | `create` | Templates, photos, message, preview, share success, free-limit / one-off paywall entry |
 | `vault` | People list, add/edit, auto-send toggles, upcoming, review window UI, delete person |
 | `history` | Creations list + detail, reshare |
 | `billing` | Plans, store purchase, manage/cancel, entitlement surface |
 | `recipient` | Public card view concerns (primarily web; shared types with mobile where useful) |
-| `shared` | Design tokens, UI primitives, navigation shell, pure utilities |
+| `shared` | Design tokens, UI primitives, HTTP client, config, platform helpers (imports no feature) |
+| `app` (`src/app`) | The shell: navigators, tabs, startup wiring. The only place that knows several features |
 
 ### Per-feature layering (pragmatic)
 
@@ -77,15 +82,16 @@ feature/
 
 1. **UI** may depend on `application` and `domain`; UI must **not** import Firebase/RevenueCat SDKs directly.
 2. **`data`** may depend on `domain`; `data` must **not** import React components or `ui`.
-3. Features must **not** import another feature’s `ui`. Cross-feature calls go through `application` APIs or shared domain types.
-4. Enforce with ESLint `no-restricted-imports` (or equivalent) from Phase 1 onward; tighten in Phase 5.
+3. Features must **not** import another feature’s `ui` or `data`. Cross-feature calls go through `application` APIs or domain types, and only along the edges in `scripts/architecture/features.json`.
+4. `domain` is pure (no packages, no `any`); `shared` imports no feature; features never import `src/app`.
+5. **Enforced** by `npm run arch:check` (an import-graph check that also runs in `npm test`) and by ESLint `no-restricted-imports` for fast feedback. See [Client architecture](/docs/architecture).
 
 ### State management (predictable)
 
 | Kind | Approach | Examples |
 |---|---|---|
-| **Server / remote state** | Cache + sync layer (e.g. TanStack Query) and/or controlled Firestore listeners | Vault list, creations history, subscription entitlement |
-| **Local flow / UI state** | Small scoped store (e.g. Zustand) or feature-local state | Create wizard steps, review-window draft edits |
+| **Server / remote state** | Controlled Firestore listeners and repositories behind `application` hooks (a query cache such as TanStack Query is an option if a real need appears) | Vault list, creations history, subscription entitlement |
+| **Local flow / UI state** | React context plus feature-local state (a small store such as Zustand is an option if context gets heavy) | Create wizard steps, review-window draft edits |
 | **Auth session** | Dedicated auth module state sourced from Firebase Auth | Soft gate, tab shell |
 
 Do **not** dump all app state into one global store.

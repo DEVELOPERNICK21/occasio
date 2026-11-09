@@ -67,7 +67,8 @@ Full rules: `ui-design-principles.md` (§11 anti-slop for visual + copy)
 ## Anti-slop (agents)
 
 **UI:** cream/green tokens only · one primary CTA · no purple gradients · no emoji/hype copy · copy `create/` screens.  
-**Code:** smallest diff · no new utils folders · no `fetch` in `ui/` · match existing feature patterns.  
+**Code:** smallest diff · no new utils folders · no `fetch` in `ui/` · match existing feature patterns.
+**Architecture:** a feature may import another only as `scripts/architecture/features.json` allows (and only its `application`/`domain`); wiring of several features goes in `src/app`, not in a feature or `shared`; one source of truth per fact (tier in `billing/domain`, error codes in `shared/api/errors.ts`, colours in `tokens.ts`). `npm run arch:check` must stay green.  
 Details: `ui-design-principles.md` §11 · `data-flow.md` §12 · `product-principles.md` §7.
 
 ## Data & network
@@ -103,6 +104,8 @@ Template system MVP is implemented; resume polish after Shipaton if needed.
 
 ```sh
 npx tsc --noEmit
+npm run arch:check     # layers, feature dependencies, cycles, colours (also runs in npm test)
+npm test
 npm start && npm run android
 ```
 

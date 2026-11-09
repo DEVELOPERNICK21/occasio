@@ -19,7 +19,9 @@ src/features/<name>/{ui,application,domain,data}
 
 - UI: no Firebase/RevenueCat imports
 - `data`: no React/UI imports
-- Features: no cross-import of other features' `ui`
+- Features import each other only as `scripts/architecture/features.json` allows, and only `application`/`domain` (never `ui` or `data`)
+- Wiring of several features (navigators, startup) lives in `src/app`; `shared` imports no feature
+- `npm run arch:check` must stay green
 - Domain: pure TypeScript, strict, no `any`
 
 ## Tokens

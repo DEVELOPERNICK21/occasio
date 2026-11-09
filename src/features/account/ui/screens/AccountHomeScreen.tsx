@@ -6,18 +6,20 @@ import { FLOATING_TAB_BAR_HEIGHT } from '../../../../shared/navigation/tabBarCon
 import { BusyOverlay } from '../../../../shared/ui/BusyOverlay';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
-import type { SubscriptionTier } from '../../../vault/domain/types';
+import type { SubscriptionTier } from '../../../billing/domain/types';
+import type { WishBalance } from '../../../billing/domain/wishBalance';
 import {
   memberSinceLabel,
   profileBio,
   tierDisplayLabel,
 } from '../../domain/accountProfile';
-import type { AuthUser } from '../../domain/types';
+import type { AuthUser } from '../../../auth/domain/types';
 import {
   AccountProfileHero,
   AccountTopBar,
 } from '../components/AccountProfileHeader';
 import {
+  AccountBadgesCard,
   AccountDeleteButton,
   AccountHelpCard,
   AccountNotificationsCard,
@@ -30,6 +32,9 @@ type Props = {
   user: AuthUser;
   tier?: SubscriptionTier;
   hasPro?: boolean;
+  /** What is left to send and what was bought, once read. */
+  balance?: WishBalance | null;
+  onOpenBadges?: () => void;
   isRestoring?: boolean;
   onRestorePurchases?: () => void;
   onManagePlan?: () => void;
@@ -41,6 +46,8 @@ export function AccountHomeScreen({
   user,
   tier = 'free',
   hasPro = false,
+  balance = null,
+  onOpenBadges,
   isRestoring = false,
   onRestorePurchases,
   onManagePlan,
@@ -130,10 +137,13 @@ export function AccountHomeScreen({
 
         <AccountSubscriptionCard
           tier={tier}
+          balance={balance}
           onManagePlan={handleManagePlan}
           onRestorePurchases={onRestorePurchases}
           isRestoring={isRestoring}
         />
+
+        {onOpenBadges ? <AccountBadgesCard onPress={onOpenBadges} /> : null}
 
         <AccountNotificationsCard />
 

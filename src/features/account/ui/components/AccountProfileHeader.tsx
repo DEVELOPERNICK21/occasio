@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { profileInitials } from '../../domain/accountProfile';
-import type { AuthUser } from '../../domain/types';
-import { formatAuthIdentity } from '../../domain/mapUser';
+import type { AuthUser } from '../../../auth/domain/types';
+import { formatAuthIdentity } from '../../../auth/domain/mapUser';
 
 type Props = {
   user: AuthUser;

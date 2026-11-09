@@ -24,9 +24,11 @@ flowchart LR
 | Layer | May call | Must NOT |
 |---|---|---|
 | **ui** | `application` hooks, `domain` types for display | `fetch`, Firebase, RevenueCat |
-| **application** | `domain`, `data` | JSX, StyleSheet |
-| **domain** | nothing external | React, fetch, Firebase |
-| **data** | `domain`, `shared/config` | React, `ui/` |
+| **application** | `domain`, own `data`, other features' `application`/`domain` (only where `features.json` allows) | JSX, StyleSheet, `ui/` |
+| **domain** | other `domain` files, pure shared constants | React, fetch, Firebase, any package |
+| **data** | `domain`, `shared/api`, `shared/config`, `shared/firebase`, `shared/platform`, device and billing SDKs | React, React Native, `ui/`, `application/` |
+
+Checked by `npm run arch:check`. The app shell (`src/app`) is the only place that wires several features together.
 
 **Example (create):**
 ```

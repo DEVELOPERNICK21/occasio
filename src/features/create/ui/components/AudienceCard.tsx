@@ -1,12 +1,3 @@
-import {
-  Gem,
-  Heart,
-  Home,
-  Shield,
-  Sparkles,
-  Users,
-  type LucideIcon,
-} from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -20,67 +11,10 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
+import { audienceIcon, audienceTone } from '../../../../shared/ui/audienceStyle';
 import type { Audience } from '../../domain/templateSchema';
 
 const PRESS_SPRING = { damping: 20, stiffness: 520, mass: 0.6 };
-
-export type AudienceTone = {
-  /** Solid icon tile. */
-  tile: string;
-  iconColor: string;
-  /** Card tint. */
-  soft: string;
-  border: string;
-};
-
-/** One warm colour per relationship — helps the grid scan at a glance. */
-export const AUDIENCE_TONES: Record<Audience, AudienceTone> = {
-  someone_special: {
-    tile: colors.accent,
-    iconColor: colors.white,
-    soft: colors.sidebar,
-    border: colors.accentSoft,
-  },
-  mom: {
-    tile: colors.rose,
-    iconColor: colors.white,
-    soft: colors.roseSoft,
-    border: colors.roseSoft,
-  },
-  dad: {
-    tile: colors.sage,
-    iconColor: colors.white,
-    soft: colors.sageSoft,
-    border: colors.sageSoft,
-  },
-  friend: {
-    tile: colors.secondary,
-    iconColor: colors.white,
-    soft: colors.amberSoft,
-    border: colors.amberSoft,
-  },
-  partner: {
-    tile: colors.accentHover,
-    iconColor: colors.white,
-    soft: colors.roseSoft,
-    border: colors.accentSoft,
-  },
-  family: {
-    tile: colors.butter,
-    iconColor: colors.ink,
-    soft: colors.butterSoft,
-    border: colors.butterSoft,
-  },
-};
-
-export const AUDIENCE_ICONS: Record<Audience, LucideIcon> = {
-  someone_special: Sparkles,
-  mom: Heart,
-  dad: Shield,
-  friend: Users,
-  partner: Gem,
-  family: Home,
-};
 
 type Props = {
   audience: Audience;
@@ -95,8 +29,8 @@ export function AudienceCard({ audience, label, cue, index = 0, onPress }: Props
   const scale = useSharedValue(1);
   const wiggle = useSharedValue(0);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const tone = AUDIENCE_TONES[audience];
-  const Icon = AUDIENCE_ICONS[audience];
+  const tone = audienceTone(audience);
+  const Icon = audienceIcon(audience);
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

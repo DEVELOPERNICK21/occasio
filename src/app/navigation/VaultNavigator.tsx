@@ -3,7 +3,7 @@ import { AddPersonScreen } from '../../features/vault/ui/screens/AddPersonScreen
 import { PersonDetailScreen } from '../../features/vault/ui/screens/PersonDetailScreen';
 import { ScheduledSendReviewScreen } from '../../features/vault/ui/screens/ScheduledSendReviewScreen';
 import { VaultListScreen } from '../../features/vault/ui/screens/VaultListScreen';
-import type { VaultStackParamList } from './types';
+import type { VaultStackParamList } from '../../shared/navigation/types';
 
 const Stack = createNativeStackNavigator<VaultStackParamList>();
 

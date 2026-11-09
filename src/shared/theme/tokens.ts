@@ -76,6 +76,13 @@ export const shadow = {
 /** The dim behind a blocking dialog, such as the mascot's busy screen. */
 export const overlay = {
   scrim: 'rgba(28, 25, 20, 0.45)',
+  /** Under white text laid straight over a photo, so it stays readable. */
+  textShadow: 'rgba(42, 34, 32, 0.45)',
+  /** A light dimming of a photo so overlaid words stand out. */
+  photoShade: 'rgba(42, 34, 32, 0.28)',
+  /** A pale chip and quiet text on a coral surface. */
+  whiteSoft: 'rgba(255, 255, 255, 0.2)',
+  whiteText: 'rgba(255, 255, 255, 0.85)',
 } as const;
 
 /**

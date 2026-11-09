@@ -2,6 +2,7 @@ import {
   CircleUserRound,
   HeartPlus,
   History,
+  MailOpen,
   WandSparkles,
   type LucideProps,
 } from 'lucide-react-native';
@@ -32,6 +33,11 @@ function iconProps({ size = 25, color, active = false }: IconProps): LucideProps
 /** Magic wand — Create / compose a wish. */
 export function CreateTabIcon(props: IconProps) {
   return <WandSparkles {...iconProps(props)} />;
+}
+
+/** Opened envelope — Invitations. */
+export function InvitesTabIcon(props: IconProps) {
+  return <MailOpen {...iconProps(props)} />;
 }
 
 /** Heart with plus — Vault / saved people. */

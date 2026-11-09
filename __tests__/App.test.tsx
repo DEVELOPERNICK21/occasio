@@ -133,7 +133,6 @@ jest.mock('@react-navigation/native', () => {
 });
 
 jest.mock('@react-navigation/bottom-tabs', () => {
-  const React = require('react');
   return {
     createBottomTabNavigator: () => ({
       Navigator: ({ children }: { children: React.ReactNode }) => children,
@@ -143,7 +142,6 @@ jest.mock('@react-navigation/bottom-tabs', () => {
 });
 
 jest.mock('@react-navigation/native-stack', () => {
-  const React = require('react');
   return {
     createNativeStackNavigator: () => ({
       Navigator: ({ children }: { children: React.ReactNode }) => children,

@@ -2,20 +2,27 @@ import DateTimePicker, {
   DateTimePickerAndroid,
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
+import { Clock } from 'lucide-react-native';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from './Button';
 import { Text } from './Text';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { colors, overlay, radius, spacing, typography } from '../theme/tokens';
 
 type Props = {
-  /** `dd/mm/yyyy`, or empty when unset. */
+  /** `dd/mm/yyyy` (or `HH:MM`, 24 hours, in time mode), or empty when unset. */
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   accessibilityLabel?: string;
   maximumDate?: Date;
+  /** The earliest day that can be picked. */
+  minimumDate?: Date;
+  /** Pick a day (the default) or a time of day. */
+  mode?: 'date' | 'time';
+  /** What to show in place of `value`, for example "23 Feb 2027" or "6:30 PM". */
+  display?: string;
 };
 
 function pad(n: number): string {
@@ -26,11 +33,23 @@ function formatDate(date: Date): string {
   return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 }
 
+function formatTime(date: Date): string {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function parseDate(value: string): Date | null {
   const [day, month, year] = value.split('/').map((part) => Number.parseInt(part, 10));
   if (!day || !month) return null;
   const date = new Date(year || new Date().getFullYear(), month - 1, day);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseTime(value: string): Date | null {
+  const [hours, minutes] = value.split(':').map((part) => Number.parseInt(part, 10));
+  if (hours === undefined || minutes === undefined || Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
 }
 
 export function DateField({
@@ -39,25 +58,30 @@ export function DateField({
   placeholder = 'Pick a date',
   accessibilityLabel,
   maximumDate,
+  minimumDate,
+  mode = 'date',
+  display,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [iosOpen, setIosOpen] = useState(false);
   const [iosDraft, setIosDraft] = useState<Date>(new Date());
 
-  const initialDate = parseDate(value) ?? new Date();
+  const initialDate = (mode === 'time' ? parseTime(value) : parseDate(value)) ?? new Date();
+  const format = mode === 'time' ? formatTime : formatDate;
 
   const open = () => {
     if (Platform.OS === 'android') {
       DateTimePickerAndroid.open({
         value: initialDate,
-        mode: 'date',
+        mode,
         maximumDate,
+        minimumDate,
         neutralButton: value ? { label: 'Clear' } : undefined,
         onChange: (event: DateTimePickerEvent, date?: Date) => {
           if (event.type === 'neutralButtonPressed') {
             onChangeText('');
           } else if (event.type === 'set' && date) {
-            onChangeText(formatDate(date));
+            onChangeText(format(date));
           }
         },
       });
@@ -68,7 +92,7 @@ export function DateField({
   };
 
   const confirmIos = () => {
-    onChangeText(formatDate(iosDraft));
+    onChangeText(format(iosDraft));
     setIosOpen(false);
   };
 
@@ -87,12 +111,18 @@ export function DateField({
         style={({ pressed }) => [styles.root, pressed && styles.pressed]}
       >
         <Text style={[styles.value, !value && styles.placeholder]}>
-          {value || placeholder}
+          {value ? (display ?? value) : placeholder}
         </Text>
-        <View style={styles.calendarIcon} pointerEvents="none">
-          <View style={styles.calendarTop} />
-          <Text style={styles.calendarDay}>31</Text>
-        </View>
+        {mode === 'time' ? (
+          <View style={[styles.calendarIcon, styles.clockIcon]} pointerEvents="none">
+            <Clock size={16} color={colors.accentHover} strokeWidth={2.2} absoluteStrokeWidth />
+          </View>
+        ) : (
+          <View style={styles.calendarIcon} pointerEvents="none">
+            <View style={styles.calendarTop} />
+            <Text style={styles.calendarDay}>31</Text>
+          </View>
+        )}
       </Pressable>
 
       {Platform.OS === 'ios' ? (
@@ -106,9 +136,10 @@ export function DateField({
           <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}>
             <DateTimePicker
               value={iosDraft}
-              mode="date"
+              mode={mode}
               display="spinner"
               maximumDate={maximumDate}
+              minimumDate={minimumDate}
               themeVariant="light"
               accentColor={colors.accent}
               textColor={colors.ink}
@@ -163,6 +194,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
   },
+  clockIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   calendarTop: {
     width: '100%',
     height: 6,
@@ -176,7 +211,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(28, 25, 20, 0.45)',
+    backgroundColor: overlay.scrim,
   },
   sheet: {
     backgroundColor: colors.surface,

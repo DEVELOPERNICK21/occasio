@@ -1,5 +1,5 @@
 import { getAppCheckToken } from '../firebase/appCheck';
-import { HttpError, type HttpErrorCode } from './errors';
+import { HttpError, isHttpErrorCode, type HttpErrorCode } from './errors';
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -18,24 +18,6 @@ function mapStatusToCode(status: number, bodyCode?: string): HttpErrorCode {
   if (status === 410) return 'EXPIRED';
   if (status === 501) return 'NOT_IMPLEMENTED';
   return 'INTERNAL';
-}
-
-function isHttpErrorCode(value: string): value is HttpErrorCode {
-  return [
-    'VALIDATION_ERROR',
-    'QUOTA_EXCEEDED',
-    'UPLOAD_MISSING',
-    'NOT_FOUND',
-    'EXPIRED',
-    'UNAUTHORIZED',
-    'NOT_IMPLEMENTED',
-    'UNDER_AGE',
-    'ATTESTATION_INVALID',
-    'FREE_CARD_NEEDS_PROVIDER',
-    'EMAIL_NOT_ALLOWED',
-    'APP_CHECK_FAILED',
-    'INTERNAL',
-  ].includes(value);
 }
 
 /**

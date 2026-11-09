@@ -17,9 +17,8 @@ alwaysApply: false
 
 ## Navigation
 
-- Tabs: `src/shared/navigation/MainTabNavigator.tsx`
-- Create stack: `src/shared/navigation/CreateNavigator.tsx`
-- Types: `src/shared/navigation/types.ts`
+- Navigators and tabs (the app shell): `src/app/navigation/` (`MainTabNavigator.tsx`, `CreateNavigator.tsx`, …)
+- Route types and tab-bar parts: `src/shared/navigation/` (`types.ts`, `FloatingTabBar.tsx`)
 - New screens: add to stack + implement under `features/<feature>/ui/screens/`
 
 ## Shared UI

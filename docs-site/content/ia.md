@@ -10,7 +10,7 @@ updated: 2026-08-24
 
 - **Guest** can finish Create → Share without signing in
 - **Soft auth** gates Vault save, auto-send, synced History, subscription
-- **4 tabs:** Create · Vault · History · Account
+- **5 tabs:** Create · Invites · Vault · History · Account
 
 ### Pattern legend
 

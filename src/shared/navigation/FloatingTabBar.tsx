@@ -17,6 +17,7 @@ import {
   AccountTabIcon,
   CreateTabIcon,
   HistoryTabIcon,
+  InvitesTabIcon,
   TAB_ICON_INACTIVE,
   VaultTabIcon,
 } from '../ui/icons/TabIcons';
@@ -58,10 +59,11 @@ const {
   iconNameGap: ICON_NAME_GAP,
 } = TAB_BAR_LAYOUT;
 
-type TabRouteName = 'CreateTab' | 'VaultTab' | 'HistoryTab' | 'AccountTab';
+type TabRouteName = 'CreateTab' | 'InvitesTab' | 'VaultTab' | 'HistoryTab' | 'AccountTab';
 
 const TAB_CONFIG: Record<TabRouteName, { label: string; Icon: typeof CreateTabIcon }> = {
   CreateTab: { label: 'Create', Icon: CreateTabIcon },
+  InvitesTab: { label: 'Invites', Icon: InvitesTabIcon },
   VaultTab: { label: 'Vault', Icon: VaultTabIcon },
   HistoryTab: { label: 'History', Icon: HistoryTabIcon },
   AccountTab: { label: 'Account', Icon: AccountTabIcon },

@@ -16,10 +16,10 @@ import {
   type AutosendNotificationPayload,
 } from '../../features/vault/application/useFcmRegistration';
 import { OnboardingScreen } from '../../features/onboarding/ui/screens/OnboardingScreen';
-import { colors } from '../theme/tokens';
-import { AppBootSkeleton } from '../ui/SkeletonLayouts';
+import { colors } from '../../shared/theme/tokens';
+import { AppBootSkeleton } from '../../shared/ui/SkeletonLayouts';
 import { MainTabNavigator } from './MainTabNavigator';
-import type { RootStackParamList } from './types';
+import type { RootStackParamList } from '../../shared/navigation/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

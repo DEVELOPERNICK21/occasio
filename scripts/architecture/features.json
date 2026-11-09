@@ -1,0 +1,20 @@
+{
+  "_comment": "Which features may import which. This file is the single source for feature-to-feature dependencies: an import not listed here fails `npm run arch:check` (and the test), and so does a listed dependency nothing uses. Lower features first. `mutual` lists the one pair that may depend on each other, and why.",
+  "features": {
+    "age": [],
+    "auth": [],
+    "billing": ["auth"],
+    "vault": ["auth", "billing"],
+    "history": ["auth", "create", "vault"],
+    "create": ["auth", "billing", "history", "vault"],
+    "onboarding": ["billing", "create", "vault"],
+    "widgets": ["auth", "create", "vault"],
+    "account": ["auth", "billing"]
+  },
+  "mutual": [
+    {
+      "features": ["create", "history"],
+      "reason": "create records a finished card into history and shows history-based progress; history re-opens a card in the create flow and reads template data. Through application hooks and domain only."
+    }
+  ]
+}

@@ -12,7 +12,9 @@ import { loadAnalyticsConsent } from './src/shared/analytics/consent';
 import { AuthProvider } from './src/features/auth/application/AuthProvider';
 import { BillingProvider } from './src/features/billing/application/BillingProvider';
 import { SoftAuthModal } from './src/features/auth/ui/components/SoftAuthModal';
-import { AppNavigator } from './src/shared/navigation/AppNavigator';
+import { installAccountGates } from './src/app/accountGates';
+import { SessionEffects } from './src/app/SessionEffects';
+import { AppNavigator } from './src/app/navigation/AppNavigator';
 import {
   getFirebaseProjectId,
   isFirebaseConfigured,
@@ -20,6 +22,9 @@ import {
 import { startAnalytics } from './src/shared/firebase/analytics';
 import { startAppCheck } from './src/shared/firebase/appCheck';
 import { startCrashReporting } from './src/shared/firebase/crashlytics';
+
+// Before anything can sign in: a new account must pass the age check, and with no check installed it is refused.
+installAccountGates();
 
 function App() {
   useEffect(() => {
@@ -43,6 +48,7 @@ function App() {
       <StatusBar barStyle="dark-content" />
       <AuthProvider>
         <BillingProvider>
+          <SessionEffects />
           <AppNavigator />
           <SoftAuthModal />
         </BillingProvider>

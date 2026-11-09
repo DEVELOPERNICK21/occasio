@@ -3,21 +3,22 @@ import { useMemo } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CreateDraftProvider } from '../../features/create/application/CreateDraftContext';
 import { useAuth } from '../../features/auth/application/useAuth';
-import { AccountScreen } from '../../features/auth/ui/screens/AccountScreen';
+import { AccountTab } from './AccountTab';
 import { useVaultPeople } from '../../features/vault/application/useVaultPeople';
 import { countComingUp } from '../../features/vault/domain/vaultOccasion';
 import { OnboardingHandoff } from '../../features/onboarding/ui/components/OnboardingHandoff';
 import { WidgetHost } from '../../features/widgets/ui/WidgetHost';
 import { CreateNavigator } from './CreateNavigator';
 import { HistoryNavigator } from './HistoryNavigator';
+import { InvitesNavigator } from './InvitesNavigator';
 import { VaultNavigator } from './VaultNavigator';
-import { FLOATING_TAB_BAR_HEIGHT } from './tabBarConstants';
-import type { MainTabParamList } from './types';
+import { FLOATING_TAB_BAR_HEIGHT } from '../../shared/navigation/tabBarConstants';
+import type { MainTabParamList } from '../../shared/navigation/types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function renderFloatingTabBar(props: BottomTabBarProps) {
-  const { FloatingTabBar } = require('./FloatingTabBar') as typeof import('./FloatingTabBar');
+  const { FloatingTabBar } = require('../../shared/navigation/FloatingTabBar') as typeof import('../../shared/navigation/FloatingTabBar');
   return <FloatingTabBar {...props} />;
 }
 
@@ -58,13 +59,14 @@ export function MainTabNavigator() {
             },
           })}
         />
+        <Tab.Screen name="InvitesTab" component={InvitesNavigator} />
         <Tab.Screen
           name="VaultTab"
           component={VaultNavigator}
           options={{ tabBarBadge: comingUp > 0 ? comingUp : undefined }}
         />
         <Tab.Screen name="HistoryTab" component={HistoryNavigator} />
-        <Tab.Screen name="AccountTab" component={AccountScreen} />
+        <Tab.Screen name="AccountTab" component={AccountTab} />
       </Tab.Navigator>
     </CreateDraftProvider>
   );

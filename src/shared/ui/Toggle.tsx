@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, radius } from '../../../../shared/theme/tokens';
+import { colors, radius } from '../theme/tokens';
 
 type Props = {
   value: boolean;
@@ -7,7 +7,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function AccountToggle({ value, onValueChange, disabled = false }: Props) {
+export function Toggle({ value, onValueChange, disabled = false }: Props) {
   return (
     <Pressable
       accessibilityRole="switch"

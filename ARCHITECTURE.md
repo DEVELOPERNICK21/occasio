@@ -27,19 +27,23 @@ The Next.js docs site is **not** the creator app. Do not build product features 
 Occasio/                          ← you are here (RN app = main)
 ├── App.tsx
 ├── src/
-│   ├── features/                 ← product features (auth, create, vault, …)
-│   │   └── create/               ← in progress
+│   ├── app/                      ← APP SHELL: navigators, tabs, startup wiring (may know every feature)
+│   ├── features/                 ← product features: age, auth, account, billing, create,
+│   │   │                            history, vault, onboarding, widgets
+│   │   └── create/               ← each feature has the same four layers
 │   │       ├── domain/           ← pure rules & types
 │   │       ├── application/      ← hooks, use-cases
-│   │       ├── data/             ← Firebase, upload APIs (next)
+│   │       ├── data/             ← Firebase, upload APIs, adapters
 │   │       └── ui/               ← screens
-│   └── shared/
-│       ├── api/                  ← httpClient (typed HTTP for all repositories)
+│   └── shared/                   ← below every feature; imports none
+│       ├── api/                  ← httpClient + the one list of API error codes
 │       ├── config/               ← env, API base URL, emulator flags
 │       ├── firebase/             ← RN Firebase app helpers
-│       ├── navigation/
+│       ├── navigation/           ← route types, tab-bar parts (the navigators live in src/app)
+│       ├── platform/             ← haptics, runtime, reduce-motion
 │       ├── theme/                ← mirrors design-tokens.json
 │       └── ui/
+├── scripts/architecture/         ← the dependency checker + features.json (who may import whom)
 ├── functions/                    ← Cloud Functions (Express `api` export)
 ├── design-tokens.json            ← Stitch + RN
 ├── android/  ios/
@@ -63,13 +67,15 @@ Occasio/                          ← you are here (RN app = main)
 
 1. **Feature-based folders** under `src/features/<name>/`
 2. **Layers:** `ui` → `application` → `domain` ← `data`
-3. **UI never imports** Firebase / RevenueCat SDKs directly
-4. **`data` never imports** React components
-5. **Features don't import** other features' `ui`
-6. **Strict TypeScript** (`tsconfig` strict)
-7. **State:** remote (query/Firestore) vs flow (create wizard context / Zustand)
+3. **UI never imports** `data`, Firebase / RevenueCat SDKs, or calls `fetch`
+4. **`data` never imports** React, UI or application; **`domain`** is pure (no packages, no `any`)
+5. **Features import each other only as `scripts/architecture/features.json` allows**, and only `application` / `domain`, never another feature's `ui` or `data`
+6. **`shared` imports no feature; features never import `src/app`.** Anything that must know several features (navigators, startup wiring) lives in `src/app`
+7. **One source of truth** per fact: colours in `shared/theme/tokens.ts`, the tier in `billing/domain`, API error codes in `shared/api/errors.ts`
+8. **Strict TypeScript** (`tsconfig` strict)
+9. **State:** Firestore listeners behind application hooks, React context for the create wizard, providers for session and plan
 
-Full detail: [docs-site → Client architecture](docs-site/content/architecture.md) (browse via `npm run dev` in `docs-site`).
+**Enforced:** `npm run arch:check` (also runs in `npm test`). Full detail: [docs-site → Client architecture](docs-site/content/architecture.md) · audit: [`docs/architecture-audit.md`](docs/architecture-audit.md).
 
 ## Build order (mobile)
 

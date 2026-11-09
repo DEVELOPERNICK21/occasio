@@ -1,5 +1,5 @@
 import { colors } from '../../../shared/theme/tokens';
-import type { RelationshipType } from './types';
+import type { RelationshipType } from '../domain/types';
 
 export type VaultCardTheme = {
   tagLabel: string;

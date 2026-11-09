@@ -1,6 +1,6 @@
-import type { SubscriptionTier } from '../../vault/domain/types';
-import type { AuthUser } from './types';
-import { formatAuthIdentity } from './mapUser';
+import type { SubscriptionTier } from '../../billing/domain/types';
+import type { AuthUser } from '../../auth/domain/types';
+import { formatAuthIdentity } from '../../auth/domain/mapUser';
 
 export function tierDisplayLabel(tier: SubscriptionTier): string {
   switch (tier) {

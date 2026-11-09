@@ -1,13 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { BadgesScreen } from '../../features/create/ui/screens/BadgesScreen';
 import { CreateHomeScreen } from '../../features/create/ui/screens/CreateHomeScreen';
 import { AddPhotosScreen } from '../../features/create/ui/screens/AddPhotosScreen';
+import { HolidaysScreen } from '../../features/create/ui/screens/HolidaysScreen';
 import { DetailsScreen } from '../../features/create/ui/screens/DetailsScreen';
 import { PreviewScreen } from '../../features/create/ui/screens/PreviewScreen';
 import { ShareSuccessScreen } from '../../features/create/ui/screens/ShareSuccessScreen';
 import { WhoForScreen } from '../../features/create/ui/screens/WhoForScreen';
 import { OccasionScreen } from '../../features/create/ui/screens/OccasionScreen';
 import { TemplateRecommendScreen } from '../../features/create/ui/screens/TemplateRecommendScreen';
-import type { CreateStackParamList } from './types';
+import type { CreateStackParamList } from '../../shared/navigation/types';
 
 const Stack = createNativeStackNavigator<CreateStackParamList>();
 
@@ -15,8 +17,10 @@ export function CreateNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="CreateHome" component={CreateHomeScreen} />
+      <Stack.Screen name="Badges" component={BadgesScreen} />
       <Stack.Screen name="WhoFor" component={WhoForScreen} />
       <Stack.Screen name="Occasion" component={OccasionScreen} />
+      <Stack.Screen name="Holidays" component={HolidaysScreen} />
       <Stack.Screen
         name="TemplateRecommend"
         component={TemplateRecommendScreen}

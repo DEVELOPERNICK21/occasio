@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "icons:generate": "bash scripts/generate-app-icons.sh",
     "android:sha1": "bash scripts/print-android-sha1.sh",
-    "firebase:deploy": "firebase deploy --only functions,firestore:rules"
+    "firebase:deploy": "firebase deploy --only functions,firestore:rules",
+    "arch:check": "node scripts/architecture/check.js"
   },
   "dependencies": {
     "@invertase/react-native-apple-authentication": "^2.5.1",
