@@ -45,7 +45,7 @@ The server decides (`createCreation` in `docs-site/src/lib/creationsServer.ts`);
 ## What to turn on in Firebase (not code)
 
 * Authentication, Settings: keep **"Link accounts that use the same email"** on (the default), so signing in with Google using an email that already has a password account merges into that account instead of creating a duplicate.
-* Authentication, Settings: turn **email enumeration protection** on.
+* Authentication, Settings: turn **email enumeration protection** on. One side effect to know: with it on, Firebase will not say which sign-ins an email has, and a password reset for an address that has no password account (for example a Google or Apple account) is accepted and **sends nothing**. The app cannot warn about it, so the reset screen's message says so (`PASSWORD_RESET_SENT_COPY`). If someone says they never got a reset email, first check in Authentication, Users which provider that email uses.
 * Turn on **App Check** (Play Integrity on Android, App Attest on iOS). Our own API checks the token (`X-Firebase-AppCheck`, verified with the Admin SDK), so scripts that call the API without the real app are refused once `APP_CHECK_MODE=enforce`. It is built and runs in log mode by default: the setup and rollout are in [app-check.md](./app-check.md). Enforcing App Check on Firebase Auth itself needs an upgrade to Identity Platform (a project-level billing change), so it is not the first step.
 
 ## Where it lives

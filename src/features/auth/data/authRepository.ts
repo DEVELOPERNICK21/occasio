@@ -6,6 +6,7 @@ import { env } from '../../../shared/config/env';
 import { mapFirebaseUser } from '../domain/mapUser';
 import type { AuthUser } from '../domain/types';
 import { deleteAccountFailureMessage } from '../domain/deleteAccountError';
+import { PASSWORD_RESET_FAILED_COPY } from '../domain/passwordReset';
 import { NewAccountRefusedError } from '../domain/newAccountGate';
 import { AuthError, mapFirebaseAuthError, mapGoogleSignInError } from './authErrors';
 import { configureGoogleSignIn } from './googleSignIn';
@@ -309,6 +310,10 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
   }
 
   try {
+    // A courtesy for Google and Apple accounts, which have no password to reset. Firebase's email
+    // enumeration protection (recommended in docs/free-card-abuse.md) makes this always come back
+    // empty, and then a reset for such an account is accepted and silently sends nothing. That is
+    // why the success copy in `passwordReset.ts` also covers it.
     let signInMethods: string[] = [];
     try {
       signInMethods = await auth().fetchSignInMethodsForEmail(email);
@@ -348,7 +353,9 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
       return;
     }
 
-    throw mapFirebaseAuthError(error);
+    const mapped = mapFirebaseAuthError(error);
+    // The generic fallback says "Sign-in failed", which is wrong for a reset.
+    throw mapped.code === 'UNKNOWN' ? new AuthError('UNKNOWN', PASSWORD_RESET_FAILED_COPY) : mapped;
   }
 }
 
