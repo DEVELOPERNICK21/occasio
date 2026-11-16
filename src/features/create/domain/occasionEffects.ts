@@ -2,7 +2,7 @@ import { holidayById, type HolidayEffect } from './holidays';
 import type { Occasion } from './templateSchema';
 import type { TemplateType } from './types';
 
-/** iMessage-style screen effect ids (Lottie packs). */
+/** Screen effect ids: the celebration drawn over a card, and the sound that goes with it. */
 export type ScreenEffectId = HolidayEffect;
 
 const OCCASION_EFFECTS: Record<Occasion, ScreenEffectId> = {

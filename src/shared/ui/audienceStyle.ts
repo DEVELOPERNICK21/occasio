@@ -1,4 +1,4 @@
-import { Gem, Heart, Home, Shield, Sparkles, Users, type LucideIcon } from 'lucide-react-native';
+import { Gem, Heart, Home, Shield, Sparkles, Users, type LucideIcon } from './icons/lucide';
 import { colors } from '../theme/tokens';
 
 /**

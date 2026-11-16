@@ -8,7 +8,7 @@ import {
   Sparkles,
   Gem,
   type LucideIcon,
-} from 'lucide-react-native';
+} from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { Text } from '../../../../shared/ui/Text';

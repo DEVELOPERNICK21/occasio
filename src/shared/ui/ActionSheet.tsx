@@ -6,8 +6,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { ChevronRight } from 'lucide-react-native';
-import type { LucideProps } from 'lucide-react-native';
+import { ChevronRight } from './icons/lucide';
+import type { LucideProps } from './icons/lucide';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { triggerCardHaptic } from '../platform/haptics';
 import { useReduceMotion } from '../platform/useReduceMotion';

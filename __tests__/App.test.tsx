@@ -93,10 +93,8 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-jest.mock('lottie-react-native', () => 'LottieView');
 jest.mock('react-native-haptic-feedback', () => ({ trigger: jest.fn() }));
 jest.mock('react-native-image-crop-picker', () => ({}));
-jest.mock('react-native-image-picker', () => ({}));
 
 jest.mock('@react-native-firebase/messaging', () => {
   const messaging = () => ({

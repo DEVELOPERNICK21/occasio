@@ -7,7 +7,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import { ChevronRight, Flame, Lock, Trophy } from 'lucide-react-native';
+import { ChevronRight, Flame, Lock, Trophy } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';
 import type { WishJourney } from '../../domain/wishJourney';

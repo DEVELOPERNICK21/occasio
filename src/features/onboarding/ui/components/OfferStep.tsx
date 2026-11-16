@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { CalendarDays } from 'lucide-react-native';
+import { CalendarDays } from '../../../../shared/ui/icons/lucide';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';

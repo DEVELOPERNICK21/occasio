@@ -1,4 +1,4 @@
-import { Flower2, Landmark, Leaf, type LucideIcon } from 'lucide-react-native';
+import { Flower2, Landmark, Leaf, type LucideIcon } from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { Text } from '../../../../shared/ui/Text';

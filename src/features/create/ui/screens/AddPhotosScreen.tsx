@@ -7,7 +7,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Images } from 'lucide-react-native';
+import { Images } from '../../../../shared/ui/icons/lucide';
 import { env } from '../../../../shared/config/env';
 import {
   MAX_PHOTOS_BASE64,

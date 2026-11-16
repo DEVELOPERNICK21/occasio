@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ChevronRight, Ellipsis } from 'lucide-react-native';
+import { ChevronRight, Ellipsis } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { VaultCardTheme } from '../vaultCardTheme';

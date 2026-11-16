@@ -6,6 +6,8 @@ module.exports = {
     '\\.(mp3|wav)$': '<rootDir>/jest.assetStub.js',
     // The ESM build is .mjs, which jest does not transform.
     '^lucide-react-native$': '<rootDir>/node_modules/lucide-react-native/dist/cjs/lucide-react-native.js',
+    // The app loads each icon from its own file (see src/shared/ui/icons/lucide.ts).
+    '^lucide-react-native/icons/(.*)$': '<rootDir>/node_modules/lucide-react-native/dist/cjs/icons/$1.js',
   },
   setupFiles: ['./jest.setup.js'],
   transformIgnorePatterns: [

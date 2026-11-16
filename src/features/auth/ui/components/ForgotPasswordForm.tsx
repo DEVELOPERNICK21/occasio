@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CircleCheck, Mail } from 'lucide-react-native';
+import { CircleCheck, Mail } from '../../../../shared/ui/icons/lucide';
 import { Button } from '../../../../shared/ui/Button';
 import { Text } from '../../../../shared/ui/Text';
 import { TextField } from '../../../../shared/ui/TextField';

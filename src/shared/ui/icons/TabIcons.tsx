@@ -5,7 +5,7 @@ import {
   MailOpen,
   WandSparkles,
   type LucideProps,
-} from 'lucide-react-native';
+} from './lucide';
 import { colors } from '../../theme/tokens';
 
 type IconProps = {

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The celebration sounds are loaded by name at runtime (react-native-sound looks up "sfx_balloons" and
+  the rest in res/raw), so nothing in the code references them as resources. Without this, resource
+  shrinking sees them as unused and deletes them from release builds, and the sounds go silent
+  without any error. See src/features/create/data/celebrationSound.ts.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@raw/sfx_*" />

@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { CircleAlert } from 'lucide-react-native';
+import { CircleAlert } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 

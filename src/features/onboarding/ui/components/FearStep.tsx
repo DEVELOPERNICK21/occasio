@@ -1,4 +1,4 @@
-import { CalendarDays } from 'lucide-react-native';
+import { CalendarDays } from '../../../../shared/ui/icons/lucide';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Text } from '../../../../shared/ui/Text';

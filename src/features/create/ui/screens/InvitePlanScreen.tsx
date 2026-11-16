@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Plus } from 'lucide-react-native';
+import { Plus } from '../../../../shared/ui/icons/lucide';
 import { Button } from '../../../../shared/ui/Button';
 import { Field } from '../../../../shared/ui/Field';
 import { Screen } from '../../../../shared/ui/Screen';

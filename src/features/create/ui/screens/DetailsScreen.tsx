@@ -6,7 +6,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { PenLine } from 'lucide-react-native';
+import { PenLine } from '../../../../shared/ui/icons/lucide';
 import { Field } from '../../../../shared/ui/Field';
 import { Text } from '../../../../shared/ui/Text';
 import { TextInput, type TextInputHandle } from '../../../../shared/ui/TextInput';

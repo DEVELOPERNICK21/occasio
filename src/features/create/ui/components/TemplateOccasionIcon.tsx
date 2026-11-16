@@ -27,7 +27,7 @@ import {
   Users,
   Wheat,
   type LucideIcon,
-} from 'lucide-react-native';
+} from '../../../../shared/ui/icons/lucide';
 import { holidayById, type HolidayIcon } from '../../domain/holidays';
 import type { BaseTemplateType, TemplateType } from '../../domain/types';
 

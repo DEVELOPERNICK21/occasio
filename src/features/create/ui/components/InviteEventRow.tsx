@@ -1,4 +1,4 @@
-import { X } from 'lucide-react-native';
+import { X } from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import { DateField } from '../../../../shared/ui/DateField';

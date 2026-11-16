@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { CircleAlert, Clock, Info } from 'lucide-react-native';
+import { CircleAlert, Clock, Info } from './icons/lucide';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import { Text } from './Text';
 

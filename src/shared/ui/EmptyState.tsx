@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { LucideProps } from 'lucide-react-native';
+import type { LucideProps } from './icons/lucide';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { PipSpot } from '../mascot/pipSpots';
 import { Button } from './Button';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CreditCard, LogIn } from 'lucide-react-native';
+import { CreditCard, LogIn } from '../../../../shared/ui/icons/lucide';
 import { ActionSheet, type SheetAction } from '../../../../shared/ui/ActionSheet';
 import { PipFriend } from '../../../../shared/ui/PipFriend';
 import { isAuthError } from '../../../auth/application/AuthProvider';

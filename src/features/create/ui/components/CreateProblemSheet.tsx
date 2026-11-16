@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { RotateCcw } from 'lucide-react-native';
+import { RotateCcw } from '../../../../shared/ui/icons/lucide';
 import { ActionSheet } from '../../../../shared/ui/ActionSheet';
 import { PipFriend } from '../../../../shared/ui/PipFriend';
 

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Check, Lock, Mail } from 'lucide-react-native';
+import { Check, Lock, Mail } from '../../../../shared/ui/icons/lucide';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
 import { Text } from '../../../../shared/ui/Text';

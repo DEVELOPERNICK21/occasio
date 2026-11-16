@@ -57,9 +57,11 @@ react {
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Release builds run R8: it removes the Java code and resources nothing uses, which is most of what
+ * the Firebase, RevenueCat and Google libraries bring. Debug builds are left alone.
+ * Rules for libraries that need them are in proguard-rules.pro.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -90,7 +92,7 @@ android {
         applicationId "com.occasio.greetings"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 18
+        versionCode 19
         versionName "1.0.1"
     }
     signingConfigs {
@@ -116,15 +118,18 @@ android {
         release {
             signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // Phones are ARM. The x86 copies of every native library are for emulators on Intel
+            // machines and roughly double the native code, so release builds leave them out.
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
         }
     }
 }
 
 dependencies {
-    // Backported Android photo picker on API 24–29 (react-native-image-picker).
-    implementation("androidx.activity:activity:1.9.+")
-
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

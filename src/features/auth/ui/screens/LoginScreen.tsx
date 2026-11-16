@@ -10,7 +10,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft } from '../../../../shared/ui/icons/lucide';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PipFriend } from '../../../../shared/ui/PipFriend';
 import { Text } from '../../../../shared/ui/Text';

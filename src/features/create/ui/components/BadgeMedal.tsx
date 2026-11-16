@@ -6,7 +6,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { Lock } from 'lucide-react-native';
+import { Lock } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { WishBadgeId } from '../../domain/wishJourney';

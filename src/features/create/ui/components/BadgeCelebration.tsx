@@ -14,7 +14,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { triggerSuccessHaptic } from '../../../../shared/platform/haptics';
-import { Lock } from 'lucide-react-native';
+import { Lock } from '../../../../shared/ui/icons/lucide';
 import { Button } from '../../../../shared/ui/Button';
 import { Pip } from '../../../../shared/ui/Pip';
 import { Text } from '../../../../shared/ui/Text';

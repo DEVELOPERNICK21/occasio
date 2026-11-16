@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Search, X } from 'lucide-react-native';
+import { Search, X } from './icons/lucide';
 import { TextInput } from './TextInput';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 

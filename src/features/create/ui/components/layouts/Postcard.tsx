@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { Heart } from 'lucide-react-native';
+import { Heart } from '../../../../../shared/ui/icons/lucide';
 import { colors, frameArt, overlay, radius, shadow, spacing, typography } from '../../../../../shared/theme/tokens';
 import { fontHand } from '../../../../../shared/theme/artFonts';
 import { Text } from '../../../../../shared/ui/Text';

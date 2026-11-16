@@ -1,7 +1,7 @@
 import Sound from 'react-native-sound';
 import { appPlatform, resolveAssetUri } from '../../../shared/platform/runtime';
 import type { ScreenEffectId } from '../domain/occasionEffects';
-import { soundForEffect } from '../domain/occasionSounds';
+import { BUNDLED_SOUNDS } from './celebrationAssets';
 
 /**
  * Occasion soundtrack / chimes — Ambient so iOS silent switch is respected.
@@ -12,14 +12,6 @@ import { soundForEffect } from '../domain/occasionSounds';
  * Android: res/raw. iOS: Metro-resolved asset URI.
  */
 Sound.setCategory('Ambient', true);
-
-const BUNDLE: Record<ScreenEffectId, number> = {
-  balloons: require('../assets/sounds/balloons.mp3'),
-  hearts: require('../assets/sounds/hearts.mp3'),
-  confetti: require('../assets/sounds/confetti.wav'),
-  sparkles: require('../assets/sounds/sparkles.mp3'),
-  celebration: require('../assets/sounds/celebration.wav'),
-};
 
 /** Android res/raw names (library strips extension on Android). */
 const RAW_NAME: Record<ScreenEffectId, string> = {
@@ -82,7 +74,10 @@ function playFromAndroidRaw(effectId: ScreenEffectId): void {
 }
 
 function playFromResolvedAsset(effectId: ScreenEffectId): void {
-  const asset = BUNDLE[effectId];
+  const asset = BUNDLED_SOUNDS[effectId];
+  if (asset === undefined) {
+    return;
+  }
   const uri = resolveAssetUri(asset);
   if (!uri) {
     return;
@@ -94,12 +89,11 @@ function playFromResolvedAsset(effectId: ScreenEffectId): void {
 export function playCelebrationSound(effectId: ScreenEffectId): void {
   try {
     releaseActive();
-    const id = soundForEffect(effectId);
     if (appPlatform() === 'android') {
-      playFromAndroidRaw(id);
+      playFromAndroidRaw(effectId);
       return;
     }
-    playFromResolvedAsset(id);
+    playFromResolvedAsset(effectId);
   } catch {
     // Never crash Preview over audio.
   }

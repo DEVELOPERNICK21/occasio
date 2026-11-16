@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Trophy } from 'lucide-react-native';
+import { Trophy } from '../../../../shared/ui/icons/lucide';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { Button } from '../../../../shared/ui/Button';
 import { Pip } from '../../../../shared/ui/Pip';

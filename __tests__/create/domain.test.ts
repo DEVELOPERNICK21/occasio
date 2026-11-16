@@ -32,11 +32,7 @@ import {
   wishGreeting,
 } from '../../src/features/create/domain/templates';
 import {
-  countWishesThisMonth,
   formatOccasionCountdown,
-  getCreateHomeSubtitle,
-  getMilestoneCardContent,
-  getMilestoneLine,
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
   shouldShowVaultNudge,
@@ -310,46 +306,6 @@ describe('createHome', () => {
     expect(upcomingOccasionPrompt('Dad', 1)).toMatch(/Tomorrow/);
   });
 
-  it('counts wishes in the current month', () => {
-    const count = countWishesThisMonth(
-      [
-        {
-          id: '1',
-          userId: 'u',
-          creationId: 'c1',
-          shareSlug: 'abcd1234',
-          shareUrl: 'https://example.com',
-          recipientName: 'Mom',
-          templateType: 'birthday',
-          message: 'Hi',
-          createdAt: '2026-09-01T10:00:00.000Z',
-          expiresAt: '2026-10-01T10:00:00.000Z',
-        },
-        {
-          id: '2',
-          userId: 'u',
-          creationId: 'c2',
-          shareSlug: 'efgh5678',
-          shareUrl: 'https://example.com',
-          recipientName: 'Dad',
-          templateType: 'birthday',
-          message: 'Hi',
-          createdAt: '2026-08-01T10:00:00.000Z',
-          expiresAt: '2026-09-01T10:00:00.000Z',
-        },
-      ],
-      new Date('2026-09-15'),
-    );
-
-    expect(count).toBe(1);
-    expect(getMilestoneLine(0)).toBe('Your first wish takes about two minutes.');
-    expect(getMilestoneLine(3)).toBe("You've shared 3 wishes this month.");
-    expect(getMilestoneCardContent(0, false).eyebrow).toBe('Getting started');
-    expect(getMilestoneCardContent(2, true).headline).toBe("You've shared 2 wishes this month");
-    expect(getMilestoneCardContent(0, true, 3).headline).toBe("You're tracking 3 people");
-    expect(getMilestoneCardContent(0, true, 3).headlineHighlight).toBe('3');
-  });
-
   it('shows vault nudge only when upcoming list is empty and not loading', () => {
     expect(shouldShowVaultNudge(0, false)).toBe(true);
     expect(shouldShowVaultNudge(0, true)).toBe(false);
@@ -360,34 +316,6 @@ describe('createHome', () => {
     expect(getVaultNudgeContent(false, 0).actionLabel).toBe('Sign in');
     expect(getVaultNudgeContent(true, 0).title).toBe('Save dates in Vault');
     expect(getVaultNudgeContent(true, 2).title).toBe('Add birthdays to Vault');
-  });
-
-  it('uses urgent subtitle only when nearest occasion is within a week', () => {
-    expect(getCreateHomeSubtitle(true, [])).toBe(
-      'Start with who it’s for — the rest takes about two minutes.',
-    );
-    expect(
-      getCreateHomeSubtitle(true, [
-        {
-          personId: '1',
-          personName: 'Alex',
-          relationshipLabel: 'Friend',
-          daysUntil: 80,
-          label: "Alex's birthday",
-        },
-      ]),
-    ).toBe('Start with who it’s for — the rest takes about two minutes.');
-    expect(
-      getCreateHomeSubtitle(true, [
-        {
-          personId: '1',
-          personName: 'Alex',
-          relationshipLabel: 'Friend',
-          daysUntil: 3,
-          label: "Alex's birthday",
-        },
-      ]),
-    ).toBe('Someone you care about has a date soon. Start with who it’s for.');
   });
 });
 

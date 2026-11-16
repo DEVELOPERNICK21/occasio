@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react-native';
+import { Settings } from '../../../../shared/ui/icons/lucide';
 import { ActionSheet, type SheetAction } from '../../../../shared/ui/ActionSheet';
 import type { PhotoProblemSheetState } from '../../application/usePhotoPicker';
 

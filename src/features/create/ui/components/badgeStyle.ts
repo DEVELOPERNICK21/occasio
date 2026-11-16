@@ -11,7 +11,7 @@ import {
   Sparkles,
   Users,
   type LucideIcon,
-} from 'lucide-react-native';
+} from '../../../../shared/ui/icons/lucide';
 import { colors } from '../../../../shared/theme/tokens';
 import type { WishBadgeId } from '../../domain/wishJourney';
 

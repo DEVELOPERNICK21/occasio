@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Sparkles } from 'lucide-react-native';
+import { Sparkles } from '../../../../shared/ui/icons/lucide';
 import Animated, {
   Easing,
   useAnimatedStyle,

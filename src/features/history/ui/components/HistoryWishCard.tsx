@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Check, Copy, Ellipsis, Plus, Share2 } from 'lucide-react-native';
+import { Check, Copy, Ellipsis, Plus, Share2 } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import type { TemplateTheme } from '../../../create/domain/templateTheme';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';

@@ -2,7 +2,6 @@
  * @format
  */
 
-import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import firebase from '@react-native-firebase/app';
 import { AppRegistry } from 'react-native';

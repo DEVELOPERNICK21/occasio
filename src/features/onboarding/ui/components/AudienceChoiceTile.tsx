@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react-native';
+import { Check } from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeInDown,

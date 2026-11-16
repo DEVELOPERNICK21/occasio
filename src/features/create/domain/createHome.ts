@@ -2,9 +2,6 @@ import { daysUntilPersonDate } from '../../vault/domain/personRules';
 import { relationshipLabel } from '../../vault/domain/relationshipTypes';
 import type { VaultPerson } from '../../vault/domain/types';
 
-/** All the month count needs from a saved card: when it was made. */
-type DatedEntry = { createdAt: string };
-
 export type UpcomingOccasion = {
   personId: string;
   personName: string;
@@ -62,100 +59,6 @@ export function getUpcomingOccasionsFromVault(
     })
     .sort((a, b) => a.daysUntil - b.daysUntil)
     .slice(0, max);
-}
-
-export function countWishesThisMonth<T extends DatedEntry>(entries: readonly T[], now = new Date()): number {
-  const month = now.getMonth();
-  const year = now.getFullYear();
-
-  return entries.filter((entry) => {
-    const created = new Date(entry.createdAt);
-    return created.getMonth() === month && created.getFullYear() === year;
-  }).length;
-}
-
-export function getMilestoneLine(wishCount: number): string | null {
-  if (wishCount <= 0) {
-    return 'Your first wish takes about two minutes.';
-  }
-  if (wishCount === 1) {
-    return "You've shared 1 wish this month.";
-  }
-  return `You've shared ${wishCount} wishes this month.`;
-}
-
-export type MilestoneCardContent = {
-  eyebrow: string;
-  headline: string;
-  /** Substring of headline to emphasize — must match real data, never inflated. */
-  headlineHighlight?: string;
-  body: string;
-};
-
-export function getMilestoneCardContent(
-  wishCount: number,
-  isSignedIn: boolean,
-  vaultPeopleCount = 0,
-): MilestoneCardContent {
-  if (!isSignedIn) {
-    return {
-      eyebrow: 'Getting started',
-      headline: 'Your first wish takes about two minutes',
-      body: 'Start with who it is for, add a photo, and share a link — no account required.',
-    };
-  }
-
-  if (wishCount >= 2) {
-    const highlight = String(wishCount);
-    return {
-      eyebrow: 'Milestone reached',
-      headline: `You've shared ${wishCount} wishes this month`,
-      headlineHighlight: highlight,
-      body: 'Small gestures add up. Vault keeps their dates ready for the next one.',
-    };
-  }
-
-  if (wishCount === 1) {
-    return {
-      eyebrow: 'Milestone reached',
-      headline: "You've shared 1 wish this month",
-      headlineHighlight: '1',
-      body: 'Small gestures add up. Vault keeps their dates ready for the next one.',
-    };
-  }
-
-  if (vaultPeopleCount > 0) {
-    const highlight = String(vaultPeopleCount);
-    const noun = vaultPeopleCount === 1 ? 'person' : 'people';
-    return {
-      eyebrow: 'Your vault',
-      headline: `You're tracking ${vaultPeopleCount} ${noun}`,
-      headlineHighlight: highlight,
-      body: 'We surface their dates here when it is time to reach out — no spam, no guilt.',
-    };
-  }
-
-  return {
-    eyebrow: 'This month',
-    headline: 'Ready when someone matters',
-    body: 'Create a wish today — a real photo and a few honest words go far.',
-  };
-}
-
-export function getCreateHomeSubtitle(
-  isSignedIn: boolean,
-  upcoming: readonly UpcomingOccasion[],
-): string {
-  if (!isSignedIn) {
-    return 'A photo and a few honest words. Share a private link — no account needed.';
-  }
-
-  const nearestDays = upcoming[0]?.daysUntil;
-  if (typeof nearestDays === 'number' && nearestDays <= 7) {
-    return 'Someone you care about has a date soon. Start with who it’s for.';
-  }
-
-  return 'Start with who it’s for — the rest takes about two minutes.';
 }
 
 export type CreateHomeHero = {

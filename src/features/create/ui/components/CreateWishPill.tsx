@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react-native';
+import { Heart } from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';

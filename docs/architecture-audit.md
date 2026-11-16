@@ -55,3 +55,57 @@ The layering *inside* a feature was healthy. **No screen imported a data file or
 - To let one feature use another, add the edge to `scripts/architecture/features.json` on purpose, and import only its `application` or `domain`. If two features need the same UI, put it in `shared/ui`. If something must know both, wire it in `src/app`.
 - To move files: `node scripts/architecture/move.js <from> <to>`, then `npm run typecheck && npm test`.
 - A declared dependency nobody uses fails the check, so the map cannot drift from the code.
+
+---
+
+# Re-check (2026-11-09)
+
+**Question:** since the first audit, the app gained invitations, festivals, WhatsApp delivery, wishes and badges, and clearer purchase messages. Does it still follow Feature-Based Architecture + Pragmatic Clean Architecture?
+
+**Verdict: yes, and it is still enforced by tooling, not by good intentions.** The one real risk is size: `create` has grown into a hub.
+
+## What was measured
+
+| Check | Result |
+|---|---|
+| Layer rules (`ui` to `application` to `domain`, `data` below; no SDK or `fetch` in UI; domain pure; colours only in tokens; `src/app` the only place that knows many features) | **0 violations** (`npm run arch:check`, also inside `npm test`) |
+| `any` in `src/` | **0** |
+| `fetch`, Firebase or AsyncStorage outside a `data/` layer | none, other than the four adapters in `shared/firebase/` (shared infrastructure, below every feature) |
+| Impure calls in domain (`Date.now()`, `new Date()` without an argument, `Math.random`, `console`, `fetch`) | **none**: time comes in as a `now` parameter, so rules stay testable |
+| Feature dependency map | acyclic except `create` and `history`, the documented pair in `features.json` |
+| Domain files with no test | was 5 small ones; **now 0** (tests added for `accountProfile`, `renewalTerms`, `cardReveal`, `relationshipTypes`; `occasionSounds` was dead and deleted) |
+| Dead code | 5 exports of `createHome.ts` had no caller except their tests; **removed with the tests** |
+
+The "pragmatic" part holds too: there are no repository interfaces, use-case classes or dependency-injection containers. Application hooks call data functions directly, domain is plain functions and types, and the only port is `NewAccountGate` where auth genuinely must not know what approves an account.
+
+## The risk: `create` is a hub
+
+| Feature | UI files | UI lines |
+|---|---|---|
+| **create** | **78** | **12,765** |
+| vault | 16 | 2,422 |
+| onboarding | 17 | 1,586 |
+| auth | 12 | 1,332 |
+| every other feature | 4 or fewer | under 1,000 each |
+
+`create` is about 60% of the app's UI and has 25 domain files (3.4k lines). Three features import it (`history`, `onboarding`, `widgets`) and it imports four. It holds four areas that are not part of capturing a card:
+
+| Area inside `create` | Files | Lines | How separable |
+|---|---|---|---|
+| Frame layouts (`ui/components/layouts`) | 19 | about 2,500 | pure UI; fine to stay as one folder |
+| Badges, journey and wish balance | 10 | about 1,700 | **easiest to extract**: `computeWishJourney` is a pure function of history entries and a Vault count |
+| Invitations (`Invite*`, `invitation.ts`) | 12 | about 1,350 | hard: `CreationDraft` carries an `InvitationDraft`, so a split needs a small shared draft kernel first |
+| Festivals (`holidays*`, `Holiday*`) | 5 | about 1,200 | pure domain plus two components; depends on `create`'s draft, so it can stay |
+
+**Recommendation, in this order:** (1) move badges and the journey into their own `journey` feature (it would depend on `history` and `vault`, and `create` on it, never the reverse); (2) give invitations their own feature once the draft is split; (3) leave the rest. Do it with `scripts/architecture/move.js`, which rewrites imports. Not done now: it is a refactor with no user-visible gain, and today's work was size and verification.
+
+## Smaller items
+
+- `create` and `history` still depend on each other, for the same documented reason as before.
+- Large files: `DesignFramePreview.tsx` (873 lines), `AccountSettingsCards.tsx` (538, several cards in one file) and `VaultListScreen.tsx` (472). UI only and tested through their parts; split when next touched.
+- `docs-site` (Next.js) and `functions/` are outside `arch:check`. Their largest files are `creationsServer.ts` (941 lines) and `cron.ts` (520); a smaller layering check for them would be the next step if they keep growing.
+- `ARCHITECTURE.md` now says what `create` holds and what is done.
+
+## Added today so it stays this way
+
+- `__tests__/architecture/iconBarrel.test.ts`: every icon comes through `src/shared/ui/icons/lucide.ts` (see `docs/app-size.md`), so the whole 1,800-icon package can never be bundled again by accident.

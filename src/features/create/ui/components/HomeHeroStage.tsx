@@ -25,7 +25,7 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg';
-import { Gift, Heart, PartyPopper, Star, type LucideIcon } from 'lucide-react-native';
+import { Gift, Heart, PartyPopper, Star, type LucideIcon } from '../../../../shared/ui/icons/lucide';
 import { triggerTabHaptic } from '../../../../shared/platform/haptics';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, shadow, spacing, typography } from '../../../../shared/theme/tokens';

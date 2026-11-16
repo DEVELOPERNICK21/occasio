@@ -1,4 +1,4 @@
-import { Camera, Images } from 'lucide-react-native';
+import { Camera, Images } from '../../../../shared/ui/icons/lucide';
 import { ActionSheet, type SheetAction } from '../../../../shared/ui/ActionSheet';
 import { PipFriend } from '../../../../shared/ui/PipFriend';
 import type { PhotoSourceSheetState } from '../../application/usePhotoPicker';

@@ -2,7 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useScrollToTop } from '@react-navigation/native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { UserPlus } from 'lucide-react-native';
+import { UserPlus } from '../../../../shared/ui/icons/lucide';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { EmptyState } from '../../../../shared/ui/EmptyState';
 import { Screen } from '../../../../shared/ui/Screen';

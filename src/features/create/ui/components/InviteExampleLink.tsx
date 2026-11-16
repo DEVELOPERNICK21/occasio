@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react-native';
+import { ExternalLink } from '../../../../shared/ui/icons/lucide';
 import { Alert, Linking, Pressable, StyleSheet } from 'react-native';
 import { env } from '../../../../shared/config/env';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';

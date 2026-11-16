@@ -1,4 +1,4 @@
-import { Cake } from 'lucide-react-native';
+import { Cake } from '../../../../shared/ui/icons/lucide';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../../../shared/ui/Text';
 import { CardWashBackground } from '../../../../shared/ui/CardWashBackground';
