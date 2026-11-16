@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MotifShapes } from '@/components/FestivalArt';
 import type { Costume } from '@/lib/experience/momentTheme';
 
 /**
@@ -237,7 +238,67 @@ function pipMouth(mood: PipMood) {
 }
 
 function pipCostume(costume: Costume, shocked: boolean) {
+  // Any festival drawing can be worn on the head or held in hand.
+  if (costume.startsWith('head:')) {
+    return (
+      <g transform="translate(76 -36) scale(0.88)">
+        <MotifShapes motif={costume.slice(5)} lit />
+      </g>
+    );
+  }
+  if (costume.startsWith('held:')) {
+    return (
+      <g transform="translate(160 66) scale(0.8)">
+        <MotifShapes motif={costume.slice(5)} lit />
+      </g>
+    );
+  }
   switch (costume) {
+    case 'santa_hat':
+      return (
+        <g transform="rotate(-6 120 46)">
+          <path d="M82 48Q86 4 120 0Q146 -2 160 20Q168 32 186 40Q170 52 160 48Z" fill="#D62839" />
+          <path d="M82 48Q86 4 120 0Q104 18 108 48Z" fill="#B71C2B" opacity=".45" />
+          <rect x="78" y="40" width="84" height="16" rx="8" fill="#fff" />
+          <circle cx="188" cy="40" r="11" fill="#fff" />
+          <circle cx="185" cy="37" r="3.6" fill="#fff" opacity=".8" />
+        </g>
+      );
+    case 'witch_hat':
+      return (
+        <g transform="rotate(-8 120 46)">
+          <ellipse cx="120" cy="48" rx="52" ry="9" fill="#2B2438" />
+          <path d="M92 46L108 -14Q114 -34 136 -44Q130 -20 148 46Z" fill="#2B2438" />
+          <path d="M95 33L147 33L149 46L92 46Z" fill="#FF8A3D" />
+          <rect x="113" y="32" width="15" height="14" rx="2" fill="#FFD54A" />
+          <rect x="117.5" y="36" width="6" height="6" rx="1" fill="#2B2438" />
+        </g>
+      );
+    case 'bunny_ears':
+      return (
+        <g>
+          <g transform="rotate(-12 96 44)">
+            <ellipse cx="96" cy="4" rx="15" ry="42" fill="#fff" stroke="#E3D6D6" strokeWidth="2" />
+            <ellipse cx="96" cy="8" rx="7.5" ry="29" fill="#F4B6C2" />
+          </g>
+          <g transform="rotate(12 144 44)">
+            <ellipse cx="144" cy="4" rx="15" ry="42" fill="#fff" stroke="#E3D6D6" strokeWidth="2" />
+            <ellipse cx="144" cy="8" rx="7.5" ry="29" fill="#F4B6C2" />
+          </g>
+        </g>
+      );
+    case 'holi_colour':
+      return (
+        <g>
+          <circle cx="74" cy="150" r="14" fill="#E84B7A" opacity=".55" />
+          <circle cx="166" cy="150" r="14" fill="#3DA5D9" opacity=".55" />
+          <circle cx="120" cy="80" r="10" fill="#6BCB77" opacity=".6" />
+          <circle cx="92" cy="92" r="6" fill="#F6B93B" opacity=".7" />
+          <g transform="translate(166 78) scale(0.7)">
+            <MotifShapes motif="splash" lit />
+          </g>
+        </g>
+      );
     case 'party_hat':
       return (
         <g transform="rotate(-9 120 44)">
@@ -369,7 +430,7 @@ export function pipFigure({ mood, mascot, costume, uid, holdsGift = false }: Pip
         <ellipse cx="156" cy="236" rx="27" ry="12" fill={shade} />
 
         {/* sprout when there is no hat or crown */}
-        {costume !== 'party_hat' && costume !== 'flower_crown' ? (
+        {!['party_hat', 'flower_crown', 'santa_hat', 'witch_hat', 'bunny_ears'].includes(costume) && !costume.startsWith('head:') ? (
           <g className="pip-sprout">
             <path
               d="M120 30Q116 10 128 -6"

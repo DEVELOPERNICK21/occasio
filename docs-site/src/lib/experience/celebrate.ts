@@ -293,8 +293,13 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
             ? ['star', 'circle', 'heart']
             : preset === 'lanterns'
               ? ['sparkle', 'circle', 'star']
-              : ['rect', 'rect', 'circle', 'star'];
-      add(radial(origin, colors, n(46), shapes, [4, 13], preset === 'petals' ? 0.12 : 0.24));
+              : preset === 'snow'
+                ? ['circle', 'sparkle', 'star']
+                : preset === 'powder'
+                  ? ['circle', 'circle', 'circle']
+                  : ['rect', 'rect', 'circle', 'star'];
+      const powder = preset === 'powder';
+      add(radial(origin, colors, n(powder ? 38 : 46), shapes, powder ? [9, 24] : [4, 13], powder ? 0.08 : preset === 'petals' ? 0.12 : 0.24));
       return;
     }
 
@@ -428,6 +433,41 @@ export function createCelebration(canvas: HTMLCanvasElement): Celebration {
           }),
         );
         add([...lanterns, ...sparkles]);
+        break;
+      }
+      case 'snow': {
+        add(
+          Array.from({ length: n(130) }, () =>
+            base({
+              x: rand(0, width),
+              y: rand(-height * 0.7, -10),
+              vx: rand(-0.3, 0.3) * sc,
+              vy: rand(0.5, 1.4) * sc,
+              size: rand(3, 9),
+              color: pick(['#FFFFFF', '#EAF6FF', '#CDE9FF']),
+              shape: 'circle',
+              life: 800,
+              maxLife: 800,
+              gravity: 0.002,
+              drag: 1,
+              sway: rand(0.2, 0.8),
+              swaySpeed: rand(0.01, 0.03),
+              delay: rand(0, 220),
+            }),
+          ),
+        );
+        add(radial({ x: width / 2, y: height * 0.4 }, colors, n(36), ['star', 'sparkle', 'circle'], [5, 12], 0.14));
+        break;
+      }
+      case 'powder': {
+        const spots = [
+          { x: width * 0.2, y: height * 0.34 },
+          { x: width * 0.8, y: height * 0.3 },
+          { x: width * 0.5, y: height * 0.5 },
+          { x: width * 0.28, y: height * 0.7 },
+          { x: width * 0.76, y: height * 0.66 },
+        ];
+        for (const spot of spots) add(radial(spot, colors, n(30), ['circle'], [10, 26], 0.06));
         break;
       }
       case 'stars':

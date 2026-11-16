@@ -1,11 +1,15 @@
 'use client';
 
 import { useCallback, useId, useMemo, useState } from 'react';
+import { FestivalArt } from '@/components/FestivalArt';
 import { useJoy } from '@/components/story/fx/JoyProvider';
 import { TapCoach } from '@/components/story/fx/TapCoach';
 import { TapToContinue } from '@/components/story/fx/TapToContinue';
 import { chunkRevealWords } from '@/lib/experience/chunkRevealWords';
+import { tapModeFor, motifName } from '@/lib/experience/festivalTaps';
+import { festivalStyleFor, momentThemeFor } from '@/lib/experience/momentTheme';
 import { playBalloonPop } from '@/lib/experience/playBalloonPop';
+import { playShimmer } from '@/lib/experience/sfx';
 import { storyCopyFor } from '@/lib/experience/storyCopy';
 
 type Props = {
@@ -97,10 +101,10 @@ const CONFETTI = [
   '#FFD36A',
 ] as const;
 
-function ConfettiBurst() {
+function ConfettiBurst({ colors = CONFETTI }: { colors?: readonly string[] }) {
   return (
     <span className="story-balloon__confetti" aria-hidden>
-      {CONFETTI.map((color, i) => (
+      {colors.slice(0, 8).map((color, i) => (
         <i
           key={color}
           style={{
@@ -122,6 +126,9 @@ export function BalloonPopScene({
   const reactId = useId().replace(/:/g, '');
   const { award } = useJoy();
   const copy = storyCopyFor(templateType);
+  // A festival has its own things to tap (diyas and crackers, a tree and its stars) instead of balloons.
+  const festival = festivalStyleFor(templateType);
+  const sparks = festival ? momentThemeFor(templateType).palette : CONFETTI;
   const words = useMemo(
     () => chunkRevealWords(revealLine, COUNT),
     [revealLine],
@@ -141,13 +148,15 @@ export function BalloonPopScene({
   const popBalloon = useCallback(
     (index: number, at?: { x: number; y: number }) => {
       if (popped[index]) return;
-      playBalloonPop();
+      const motif = festival?.taps[index];
+      if (motif && tapModeFor(motif) === 'light') playShimmer();
+      else playBalloonPop();
       award(`balloon:${index}`, 1, at);
       setBurstAt(index);
       window.setTimeout(() => setBurstAt(null), 420);
       setPopped((prev) => prev.map((v, j) => (j === index ? true : v)));
     },
-    [popped, award],
+    [popped, award, festival],
   );
 
   return (
@@ -163,18 +172,40 @@ export function BalloonPopScene({
         {popped.map((isPopped, i) => {
           const palette = BALLOONS[i] ?? BALLOONS[0]!;
           const word = words[i] ?? '';
+          const motif = festival?.taps[i];
+          const mode = motif ? tapModeFor(motif) : 'pop';
+          const lights = mode === 'light';
           return (
             <button
               key={i}
               type="button"
-              className={`story-balloon${isPopped ? ' is-popped' : ''}${burstAt === i ? ' is-bursting' : ''}`}
+              className={`story-balloon${motif ? ' story-balloon--art' : ''}${isPopped ? ' is-popped' : ''}${motif && isPopped && lights ? ' is-lit' : ''}${burstAt === i ? ' is-bursting' : ''}`}
               aria-label={
-                isPopped ? `Revealed: ${word}` : `Balloon — tap to reveal a word`
+                isPopped
+                  ? `Revealed: ${word}`
+                  : motif
+                    ? `${motifName(motif)}: tap to reveal a word`
+                    : `Balloon — tap to reveal a word`
               }
               disabled={isPopped}
               onClick={(e) => popBalloon(i, { x: e.clientX, y: e.clientY })}
             >
-              {!isPopped ? (
+              {motif ? (
+                !isPopped || lights ? (
+                  <span className="story-balloon__svg">
+                    <FestivalArt motif={motif} lit={isPopped && lights} />
+                  </span>
+                ) : null
+              ) : null}
+              {motif && isPopped ? (
+                <span
+                  className={lights ? 'story-balloon__caption' : 'story-balloon__word'}
+                  role="status"
+                >
+                  {word}
+                </span>
+              ) : null}
+              {motif ? null : !isPopped ? (
                 <BalloonSvg
                   fill={palette.fill}
                   highlight={palette.highlight}
@@ -190,7 +221,7 @@ export function BalloonPopScene({
               {burstAt === i ? (
                 <>
                   <span className="story-balloon__burst" aria-hidden />
-                  <ConfettiBurst />
+                  <ConfettiBurst colors={sparks} />
                 </>
               ) : null}
               {i === nextBalloon ? (

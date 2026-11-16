@@ -5376,3 +5376,53 @@ html.is-embedded::-webkit-scrollbar {
 .landing-frames__preview .wish-card-photo {
   object-position: center 64%;
 }
+
+
+/* Festival items in the tap scene: a drawing instead of a balloon. */
+.story-balloon--art {
+  aspect-ratio: 1 / 1;
+}
+.story-balloon--art .story-balloon__svg {
+  width: 84%;
+  height: 84%;
+}
+.story-balloon--art.is-popped:not(.is-lit) .story-balloon__svg {
+  display: none;
+}
+.story-balloon--art .story-balloon__word {
+  color: var(--accent-hover);
+}
+.story-balloon--art.is-lit .story-balloon__svg {
+  opacity: 1;
+  transform: none;
+  animation: story-art-glow 1.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--secondary) 70%, transparent));
+}
+@keyframes story-art-glow {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+.story-balloon__caption {
+  position: absolute;
+  left: 50%;
+  bottom: -0.35rem;
+  transform: translateX(-50%);
+  max-width: 120%;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-balloon--art.is-lit .story-balloon__svg {
+    animation: none;
+  }
+}

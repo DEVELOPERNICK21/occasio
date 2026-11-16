@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, type CSSProperties, type ReactNode } from 'react';
-import type { BackdropId, MomentTheme } from '@/lib/experience/momentTheme';
+import { FestivalArt, MotifShapes } from '@/components/FestivalArt';
+import type { BackdropId, FestivalStyle, MomentTheme } from '@/lib/experience/momentTheme';
 import { BalloonArt } from './BalloonArt';
 
 type Item = {
@@ -55,6 +56,7 @@ const LEAF = 'M4 20C4 9 11 3 21 3c0 10-6 17-17 17zM4 20L15 9';
 const PETAL = 'M12 2C7 6 5 12 8 18c2 3 6 3 8 0 3-6 1-12-4-16z';
 
 function Shape({ kind, color }: { kind: string; color: string }) {
+  if (kind.startsWith('motif:')) return <FestivalArt motif={kind.slice(6)} />;
   switch (kind) {
     case 'balloon':
       return <BalloonArt color={color} />;
@@ -152,7 +154,40 @@ function layersFor(id: BackdropId, colors: string[]): Layer[] {
   }
 }
 
+/** What drifts behind a festival: its own drawings, falling, rising, floating or twinkling. */
+function festivalLayers(style: FestivalStyle, colors: string[]): Layer[] {
+  return style.ambient.map((layer, i) => {
+    const twinkle = layer.motion === 'twinkle';
+    return {
+      items: makeItems(
+        [`motif:${layer.motif}`],
+        twinkle ? 14 : 9,
+        colors,
+        61 + i,
+        twinkle ? [10, 20] : layer.motion === 'float' ? [26, 46] : [20, 36],
+        twinkle ? [2.6, 5] : [16, 30],
+      ),
+      motion: layer.motion,
+    };
+  });
+}
+
 const GARLAND_STRING = 'M-10 6Q100 44 200 22T410 6';
+
+/** Eight of a festival's drawings hung along the top: diyas of marigold, a string of stars, lanterns, flags. */
+function FestivalGarland({ motif }: { motif: string }) {
+  const ys = [20, 30, 34, 30, 26, 22, 18, 14];
+  return (
+    <svg className="mbd-garland" viewBox="0 0 400 70" preserveAspectRatio="xMidYMin meet" aria-hidden>
+      <path d={GARLAND_STRING} stroke="#8a6a4a" strokeWidth="1.6" fill="none" opacity=".55" />
+      {ys.map((y, i) => (
+        <svg key={i} x={30 + i * 48 - 17} y={y - 3} width="34" height="34" viewBox="0 0 100 100">
+          <MotifShapes motif={motif} lit />
+        </svg>
+      ))}
+    </svg>
+  );
+}
 
 function starPoints(cx: number, cy: number, r: number): string {
   return Array.from({ length: 10 }, (_, i) => {
@@ -254,18 +289,25 @@ function balloonOpacity(size: number): number {
 /** Fixed, non-interactive atmosphere behind every scene of a moment. */
 export function MomentBackdrop({ theme }: { theme: MomentTheme }) {
   const layers = useMemo(
-    () => layersFor(theme.backdrop, theme.palette),
-    [theme.backdrop, theme.palette],
+    () =>
+      theme.festival
+        ? festivalLayers(theme.festival, theme.palette)
+        : layersFor(theme.backdrop, theme.palette),
+    [theme.backdrop, theme.festival, theme.palette],
   );
 
   return (
     <div className={`mbd mbd--${theme.backdrop}`} aria-hidden>
-      <Decor id={theme.backdrop} />
+      {theme.festival ? (
+        theme.festival.garland ? <FestivalGarland motif={theme.festival.garland} /> : null
+      ) : (
+        <Decor id={theme.backdrop} />
+      )}
       {layers.map((layer, li) =>
         layer.items.map((item, i) => (
           <span
             key={`${li}-${i}`}
-            className={`mbd-item mbd-item--${layer.motion} mbd-item--${item.kind}`}
+            className={`mbd-item mbd-item--${layer.motion} mbd-item--${item.kind.split(':')[0]}`}
             style={
               {
                 left: `${item.left}%`,

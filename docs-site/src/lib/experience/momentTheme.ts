@@ -4,6 +4,7 @@
  * variables set from `vars`, so a new moment is a new entry here, not new CSS.
  */
 import { mix, withAlpha } from '../colorMix';
+import festivalArtData from '../festivalArtData.json';
 import { HOLIDAY_LOOKS, webHolidayFor } from '../holidays';
 
 export type MomentId =
@@ -13,11 +14,41 @@ export type MomentId =
   | 'congratulations'
   | 'just_because';
 
-export type FxPreset = 'confetti' | 'petals' | 'fireworks' | 'lanterns' | 'stars';
+export type FxPreset = 'confetti' | 'petals' | 'fireworks' | 'lanterns' | 'stars' | 'snow' | 'powder';
 
-export type BackdropId = 'party' | 'romance' | 'garden' | 'celebration' | 'doodle';
+export type BackdropId = 'party' | 'romance' | 'garden' | 'celebration' | 'doodle' | 'festival';
 
-export type Costume = 'party_hat' | 'rose' | 'flower_crown' | 'medal' | 'shades';
+export type Costume =
+  | 'party_hat'
+  | 'rose'
+  | 'flower_crown'
+  | 'medal'
+  | 'shades'
+  | 'santa_hat'
+  | 'witch_hat'
+  | 'bunny_ears'
+  | 'holi_colour'
+  /** A festival drawing worn on the head ("head:diya") or held in hand ("held:flag"). */
+  | `head:${string}`
+  | `held:${string}`;
+
+/** A festival's signature look: what it is drawn with. Written in `scripts/art/festival-motifs.mjs`. */
+export type FestivalStyle = {
+  hero: string;
+  extras: string[];
+  /** Four things the recipient taps in the story. */
+  taps: string[];
+  garland: string | null;
+  ambient: Array<{ motif: string; motion: 'rise' | 'fall' | 'float' | 'twinkle' }>;
+  costume: string;
+  fx: FxPreset;
+};
+
+const FESTIVAL_STYLES = festivalArtData.festivals as unknown as Record<string, FestivalStyle>;
+
+export function festivalStyleFor(templateType: string): FestivalStyle | null {
+  return Object.prototype.hasOwnProperty.call(FESTIVAL_STYLES, templateType) ? FESTIVAL_STYLES[templateType]! : null;
+}
 
 export type GateCopy = {
   /** Shown with the sender's name, e.g. "Sam made something for you". */
@@ -72,6 +103,8 @@ export type MomentTheme = {
   /** The card type the song is chosen by, when it is not the moment (a festival keeps its own). */
   songType?: string;
   label: string;
+  /** Set for a festival: its drawings, taps and costume. */
+  festival?: FestivalStyle;
   dark: boolean;
   backdrop: BackdropId;
   fx: FxPreset;
@@ -311,14 +344,16 @@ function buildHolidayTheme(templateType: string): MomentTheme | null {
   const { accent, accentSecondary: gold, softBackground: soft, orbPrimary, orbSecondary } = look;
   const ink = mix(accent, NIGHT, 0.82);
   const label = holiday.label;
+  const art = festivalStyleFor(templateType);
   return {
     id: 'just_because',
     songType: templateType,
     label,
+    festival: art ?? undefined,
     dark: false,
-    backdrop: look.backdrop,
-    fx: look.fx,
-    costume: look.costume,
+    backdrop: art ? 'festival' : look.backdrop,
+    fx: art?.fx ?? look.fx,
+    costume: (art?.costume ?? look.costume) as Costume,
     mascot: { light: mix(gold, WHITE, 0.45), base: gold, shade: mix(gold, BLACK, 0.2), cheek: accent },
     palette: [accent, gold, orbPrimary, orbSecondary, mix(accent, WHITE, 0.4), mix(gold, WHITE, 0.5)],
     starName: 'wishes',

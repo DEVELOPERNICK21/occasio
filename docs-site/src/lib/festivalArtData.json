@@ -1,0 +1,1186 @@
+{
+ "festivals": {
+  "maha_shivratri": {
+   "hero": "bilva",
+   "extras": [
+    "moon",
+    "diya",
+    "lotus"
+   ],
+   "taps": [
+    "diya",
+    "bilva",
+    "diya",
+    "moon"
+   ],
+   "garland": "bilva",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:crescent",
+   "fx": "lanterns"
+  },
+  "holi": {
+   "hero": "splash",
+   "extras": [
+    "gulal",
+    "balloon",
+    "heart"
+   ],
+   "taps": [
+    "splash",
+    "gulal",
+    "balloon",
+    "splash"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "splash",
+     "motion": "float"
+    }
+   ],
+   "costume": "holi_colour",
+   "fx": "powder"
+  },
+  "ram_navami": {
+   "hero": "bow",
+   "extras": [
+    "sun",
+    "diya",
+    "marigold"
+   ],
+   "taps": [
+    "diya",
+    "bow",
+    "diya",
+    "sun"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:diya",
+   "fx": "lanterns"
+  },
+  "hanuman_jayanti": {
+   "hero": "sun",
+   "extras": [
+    "marigold",
+    "diya",
+    "flag"
+   ],
+   "taps": [
+    "diya",
+    "sun",
+    "diya",
+    "marigold"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:marigold",
+   "fx": "lanterns"
+  },
+  "raksha_bandhan": {
+   "hero": "rakhi",
+   "extras": [
+    "thali",
+    "heart",
+    "sparkle"
+   ],
+   "taps": [
+    "rakhi",
+    "heart",
+    "rakhi",
+    "thali"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "held:rakhi",
+   "fx": "petals"
+  },
+  "janmashtami": {
+   "hero": "flute",
+   "extras": [
+    "feather",
+    "matka",
+    "lotus"
+   ],
+   "taps": [
+    "matka",
+    "feather",
+    "matka",
+    "flute"
+   ],
+   "garland": "feather",
+   "ambient": [
+    {
+     "motif": "feather",
+     "motion": "float"
+    }
+   ],
+   "costume": "held:flute",
+   "fx": "petals"
+  },
+  "ganesh_chaturthi": {
+   "hero": "modak",
+   "extras": [
+    "hibiscus",
+    "marigold",
+    "lotus"
+   ],
+   "taps": [
+    "modak",
+    "hibiscus",
+    "modak",
+    "marigold"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "hibiscus",
+     "motion": "fall"
+    }
+   ],
+   "costume": "head:hibiscus",
+   "fx": "petals"
+  },
+  "navratri": {
+   "hero": "dandiya",
+   "extras": [
+    "kalash",
+    "diya",
+    "marigold"
+   ],
+   "taps": [
+    "diya",
+    "dandiya",
+    "diya",
+    "kalash"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:dandiya",
+   "fx": "confetti"
+  },
+  "durga_puja": {
+   "hero": "conch",
+   "extras": [
+    "marigold",
+    "lotus",
+    "diya"
+   ],
+   "taps": [
+    "diya",
+    "conch",
+    "diya",
+    "lotus"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "marigold",
+     "motion": "fall"
+    }
+   ],
+   "costume": "head:marigold",
+   "fx": "lanterns"
+  },
+  "dussehra": {
+   "hero": "bow",
+   "extras": [
+    "marigold",
+    "diya",
+    "rocket"
+   ],
+   "taps": [
+    "rocket",
+    "diya",
+    "rocket",
+    "bow"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:bow",
+   "fx": "fireworks"
+  },
+  "karwa_chauth": {
+   "hero": "moon",
+   "extras": [
+    "thali",
+    "heart",
+    "diya"
+   ],
+   "taps": [
+    "diya",
+    "moon",
+    "diya",
+    "heart"
+   ],
+   "garland": "heart",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "held:thali",
+   "fx": "petals"
+  },
+  "diwali": {
+   "hero": "diya",
+   "extras": [
+    "rocket",
+    "anar",
+    "rangoli",
+    "marigold"
+   ],
+   "taps": [
+    "diya",
+    "rocket",
+    "anar",
+    "diya"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "rise"
+    },
+    {
+     "motif": "diya",
+     "motion": "float"
+    }
+   ],
+   "costume": "head:diya",
+   "fx": "fireworks"
+  },
+  "bhai_dooj": {
+   "hero": "thali",
+   "extras": [
+    "rakhi",
+    "heart",
+    "marigold"
+   ],
+   "taps": [
+    "thali",
+    "heart",
+    "thali",
+    "rakhi"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "held:thali",
+   "fx": "petals"
+  },
+  "chhath_puja": {
+   "hero": "sun",
+   "extras": [
+    "marigold",
+    "lotus",
+    "diya"
+   ],
+   "taps": [
+    "diya",
+    "sun",
+    "diya",
+    "lotus"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:sun",
+   "fx": "lanterns"
+  },
+  "guru_purnima": {
+   "hero": "book",
+   "extras": [
+    "lotus",
+    "moon",
+    "diya"
+   ],
+   "taps": [
+    "diya",
+    "book",
+    "diya",
+    "lotus"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:book",
+   "fx": "stars"
+  },
+  "lohri": {
+   "hero": "bonfire",
+   "extras": [
+    "wheat",
+    "sparkle",
+    "sun"
+   ],
+   "taps": [
+    "bonfire",
+    "wheat",
+    "bonfire",
+    "wheat"
+   ],
+   "garland": "wheat",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "rise"
+    }
+   ],
+   "costume": "head:wheat",
+   "fx": "lanterns"
+  },
+  "makar_sankranti": {
+   "hero": "kite",
+   "extras": [
+    "sun",
+    "wheat",
+    "balloon"
+   ],
+   "taps": [
+    "kite",
+    "sun",
+    "kite",
+    "sun"
+   ],
+   "garland": "kite",
+   "ambient": [
+    {
+     "motif": "kite",
+     "motion": "float"
+    }
+   ],
+   "costume": "held:kite",
+   "fx": "confetti"
+  },
+  "pongal": {
+   "hero": "pongal",
+   "extras": [
+    "sun",
+    "wheat",
+    "marigold"
+   ],
+   "taps": [
+    "pongal",
+    "sun",
+    "wheat",
+    "pongal"
+   ],
+   "garland": "toran",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "rise"
+    }
+   ],
+   "costume": "head:wheat",
+   "fx": "stars"
+  },
+  "basant_panchami": {
+   "hero": "flower",
+   "extras": [
+    "sparkle",
+    "book",
+    "kite"
+   ],
+   "taps": [
+    "flower",
+    "kite",
+    "flower",
+    "book"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "kite",
+     "motion": "float"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "petals"
+  },
+  "ugadi": {
+   "hero": "toran",
+   "extras": [
+    "kalash",
+    "marigold",
+    "sun"
+   ],
+   "taps": [
+    "kalash",
+    "sun",
+    "kalash",
+    "marigold"
+   ],
+   "garland": "toran",
+   "ambient": [
+    {
+     "motif": "marigold",
+     "motion": "fall"
+    }
+   ],
+   "costume": "head:marigold",
+   "fx": "petals"
+  },
+  "gudi_padwa": {
+   "hero": "kalash",
+   "extras": [
+    "toran",
+    "marigold",
+    "flag"
+   ],
+   "taps": [
+    "kalash",
+    "marigold",
+    "kalash",
+    "sun"
+   ],
+   "garland": "toran",
+   "ambient": [
+    {
+     "motif": "marigold",
+     "motion": "fall"
+    }
+   ],
+   "costume": "head:marigold",
+   "fx": "petals"
+  },
+  "vishu": {
+   "hero": "marigold",
+   "extras": [
+    "kalash",
+    "sun",
+    "lotus"
+   ],
+   "taps": [
+    "marigold",
+    "kalash",
+    "marigold",
+    "sun"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "marigold",
+     "motion": "fall"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "petals"
+  },
+  "puthandu": {
+   "hero": "sun",
+   "extras": [
+    "toran",
+    "kalash",
+    "marigold"
+   ],
+   "taps": [
+    "sun",
+    "kalash",
+    "sun",
+    "marigold"
+   ],
+   "garland": "toran",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:sun",
+   "fx": "confetti"
+  },
+  "pohela_boishakh": {
+   "hero": "sun",
+   "extras": [
+    "dhol",
+    "marigold",
+    "balloon"
+   ],
+   "taps": [
+    "sun",
+    "dhol",
+    "sun",
+    "dhol"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "confetti"
+  },
+  "baisakhi": {
+   "hero": "wheat",
+   "extras": [
+    "dhol",
+    "sun",
+    "marigold"
+   ],
+   "taps": [
+    "dhol",
+    "wheat",
+    "dhol",
+    "wheat"
+   ],
+   "garland": "wheat",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:dhol",
+   "fx": "confetti"
+  },
+  "onam": {
+   "hero": "pookalam",
+   "extras": [
+    "marigold",
+    "lotus",
+    "kalash"
+   ],
+   "taps": [
+    "pookalam",
+    "marigold",
+    "pookalam",
+    "kalash"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "marigold",
+     "motion": "fall"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "petals"
+  },
+  "gujarati_new_year": {
+   "hero": "rangoli",
+   "extras": [
+    "diya",
+    "marigold",
+    "sparkle"
+   ],
+   "taps": [
+    "diya",
+    "rangoli",
+    "diya",
+    "rocket"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "rise"
+    }
+   ],
+   "costume": "head:diya",
+   "fx": "fireworks"
+  },
+  "republic_day": {
+   "hero": "flag",
+   "extras": [
+    "sparkle",
+    "star",
+    "balloon"
+   ],
+   "taps": [
+    "flag",
+    "balloon",
+    "flag",
+    "burst"
+   ],
+   "garland": "flag",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:flag",
+   "fx": "fireworks"
+  },
+  "independence_day": {
+   "hero": "flag",
+   "extras": [
+    "sparkle",
+    "star",
+    "balloon"
+   ],
+   "taps": [
+    "flag",
+    "burst",
+    "flag",
+    "balloon"
+   ],
+   "garland": "flag",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:flag",
+   "fx": "fireworks"
+  },
+  "teachers_day": {
+   "hero": "book",
+   "extras": [
+    "apple",
+    "star",
+    "flower"
+   ],
+   "taps": [
+    "apple",
+    "book",
+    "apple",
+    "star"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:book",
+   "fx": "stars"
+  },
+  "childrens_day": {
+   "hero": "balloon",
+   "extras": [
+    "kite",
+    "star",
+    "heart"
+   ],
+   "taps": [
+    "balloon",
+    "kite",
+    "balloon",
+    "star"
+   ],
+   "garland": "balloon",
+   "ambient": [
+    {
+     "motif": "balloon",
+     "motion": "rise"
+    }
+   ],
+   "costume": "party_hat",
+   "fx": "confetti"
+  },
+  "ramadan": {
+   "hero": "crescent",
+   "extras": [
+    "lantern",
+    "moon",
+    "star"
+   ],
+   "taps": [
+    "lantern",
+    "crescent",
+    "lantern",
+    "star"
+   ],
+   "garland": "lantern",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:crescent",
+   "fx": "lanterns"
+  },
+  "eid_al_fitr": {
+   "hero": "crescent",
+   "extras": [
+    "lantern",
+    "star",
+    "heart"
+   ],
+   "taps": [
+    "lantern",
+    "crescent",
+    "lantern",
+    "star"
+   ],
+   "garland": "lantern",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:crescent",
+   "fx": "lanterns"
+  },
+  "eid_al_adha": {
+   "hero": "crescent",
+   "extras": [
+    "lantern",
+    "moon",
+    "star"
+   ],
+   "taps": [
+    "lantern",
+    "crescent",
+    "lantern",
+    "star"
+   ],
+   "garland": "lantern",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:crescent",
+   "fx": "stars"
+  },
+  "easter": {
+   "hero": "egg",
+   "extras": [
+    "bunny",
+    "flower",
+    "sparkle"
+   ],
+   "taps": [
+    "egg",
+    "bunny",
+    "egg",
+    "flower"
+   ],
+   "garland": "egg",
+   "ambient": [
+    {
+     "motif": "flower",
+     "motion": "fall"
+    }
+   ],
+   "costume": "bunny_ears",
+   "fx": "petals"
+  },
+  "christmas": {
+   "hero": "santa",
+   "extras": [
+    "tree",
+    "star",
+    "snowflake"
+   ],
+   "taps": [
+    "tree",
+    "star",
+    "santa",
+    "tree"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "snowflake",
+     "motion": "fall"
+    },
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "santa_hat",
+   "fx": "snow"
+  },
+  "guru_nanak_jayanti": {
+   "hero": "diya",
+   "extras": [
+    "sun",
+    "marigold",
+    "lotus"
+   ],
+   "taps": [
+    "diya",
+    "sun",
+    "diya",
+    "marigold"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "rise"
+    }
+   ],
+   "costume": "head:diya",
+   "fx": "lanterns"
+  },
+  "buddha_purnima": {
+   "hero": "lotus",
+   "extras": [
+    "moon",
+    "diya",
+    "sparkle"
+   ],
+   "taps": [
+    "lotus",
+    "diya",
+    "moon",
+    "diya"
+   ],
+   "garland": "lotus",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:lotus",
+   "fx": "lanterns"
+  },
+  "mahavir_jayanti": {
+   "hero": "lotus",
+   "extras": [
+    "diya",
+    "sun",
+    "heart"
+   ],
+   "taps": [
+    "lotus",
+    "diya",
+    "lotus",
+    "diya"
+   ],
+   "garland": "marigold",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "head:lotus",
+   "fx": "stars"
+  },
+  "new_year": {
+   "hero": "burst",
+   "extras": [
+    "clock",
+    "sparkle",
+    "star"
+   ],
+   "taps": [
+    "burst",
+    "rocket",
+    "burst",
+    "star"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "party_hat",
+   "fx": "fireworks"
+  },
+  "valentines_day": {
+   "hero": "rose",
+   "extras": [
+    "heart",
+    "envelope",
+    "sparkle"
+   ],
+   "taps": [
+    "heart",
+    "rose",
+    "heart",
+    "rose"
+   ],
+   "garland": "heart",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "rose",
+   "fx": "petals"
+  },
+  "womens_day": {
+   "hero": "flower",
+   "extras": [
+    "heart",
+    "star",
+    "sparkle"
+   ],
+   "taps": [
+    "flower",
+    "heart",
+    "flower",
+    "star"
+   ],
+   "garland": "flower",
+   "ambient": [
+    {
+     "motif": "flower",
+     "motion": "fall"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "petals"
+  },
+  "mothers_day": {
+   "hero": "flower",
+   "extras": [
+    "heart",
+    "rose",
+    "sparkle"
+   ],
+   "taps": [
+    "flower",
+    "heart",
+    "rose",
+    "heart"
+   ],
+   "garland": "flower",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "flower_crown",
+   "fx": "petals"
+  },
+  "fathers_day": {
+   "hero": "tie",
+   "extras": [
+    "star",
+    "book",
+    "heart"
+   ],
+   "taps": [
+    "tie",
+    "star",
+    "tie",
+    "heart"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "star",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "shades",
+   "fx": "stars"
+  },
+  "friendship_day": {
+   "hero": "band",
+   "extras": [
+    "heart",
+    "star",
+    "balloon"
+   ],
+   "taps": [
+    "band",
+    "heart",
+    "band",
+    "balloon"
+   ],
+   "garland": "heart",
+   "ambient": [
+    {
+     "motif": "heart",
+     "motion": "rise"
+    }
+   ],
+   "costume": "party_hat",
+   "fx": "confetti"
+  },
+  "halloween": {
+   "hero": "pumpkin",
+   "extras": [
+    "ghost",
+    "bat",
+    "sparkle"
+   ],
+   "taps": [
+    "pumpkin",
+    "ghost",
+    "pumpkin",
+    "bat"
+   ],
+   "garland": "bat",
+   "ambient": [
+    {
+     "motif": "bat",
+     "motion": "float"
+    }
+   ],
+   "costume": "witch_hat",
+   "fx": "stars"
+  },
+  "thanksgiving": {
+   "hero": "leaf",
+   "extras": [
+    "pumpkin",
+    "wheat",
+    "apple"
+   ],
+   "taps": [
+    "pumpkin",
+    "leaf",
+    "pumpkin",
+    "apple"
+   ],
+   "garland": "leaf",
+   "ambient": [
+    {
+     "motif": "leaf",
+     "motion": "fall"
+    }
+   ],
+   "costume": "head:leaf",
+   "fx": "petals"
+  },
+  "new_years_eve": {
+   "hero": "clock",
+   "extras": [
+    "burst",
+    "star",
+    "sparkle"
+   ],
+   "taps": [
+    "burst",
+    "rocket",
+    "burst",
+    "star"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "party_hat",
+   "fx": "fireworks"
+  },
+  "lunar_new_year": {
+   "hero": "lantern_red",
+   "extras": [
+    "envelope",
+    "sparkle",
+    "flower"
+   ],
+   "taps": [
+    "lantern_red",
+    "envelope",
+    "lantern_red",
+    "burst"
+   ],
+   "garland": "lantern_red",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:lantern_red",
+   "fx": "fireworks"
+  },
+  "hanukkah": {
+   "hero": "menorah",
+   "extras": [
+    "dreidel",
+    "star",
+    "sparkle"
+   ],
+   "taps": [
+    "menorah",
+    "dreidel",
+    "menorah",
+    "star"
+   ],
+   "garland": "star",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:dreidel",
+   "fx": "stars"
+  },
+  "rosh_hashanah": {
+   "hero": "apple",
+   "extras": [
+    "honey",
+    "sparkle",
+    "star"
+   ],
+   "taps": [
+    "apple",
+    "honey",
+    "apple",
+    "honey"
+   ],
+   "garland": "apple",
+   "ambient": [
+    {
+     "motif": "sparkle",
+     "motion": "twinkle"
+    }
+   ],
+   "costume": "held:honey",
+   "fx": "stars"
+  }
+ }
+}
