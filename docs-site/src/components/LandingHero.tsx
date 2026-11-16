@@ -22,7 +22,7 @@ export function LandingHero() {
           className={`landing-hero-copy ${mounted ? 'landing-hero-copy--visible' : ''}`}
         >
           <p className="landing-hero-eyebrow text-sm font-medium text-[var(--accent)]">
-            Occasio · On Google Play · iPhone coming soon
+            Occasio · On the App Store and Google Play
           </p>
           <h1 className="landing-hero-title mt-3 max-w-lg text-[2rem] leading-[1.12] tracking-tight text-[var(--ink)] md:text-[2.75rem]">
             Send a wish that feels like you showed up
@@ -33,10 +33,18 @@ export function LandingHero() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={contact.playStore}
+              href={contact.appStore}
               target="_blank"
               rel="noopener noreferrer"
               className="landing-btn-primary landing-hero-cta"
+            >
+              Download on the App Store
+            </a>
+            <a
+              href={contact.playStore}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-btn-secondary"
             >
               Get it on Google Play
             </a>

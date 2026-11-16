@@ -24,12 +24,20 @@ export function PublicShell({ children }: Props) {
               Frames
             </Link>
             <a
-              href={contact.playStore}
+              href={contact.appStore}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
             >
-              Get the app
+              App Store
+            </a>
+            <a
+              href={contact.playStore}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden rounded-full border border-[var(--border)] px-4 py-1.5 text-xs font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--surface)] sm:inline-flex"
+            >
+              Google Play
             </a>
           </div>
         </div>

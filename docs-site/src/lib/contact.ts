@@ -1,7 +1,9 @@
-/** Public contact + beta access — single source for landing and legal. */
+/** Public contact + store links — single source for landing and legal. */
 export const contact = {
   email: 'developernick1@gmail.com',
   mailto: 'mailto:developernick1@gmail.com',
+  /** Public App Store listing (Apple ID 6817678311). */
+  appStore: 'https://apps.apple.com/in/app/occasio-gift-wish-reminder/id6817678311',
   /** Public Google Play listing (package com.occasio.greetings). */
   playStore: 'https://play.google.com/store/apps/details?id=com.occasio.greetings',
   playStoreInternalTest:

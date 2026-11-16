@@ -18,7 +18,7 @@ I have not sent anything to Apple and have not changed App Store Connect. If you
 
 ## Needs your word (I cannot know it)
 
-- **Sounds and animations (item 6).** The app bundles five sound effects (`src/features/create/assets/sounds/`) and five Lottie animations (`…/assets/lottie/`). The repo has no licence record for them. If you made them or bought a licence, keep the sentence. If they came from a free library, name it and its licence instead, or replace them. The same answer settles the open **Content Rights** question in App Store Connect.
+- **Sounds and animations (item 6).** The app bundles five sound effects (`src/features/create/assets/sounds/`). It used to carry five Lottie animation files that nothing ever played; they and the Lottie library were removed in November 2026, so there are no animation files to account for. The repo has no licence record for the sounds. If you made them or bought a licence, keep the sentence. If they came from a free library, name it and its licence instead, or replace them. The same answer settles the open **Content Rights** question in App Store Connect.
 - **The recording list in item 1 of the reply** says what the video shows. If the video does not show something on that list, remove it from the sentence.
 
 ## Screen recording: shot list (about 4 minutes)

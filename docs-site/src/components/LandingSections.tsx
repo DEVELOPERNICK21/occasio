@@ -283,7 +283,25 @@ export function LandingRecipientCta() {
               view it.
             </p>
             <p className="mt-6 text-sm text-[var(--muted)]">
-              Want to send one back? Get Occasio on Google Play. An iPhone version is coming.
+              Want to send one back? Get Occasio on the{' '}
+              <a
+                href={contact.appStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-[var(--ink)]"
+              >
+                App Store
+              </a>{' '}
+              or{' '}
+              <a
+                href={contact.playStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-[var(--ink)]"
+              >
+                Google Play
+              </a>
+              .
             </p>
           </div>
         </LandingScrollReveal>
@@ -310,10 +328,18 @@ export function LandingClosingCta() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={contact.playStore}
+              href={contact.appStore}
               target="_blank"
               rel="noopener noreferrer"
               className="landing-btn-primary"
+            >
+              Download on the App Store
+            </a>
+            <a
+              href={contact.playStore}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-btn-secondary"
             >
               Get it on Google Play
             </a>
