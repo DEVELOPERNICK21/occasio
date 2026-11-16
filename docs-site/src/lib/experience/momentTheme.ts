@@ -54,10 +54,12 @@ export type GateCopy = {
   /** Shown with the sender's name, e.g. "Sam made something for you". */
   hopeful: string;
   hopefulSub: string;
+  /** After the first "No": Pip is shocked. The question stays open and the button turns into "Not now". */
   refusedOnce: string;
   refusedOnceSub: string;
-  refusedTwice: string;
-  refusedTwiceSub: string;
+  /** After "Not now": the card is closed and Pip cries a little. A joke about Pip, never a push to open it. */
+  declined: string;
+  declinedSub: string;
   yes: string;
 };
 
@@ -158,8 +160,8 @@ const THEMES: Record<MomentId, MomentTheme> = {
       hopefulSub: 'Pip has been guarding it all day.',
       refusedOnce: 'Excuse me?!',
       refusedOnceSub: 'Let’s pretend I didn’t hear that.',
-      refusedTwice: 'Pip is crying now.',
-      refusedTwiceSub: 'Look what you did. Tiny violin time.',
+      declined: 'Pip is crying now.',
+      declinedSub: 'Tiny violin time. Pip will be fine.',
       yes: 'Show me!',
     },
   },
@@ -197,8 +199,8 @@ const THEMES: Record<MomentId, MomentTheme> = {
       hopefulSub: 'It took a while. It has feelings.',
       refusedOnce: 'Rude. But romantic.',
       refusedOnceSub: 'Pip will allow one more chance.',
-      refusedTwice: 'Pip is sobbing into a rose.',
-      refusedTwiceSub: 'Violins are involved.',
+      declined: 'Pip is sobbing into a rose.',
+      declinedSub: 'Violins are involved.',
       yes: 'Open it',
     },
   },
@@ -236,8 +238,8 @@ const THEMES: Record<MomentId, MomentTheme> = {
       hopefulSub: 'Small words. Big feelings.',
       refusedOnce: 'You don’t want gratitude?!',
       refusedOnceSub: 'Pip is doing its best to stay calm.',
-      refusedTwice: 'Pip is crying grateful tears anyway.',
-      refusedTwiceSub: 'Somebody hand it a tissue.',
+      declined: 'Pip is crying grateful tears anyway.',
+      declinedSub: 'Somebody hand it a tissue.',
       yes: 'Okay, show me',
     },
   },
@@ -275,8 +277,8 @@ const THEMES: Record<MomentId, MomentTheme> = {
       hopefulSub: 'You did the thing. Want your moment?',
       refusedOnce: 'Humble. Way too humble.',
       refusedOnceSub: 'Pip is applauding anyway.',
-      refusedTwice: 'Pip is crying proud tears.',
-      refusedTwiceSub: 'The medal is getting wet.',
+      declined: 'Pip is crying proud tears.',
+      declinedSub: 'The medal is getting wet.',
       yes: 'Take a bow',
     },
   },
@@ -314,8 +316,8 @@ const THEMES: Record<MomentId, MomentTheme> = {
       hopefulSub: 'Just this. Just for you.',
       refusedOnce: 'Bold of you.',
       refusedOnceSub: 'Pip pretends to be fine.',
-      refusedTwice: 'Pip has fainted, dramatically.',
-      refusedTwiceSub: 'A tiny violin plays it out.',
+      declined: 'Pip has fainted, dramatically.',
+      declinedSub: 'A tiny violin plays it out.',
       yes: 'Fine, show me',
     },
   },
@@ -397,8 +399,8 @@ function buildHolidayTheme(templateType: string): MomentTheme | null {
       hopefulSub: `A ${label} wish, just for you.`,
       refusedOnce: 'Not even a quick look?',
       refusedOnceSub: 'Pip will wait, politely.',
-      refusedTwice: 'Pip is a little sad now.',
-      refusedTwiceSub: 'One tap would fix it.',
+      declined: 'Pip is a little sad now.',
+      declinedSub: 'Pip will be fine. Probably.',
       yes: 'Open it',
     },
   };

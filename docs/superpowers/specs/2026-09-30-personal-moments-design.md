@@ -111,7 +111,7 @@ creations/{id}/replies/{replyId}
 | `resolveExperience(card)` | Per-moment arc, version switch, omission rules | card fields only |
 | `resolveReasons(card)` | `reasons` → else split `balloonLine` → else stock | pure |
 | `validatePersonalFields` (RN domain) | Lengths, counts, passcode format (4 digits) | pure |
-| `YesNoGateScene` | Yes advances; No cycles escalating replies, No button shrinks, then only Yes | props |
+| `YesNoGateScene` | Yes advances; the first No gets a reaction and turns into "Not now", which closes the card (Pip cries, nothing opens until the person taps Yes or "Open it after all") | props |
 | `PasscodeGateScene` | Keypad, calls unlock via player callback, wrong-code joke screen | props + `onUnlock` |
 | `BalloonPopScene` (update) | Each balloon reveals one reason card | props |
 | `PhotoDeckScene` (update) | Tap a card to flip → `photoNotes[i]` or stock caption | props |

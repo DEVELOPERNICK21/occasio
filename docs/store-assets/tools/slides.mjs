@@ -26,7 +26,7 @@ export const COPY = {
     f4: { l: 'Made in a<br>few <em>taps</em>', s: 'Pick the moment. Add a photo<br>and your own words.' },
     f5: { l: 'Five moments.<br>Five <em>looks</em>.', s: 'Birthday, anniversary, thank you,<br>congrats, just because' },
     f6: { l: 'A letter that<br><em>opens</em> in 3D', s: 'A wax seal, your words, your photo' },
-    f7: { l: 'Even <em>“No”</em> gets<br>a reaction', s: 'Say no twice and it becomes yes.<br>Nobody gets stuck.' },
+    f7: { l: 'Even <em>“No”</em> gets<br>a reaction', s: 'Say no and Pip gasps. Say “Not now”<br>and the card closes. Your answer stands.' },
     f8: { l: 'Start <em>free</em>.<br>Upgrade anytime.', s: 'Your first card needs no account.' },
     plan: {
       free: { name: 'Free', items: ['1 card to try', 'No account to start', '1 saved person'] },

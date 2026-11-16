@@ -3498,10 +3498,13 @@ body {
   0%, 100% { transform: scale(0.92); opacity: 0.7; }
   50% { transform: scale(1.08); opacity: 1; }
 }
-.gate[data-refusals='1'] .gate__ring { border-color: #ff5d5d; animation-duration: 3s; }
-.gate[data-refusals='2'] .gate__aura {
+.gate[data-phase='reacted'] .gate__ring { border-color: #ff5d5d; animation-duration: 3s; }
+/* Not now: the card is closed. Pip cries (blue glow), the ring stops turning and the ticket settles. */
+.gate[data-phase='declined'] .gate__aura {
   background: radial-gradient(closest-side, rgba(120, 190, 255, 0.5), transparent 72%);
 }
+.gate[data-phase='declined'] .gate__ring { animation: none; opacity: 0.35; }
+.gate[data-phase='declined'] .gate__ticket { animation: none; opacity: 0.7; }
 .gate__pop {
   position: absolute;
   top: 2%;
@@ -3538,6 +3541,15 @@ body {
   color: var(--muted);
   min-height: 1.6rem;
 }
+/* Said plainly once the card is closed, after the joke: the answer was heard. */
+.gate__note {
+  margin: -0.6rem 0 1.2rem;
+  max-width: 19rem;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
 .gate__actions {
   display: flex;
   flex-wrap: wrap;
@@ -3558,8 +3570,7 @@ body {
   cursor: pointer;
   transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.3s ease;
 }
-.gate__yes,
-.gate__no.is-yes {
+.gate__yes {
   border: none;
   color: var(--on-accent, #fff);
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--secondary)));
@@ -3567,8 +3578,7 @@ body {
   position: relative;
   overflow: hidden;
 }
-.gate__yes::after,
-.gate__no.is-yes::after {
+.gate__yes::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -3581,13 +3591,22 @@ body {
 }
 .gate__no {
   background: var(--surface);
-  border: 2px solid color-mix(in srgb, var(--ink) 30%, transparent);
-  color: var(--ink-soft);
-  opacity: 0.85;
+  border: 2px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  color: var(--ink);
 }
-.gate__no.is-yes {
-  opacity: 1;
+/* The way back after "Not now": offered, quiet, and only ever opened by the person's own tap. */
+.gate__again {
+  min-height: 48px;
+  padding: 0 1.2rem;
+  background: none;
   border: none;
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
 }
 .gate__yes:active,
 .gate__no:active {
@@ -3598,7 +3617,6 @@ body {
   .gate__aura,
   .gate__ring,
   .gate__yes::after,
-  .gate__no.is-yes::after,
   .gate__title {
     animation: none;
   }

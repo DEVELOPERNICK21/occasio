@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CelebrationCanvas, type CelebrationHandle } from '@/components/story/fx/CelebrationCanvas';
 import { useJoy } from '@/components/story/fx/JoyProvider';
-import { Pip, type PipMood } from '@/components/story/fx/Pip';
+import { Pip } from '@/components/story/fx/Pip';
+import { OPEN_AFTER_ALL, declineLabel, gateView, nextPhase, type GatePhase } from '@/lib/experience/gateFlow';
 import type { MomentTheme } from '@/lib/experience/momentTheme';
 import { unlockMusic } from '@/lib/experience/occasionMusic';
 import { playBoing, playSadTrombone, playTada } from '@/lib/experience/sfx';
@@ -15,9 +16,6 @@ type Props = {
   onComplete: () => void;
 };
 
-const MOODS: PipMood[] = ['hopeful', 'shocked', 'cry'];
-const POP = ['', '💢', '💧'];
-
 function buzz(ms: number): void {
   try {
     navigator.vibrate?.(ms);
@@ -27,33 +25,31 @@ function buzz(ms: number): void {
 }
 
 /**
- * The first frame. Pip guards the surprise; saying "No" is a running gag that
- * escalates (shocked, then crying with a tiny violin) but never blocks: the
- * second refusal turns both buttons into "Yes", and Yes is always one tap away.
+ * The first frame. Pip guards the surprise. The first "No" is a running gag (Pip is shocked, the button turns into
+ * "Not now"); "Not now" is a real answer: Pip cries a little, the card closes, and nothing opens until the person taps
+ * "Yes" or "Open it after all" themselves. A decline never opens the card. See `lib/experience/gateFlow.ts`.
  */
 export function GateScene({ theme, recipientName, fromName, onComplete }: Props) {
   const { award } = useJoy();
   const fx = useRef<CelebrationHandle>(null);
-  const [refusals, setRefusals] = useState(0);
-  const [leaving, setLeaving] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [phase, setPhase] = useState<GatePhase>('asking');
   const from = fromName?.trim() || 'Someone';
   const name = recipientName.trim();
-  const copy = theme.gate;
 
-  const mood: PipMood = leaving ? 'joy' : (MOODS[Math.min(refusals, 2)] ?? 'hopeful');
-  const title =
-    refusals === 0
-      ? `${from} ${copy.hopeful}`
-      : refusals === 1
-        ? copy.refusedOnce
-        : copy.refusedTwice;
-  const sub =
-    refusals === 0 ? copy.hopefulSub : refusals === 1 ? copy.refusedOnceSub : copy.refusedTwiceSub;
+  const leaving = phase === 'opening';
+  const view = gateView(phase, theme.gate, from);
+  const decline = declineLabel(phase);
+
+  // The button that was pressed goes away when the card closes, so the heading takes focus and is read out.
+  useEffect(() => {
+    if (phase === 'declined') titleRef.current?.focus();
+  }, [phase]);
 
   const yes = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       if (leaving) return;
-      setLeaving(true);
+      setPhase((current) => nextPhase(current, 'yes'));
       // This tap is what lets the song start on its own at the end.
       unlockMusic(theme.songType ?? theme.id);
       playTada();
@@ -69,19 +65,18 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
 
   const no = useCallback(() => {
     if (leaving) return;
-    const next = refusals + 1;
-    setRefusals(next);
-    buzz(next === 1 ? 40 : 90);
-    if (next === 1) playBoing();
+    const next = nextPhase(phase, 'decline');
+    setPhase(next);
+    buzz(next === 'reacted' ? 40 : 90);
+    // Pip's reaction: a boing for the gasp, then the sad trombone for the tiny violin.
+    if (next === 'reacted') playBoing();
     else playSadTrombone();
-  }, [leaving, refusals]);
-
-  const bothYes = refusals >= 2;
+  }, [leaving, phase]);
 
   return (
     <section
       className={`gate gate--${theme.id}${leaving ? ' is-leaving' : ''}`}
-      data-refusals={refusals}
+      data-phase={phase}
       aria-label="Start the surprise"
     >
       <CelebrationCanvas ref={fx} preset={theme.fx} colors={theme.palette} fixed />
@@ -96,38 +91,43 @@ export function GateScene({ theme, recipientName, fromName, onComplete }: Props)
       <div className="gate__stage">
         <span className="gate__aura" aria-hidden />
         <span className="gate__ring" aria-hidden />
-        <Pip mood={mood} theme={theme} size={232} holdsGift />
-        {POP[Math.min(refusals, 2)] ? (
-          <span key={refusals} className="gate__pop" aria-hidden>
-            {POP[Math.min(refusals, 2)]}
+        <Pip mood={view.mood} theme={theme} size={232} holdsGift />
+        {view.pop ? (
+          <span key={phase} className="gate__pop" aria-hidden>
+            {view.pop}
           </span>
         ) : null}
       </div>
 
-      <h2 key={`t${refusals}${leaving}`} className="gate__title" aria-live="polite">
-        {leaving ? 'Here we go!' : title}
+      <h2 key={`t${phase}`} ref={titleRef} tabIndex={-1} className="gate__title" aria-live="polite">
+        {view.title}
       </h2>
-      <p className="gate__sub">{leaving ? 'Sound on for the full effect.' : sub}</p>
+      <p className="gate__sub">{view.sub}</p>
+      {view.note ? <p className="gate__note">{view.note}</p> : null}
 
       <div className="gate__actions">
-        <button
-          type="button"
-          className="gate__yes"
-          style={{ transform: `scale(${bothYes ? 1 : 1 + refusals * 0.08})` }}
-          onClick={yes}
-          disabled={leaving}
-        >
-          {copy.yes}
-        </button>
-        <button
-          type="button"
-          className={`gate__no${bothYes ? ' is-yes' : ''}`}
-          style={{ transform: `scale(${bothYes ? 1 : 1 - refusals * 0.14})` }}
-          onClick={bothYes ? yes : no}
-          disabled={leaving}
-        >
-          {bothYes ? copy.yes : 'No'}
-        </button>
+        {phase === 'declined' ? (
+          <button type="button" className="gate__again" onClick={yes}>
+            {OPEN_AFTER_ALL}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="gate__yes"
+              style={{ transform: `scale(${phase === 'reacted' ? 1.08 : 1})` }}
+              onClick={yes}
+              disabled={leaving}
+            >
+              {theme.gate.yes}
+            </button>
+            {decline ? (
+              <button type="button" className="gate__no" onClick={no} disabled={leaving}>
+                {decline}
+              </button>
+            ) : null}
+          </>
+        )}
       </div>
     </section>
   );

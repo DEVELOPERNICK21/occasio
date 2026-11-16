@@ -7,7 +7,7 @@ What the person who **receives** a card sees. Product code lives in
 
 `gate → balloons → candle (birthday, anniversary) → gift → contract (just because) → hub → finale`
 
-- **gate** — "Do you want to see it?" with Pip. A playful "No" escalates twice, then both buttons become "Yes".
+- **gate** — "Do you want to see it?" with Pip. The first "No" is a joke (Pip gasps) and the button turns into "Not now". "Not now" is a real answer: Pip cries a little with a tiny violin, the card closes, and nothing opens until the person taps "Yes" or "Open it after all". A decline never opens the card (rules in `lib/experience/gateFlow.ts`).
 - **hub** — camera (photos), jar (reasons), envelope (letter), opened in any order. Photos are a swipe deck
   (birthday, anniversary) or a clothesline with a note on the back (other moments).
 - **finale** — one choreographed show, then tap-for-more. Sticker pack, reaction, replay, "make one back".
@@ -249,7 +249,7 @@ Persuasive design is welcome; deceptive design is not.
 | Keep Skip, Mute and "just tap to agree" always available | Farm rewards on replay (awards are idempotent per action) |
 | Ask for the microphone only when the recipient taps for it | Collect analytics beyond the four anonymous funnel counters |
 
-The "No" gag is safe because it can never trap anyone: the second refusal turns both buttons into "Yes".
+The "No" gag is safe because the joke is Pip's reaction and never the person's answer: nothing is ever turned into "Yes" for them. "Not now" closes the card, the page says plainly that the surprise will keep, and the way back ("Open it after all") is offered but only opens on their own tap. `gateFlow.test.ts` fails if a decline can ever open the card, or if the closed state pushes, guilts or hurries.
 
 ## Reviewing a scene quickly
 
