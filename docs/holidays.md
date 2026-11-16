@@ -6,12 +6,15 @@ festival's greeting, colours, celebration effect and opening lines already set.
 
 ## What a person sees
 
-- **Home** shows the next festival worth a wish ("Diwali is in 5 days"), one tap to start it, and a link to
-  all of them. It looks up to 30 days ahead, keeps yesterday's festival for a late wish, and only suggests
-  festivals marked "On Home" below. With nothing close it is just the way into the list.
-- **Festivals and holidays** (the list) opens from that link, and from "Making it for a festival or holiday?"
-  under "What's the moment?". It shows *Coming up* (the next 60 days) and then every festival in groups, each
-  with its date. Opened from the moment step, it keeps who the card is for.
+- **Home** puts "Festivals coming up" at the very top, under the greeting: a swipeable row of cards, each with
+  the festival, how soon it is ("Tomorrow", "In 12 days", "Yesterday") and its date. Tap a card to start a wish
+  for it; "See all" opens the whole list. It shows the widely celebrated festivals (the "On Home" column below) in
+  the next 60 days, soonest first, up to six, and keeps yesterday's festival for a late wish. With nothing coming
+  up it is just a "Festivals and holidays" link.
+- **"What's the moment?"** (the step after choosing who it is for) has the same row above the five everyday
+  moments, so a festival is one tap away there too, and it keeps who the card is for.
+- **Festivals and holidays** (the full list) opens from "See all". It leads with *Coming up* (every festival in
+  the next 60 days, not only the well-known ones) and then lists all of them in groups, each with its date.
 - **The card** says "Happy Diwali" on the frame, offers that festival's opening lines in *Say it your way*, and
   on the recipient's page shows "Happy Diwali," above the name, in the festival's colours, with its own effect
   and song. It opens as the interactive story like every other moment (gate, balloons, gift, photos and
@@ -126,7 +129,7 @@ Dates are shown to the person as the next time it falls (for example "Thu 29 Oct
 | Colour families (15, five colours each) and the festival themes | `src/features/create/domain/templateTheme.ts` |
 | Card type, label, greeting, headline, effect, story default, openers | `types.ts`, `templates.ts`, `audienceOccasion.ts`, `occasionEffects.ts`, `experienceMode.ts`, `messageStarters.ts` |
 | Starting a card | `useCreateDraft.startFromHoliday` |
-| Screens | `HolidaysScreen`, `HolidayFeatureCard` (Home), `HolidayRow`, the link on `OccasionScreen` |
+| Screens | `HolidaysScreen`, `HolidayRow`, and `UpcomingHolidays` (the row at the top of `CreateHomeScreen` and `OccasionScreen`, fed by `comingUpHolidays`) |
 | The recipient's page | `docs-site/src/lib/holidays.ts` (twin of the list), `recipientCard.ts`, `templateThemes.ts`, `occasionEffects.ts`, `experience/momentTheme.ts` (story look built from the colour family), `storyCopy.ts`, `resolveExperience.ts` |
 
 The recipient's page cannot import from the app, so it keeps a copy of the table.
@@ -172,8 +175,8 @@ and the link preview at `/c/demo-diwali-maya-abc123/opengraph-image`.
 
 ## Not done yet
 
-- **Festival artwork.** Festival stories reuse the existing balloons, gift, envelope and letter art in the
-  festival's colours and words. Diyas, pichkaris, pumpkins and the like would be new drawings.
+- **Festival artwork** is now built (diyas, crackers, Santa and a tree, pumpkins and more for all 51; see
+  [festival-art-and-coach.md](festival-art-and-coach.md)). Still plain: the 3D gift wrap, the link-preview image and Pip's face.
 - **Region.** Everyone sees the same list. Home suggests only the widely celebrated festivals, so an Indian
   account is not told about Thanksgiving, but a US account is not told about Diwali either. A region or language
   setting would let Home choose better.

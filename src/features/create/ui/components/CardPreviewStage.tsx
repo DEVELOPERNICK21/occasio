@@ -9,6 +9,7 @@ import type { Occasion } from '../../domain/templateSchema';
 import type { TemplateType } from '../../domain/types';
 import { AnimatedWishCard } from './AnimatedWishCard';
 import { OccasionStickerShower } from './OccasionStickerShower';
+import { FestivalOrnaments } from './FestivalOrnaments';
 import { TemplateRenderer } from './TemplateRenderer';
 
 type Props = {
@@ -59,6 +60,7 @@ export function CardPreviewStage({
               photoUri={photoUris[0]}
             />
           )}
+          <FestivalOrnaments templateType={templateType} />
         </View>
         {/* After the card in the tree so Android elevation paints it on top */}
         <OccasionStickerShower

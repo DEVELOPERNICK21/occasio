@@ -6,16 +6,23 @@ import { Alert, Share, StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { Text } from '../../../../shared/ui/Text';
 import { useRequireAuth, useAuth } from '../../../auth/application/useAuth';
-import { useQueueGuestHistory, useRecordHistory } from '../../../history/application/useHistory';
+import { usePaywall } from '../../../billing/application/usePaywall';
+import { useWishBalance } from '../../../billing/application/useWishBalance';
+import { useHistory, useQueueGuestHistory, useRecordHistory } from '../../../history/application/useHistory';
 import { useLinkCreationToPerson } from '../../../vault/application/useLinkCreationToPerson';
 import { useVaultPeople } from '../../../vault/application/useVaultPeople';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import { useTemplateCatalog } from '../../application/useTemplateCatalog';
 import { shareMessage, storyCaption } from '../../domain/shareLink';
 import { getTemplateTheme } from '../../domain/templateTheme';
+import { audienceForRelationship, suggestRecipients, type Suggestion } from '../../domain/festivalCoach';
+import { holidayById } from '../../domain/holidays';
+import { nextOccurrence } from '../../domain/holidays';
 import { AnimatedWishCard } from '../components/AnimatedWishCard';
 import { OccasionStickerShower } from '../components/OccasionStickerShower';
 import { ShareLinkPanel } from '../components/ShareLinkPanel';
+import { FestivalNextPeople } from '../components/FestivalNextPeople';
+import { FestivalOrnaments } from '../components/FestivalOrnaments';
 import { TemplateRenderer } from '../components/TemplateRenderer';
 import type {
   CreateStackParamList,
@@ -36,13 +43,16 @@ type Props = CompositeScreenProps<
 >;
 
 export function ShareSuccessScreen({ navigation, route }: Props) {
-  const { draft, reset } = useCreateDraftContext();
+  const { draft, reset, startFromHoliday } = useCreateDraftContext();
   const { requireAuth } = useRequireAuth();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useAuth();
+  const { tier, openForced } = usePaywall();
+  const { balance } = useWishBalance(isSignedIn ? (user?.uid ?? null) : null);
   const { record } = useRecordHistory();
   const { queue } = useQueueGuestHistory();
   const { getById } = useTemplateCatalog();
   const { people } = useVaultPeople(isSignedIn);
+  const { entries } = useHistory(isSignedIn);
   const { link, isSaving: isLinking, error: linkError } = useLinkCreationToPerson();
   const { shareUrl, expiresAt, creationId, shareSlug, wasUpdated } = route.params;
   const [copied, setCopied] = useState(false);
@@ -59,6 +69,36 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
     ? `Send to ${draft.recipientName.trim()}`
     : 'Send the link';
   const screenTitle = wasUpdated ? 'Link updated' : 'Your link is ready';
+
+  // A festival card: who else in the Vault is it for? The card just made counts as given, so they are left out.
+  const festival = holidayById(draft.templateType);
+  const nextPeople = useMemo(() => {
+    if (!festival || wasUpdated || !isSignedIn) return [];
+    const now = new Date();
+    const occurrence = nextOccurrence(festival, now, 3);
+    if (!occurrence) return [];
+    const given = { recipientName: draft.recipientName, templateType: festival.id, createdAt: now.toISOString() };
+    const wishes = [...entries.map((e) => ({ recipientName: e.recipientName, templateType: e.templateType, createdAt: e.createdAt })), given];
+    const coachPeople = people.map((p) => ({ id: p.id, name: p.personName, relationship: p.relationshipType }));
+    return suggestRecipients(festival, occurrence.date, coachPeople, wishes, now, 3).suggested;
+  }, [festival, wasUpdated, isSignedIn, entries, people, draft.recipientName]);
+
+  // The card just made may have been the last wish. Then the next person is a plan, not a button that dead-ends.
+  const noWishesLeft = isSignedIn && tier === 'free' && balance?.ready === 0;
+  const handleSeePlans = () => {
+    trackEvent(AnalyticsEvents.planPromptTapped, { key: `share:${festival?.id ?? 'none'}`, kind: 'share_success' });
+    void openForced();
+  };
+
+  const handleWishNext = (suggestion: Suggestion) => {
+    if (!festival) return;
+    trackEvent(AnalyticsEvents.festivalNextPersonTapped, { holiday: festival.id });
+    startFromHoliday(festival.id, false, {
+      recipientName: suggestion.person.name,
+      audience: audienceForRelationship(suggestion.person.relationship),
+    });
+    navigation.navigate('AddPhotos');
+  };
 
   useEffect(() => {
     if (!draft.templateType) return;
@@ -200,6 +240,7 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
               showReplay
             />
           )}
+          <FestivalOrnaments templateType={draft.templateType} />
         </View>
         <OccasionStickerShower
           occasion={draft.occasion}
@@ -224,6 +265,16 @@ export function ShareSuccessScreen({ navigation, route }: Props) {
           onPress={handleCopyCaption}
         />
       </ScreenActions>
+
+      {festival ? (
+        <FestivalNextPeople
+          holiday={festival}
+          suggested={nextPeople}
+          onPick={handleWishNext}
+          noWishesLeft={noWishesLeft}
+          onSeePlans={handleSeePlans}
+        />
+      ) : null}
 
       <View style={[styles.nudge, { borderColor: theme.accent }]}>
         <Text style={[styles.nudgeEyebrow, { color: theme.accent }]}>

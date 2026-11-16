@@ -67,6 +67,8 @@ Full rules: `ui-design-principles.md` (§11 anti-slop for visual + copy)
 ## Anti-slop (agents)
 
 **UI:** cream/green tokens only · one primary CTA · no purple gradients · no emoji/hype copy · copy `create/` screens.  
+**Icons:** import from `src/shared/ui/icons/lucide` (add a line there for a new one), never from `lucide-react-native`: the package root bundles all 1,800 icons (a test fails). **Size:** see `docs/app-size.md` before adding a native package or an asset.  
+**Festival art:** the drawings and which festival uses which live in `scripts/art/festival-motifs.mjs`; edit it and run `node scripts/art/festival-motifs.mjs` (see `docs/festival-art-and-coach.md`). Never name a `.json` file like a `.ts` file beside it: Metro would load the JSON.  
 **Code:** smallest diff · no new utils folders · no `fetch` in `ui/` · match existing feature patterns.
 **Architecture:** a feature may import another only as `scripts/architecture/features.json` allows (and only its `application`/`domain`); wiring of several features goes in `src/app`, not in a feature or `shared`; one source of truth per fact (tier in `billing/domain`, error codes in `shared/api/errors.ts`, colours in `tokens.ts`). `npm run arch:check` must stay green.  
 Details: `ui-design-principles.md` §11 · `data-flow.md` §12 · `product-principles.md` §7.

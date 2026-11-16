@@ -24,13 +24,9 @@ jest.mock('../../src/shared/analytics/events', () => ({
   trackEvent: jest.fn(),
 }));
 
-import { HolidayFeatureCard } from '../../src/features/create/ui/components/HolidayFeatureCard';
+import { UpcomingHolidays } from '../../src/features/create/ui/components/UpcomingHolidays';
 import { HolidaysScreen } from '../../src/features/create/ui/screens/HolidaysScreen';
-import {
-  HOLIDAYS,
-  holidayById,
-  nextOccurrence,
-} from '../../src/features/create/domain/holidays';
+import { HOLIDAYS, comingUpHolidays } from '../../src/features/create/domain/holidays';
 
 const navigate = jest.fn();
 const goBack = jest.fn();
@@ -104,32 +100,46 @@ describe('the festivals list', () => {
   });
 });
 
-describe('the Home festival card', () => {
-  const diwali = nextOccurrence(holidayById('diwali')!, new Date(2026, 10, 1))!;
+describe('the upcoming festivals strip', () => {
+  const now = new Date(2026, 10, 9, 10, 0, 0);
+  const items = comingUpHolidays(now);
 
-  it('says how close the festival is, starts it with one tap, and links to the rest', async () => {
-    const onStart = jest.fn();
-    const onSeeAll = jest.fn();
-    const tree = await render(<HolidayFeatureCard occurrence={diwali} onStart={onStart} onSeeAll={onSeeAll} />);
+  it('shows several festivals with how soon they are, so none has to be searched for', async () => {
+    const tree = await render(<UpcomingHolidays items={items} now={now} onPick={jest.fn()} onSeeAll={jest.fn()} />);
     const text = textOf(tree.root);
-    expect(text).toContain('Diwali is in 7 days');
-    expect(text).toContain('A photo and a few honest words beat a forwarded message.');
+    expect(text).toContain('Festivals coming up');
+    for (const label of ['Diwali', 'Bhai Dooj', 'Guru Nanak Jayanti', 'Christmas', "New Year's Eve", 'New Year']) {
+      expect(text).toContain(label);
+    }
+    expect(text).toContain('Yesterday');
+    expect(text).toContain('In 2 days');
+    expect(text).toContain('Fri 25 Dec');
     expect(text).not.toContain('!');
-    await press(tree.root, 'Diwali is in 7 days');
-    expect(onStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts a wish for the festival that is tapped', async () => {
+    const onPick = jest.fn();
+    const tree = await render(<UpcomingHolidays items={items} now={now} onPick={onPick} onSeeAll={jest.fn()} />);
+    await press(tree.root, 'Bhai Dooj.');
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0]![0]).toMatchObject({ id: 'bhai_dooj', label: 'Bhai Dooj' });
+  });
+
+  it('opens the whole list from See all', async () => {
+    const onSeeAll = jest.fn();
+    const tree = await render(<UpcomingHolidays items={items} now={now} onPick={jest.fn()} onSeeAll={onSeeAll} />);
     await press(tree.root, 'See all festivals and holidays');
     expect(onSeeAll).toHaveBeenCalledTimes(1);
   });
 
-  it('is just the way into the list when nothing is close', async () => {
-    const onStart = jest.fn();
+  it('is only a way into the list when nothing is coming up', async () => {
+    const onPick = jest.fn();
     const onSeeAll = jest.fn();
-    const tree = await render(<HolidayFeatureCard occurrence={null} onStart={onStart} onSeeAll={onSeeAll} />);
+    const tree = await render(<UpcomingHolidays items={[]} now={now} onPick={onPick} onSeeAll={onSeeAll} />);
     expect(textOf(tree.root)).toContain('Festivals and holidays');
-    await press(tree.root, 'Festivals and holidays.');
+    expect(textOf(tree.root)).not.toContain('Festivals coming up');
+    await press(tree.root, 'Festivals and holidays');
     expect(onSeeAll).toHaveBeenCalledTimes(1);
-    expect(onStart).not.toHaveBeenCalled();
-    // No second link when the card itself is the link.
-    expect(tree.root.findAll((n) => n.props.accessibilityLabel === 'See all festivals and holidays')).toHaveLength(0);
+    expect(onPick).not.toHaveBeenCalled();
   });
 });

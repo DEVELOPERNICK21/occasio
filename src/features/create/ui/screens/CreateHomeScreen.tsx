@@ -2,9 +2,9 @@ import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useIsFocused, useScrollToTop } from '@react-navigation/native';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CalendarDays } from 'lucide-react-native';
+import { CalendarDays } from '../../../../shared/ui/icons/lucide';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import { triggerCardHaptic } from '../../../../shared/platform/haptics';
 import { useAuth } from '../../../auth/application/useAuth';
@@ -18,28 +18,35 @@ import { OccasionCardSkeleton } from '../../../../shared/ui/SkeletonLayouts';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import type { CreateStackParamList, MainTabParamList } from '../../../../shared/navigation/types';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import { useFestivalCoach } from '../../application/useFestivalCoach';
 import { useBadgeCelebration } from '../../application/useBadgeCelebration';
 import { BadgeCelebration } from '../components/BadgeCelebration';
 import { WishBalanceCard } from '../components/WishBalanceCard';
 import { CreateWishPill } from '../components/CreateWishPill';
-import { HolidayFeatureCard } from '../components/HolidayFeatureCard';
 import { HomeHeroStage } from '../components/HomeHeroStage';
 import { WishJourneyCard } from '../components/WishJourneyCard';
 import { AudienceCard } from '../components/AudienceCard';
+import { ReminderCard } from '../components/ReminderCard';
+import { UpcomingHolidays } from '../components/UpcomingHolidays';
 import { UpcomingOccasionCard } from '../components/UpcomingOccasionCard';
 import { VaultNudgeCard } from '../components/VaultNudgeCard';
 import { getTemplateTheme } from '../../domain/templateTheme';
 import { AUDIENCE_OPTIONS } from '../../domain/audienceOccasion';
-import { featuredHoliday } from '../../domain/holidays';
+import {
+  audienceForRelationship,
+  namesLine,
+  type Opportunity,
+} from '../../domain/festivalCoach';
+import type { Holiday } from '../../domain/holidays';
 import { freeQuotaNotice } from '../../domain/quota';
 import type { Audience } from '../../domain/templateSchema';
 import {
   getCreateHomeHero,
   getUpcomingOccasionsFromVault,
   getVaultNudgeContent,
-  shouldShowVaultNudge,
 } from '../../domain/createHome';
 import { computeWishJourney, countArmedAutoSend } from '../../domain/wishJourney';
+import { planHome, type HomeBlock, type HomeSignals } from '../../domain/homePlan';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<CreateStackParamList, 'CreateHome'>,
@@ -47,6 +54,8 @@ type Props = CompositeScreenProps<
 >;
 
 const birthdayTheme = getTemplateTheme('birthday');
+/** A birthday this close counts as coming up for the plan. */
+const BIRTHDAYS_SOON_DAYS = 14;
 
 export function CreateHomeScreen({ navigation }: Props) {
   const scrollRef = useRef<ScrollView>(null);
@@ -73,13 +82,42 @@ export function CreateHomeScreen({ navigation }: Props) {
   const { balance, settled: balanceSettled, refresh: refreshBalance } = useWishBalance(
     isSignedIn ? (user?.uid ?? null) : null,
   );
+  // Looked at again each time Home comes into view, so the festivals move on with the days.
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    if (isFocused) setToday(new Date());
+  }, [isFocused]);
+
+  // The festival coach: which festivals to put first for this person, who to wish, and today's one nudge.
+  const isPro = tier !== 'free';
+  const birthdays = useMemo(
+    () => upcoming.map((o) => ({ id: o.personId, name: o.personName, daysUntil: o.daysUntil })),
+    [upcoming],
+  );
+  const coach = useFestivalCoach({
+    uid: isSignedIn ? (user?.uid ?? null) : null,
+    now: today,
+    people: isSignedIn ? people : [],
+    entries: isSignedIn ? entries : [],
+    wishesReady: balance?.ready ?? null,
+    enabled: isFocused,
+    isPro,
+    birthdays,
+  });
+  const festivals = useMemo(() => coach.opportunities.slice(0, 6), [coach.opportunities]);
+  const festivalHints = useMemo(() => {
+    const hints: Record<string, string> = {};
+    for (const opportunity of festivals) {
+      const line = namesLine(opportunity.suggested.map((s) => s.person.name));
+      if (line) hints[opportunity.holiday.id] = `For ${line}`;
+    }
+    return hints;
+  }, [festivals]);
   const { celebrating, dismiss: dismissCelebration } = useBadgeCelebration(
     isSignedIn ? (user?.uid ?? null) : null,
     journey.badges,
     isFocused && isSignedIn && !historyLoading && !vaultLoading,
   );
-  // Recomputed each time Home comes into view, so it moves on after the day.
-  const festival = useMemo(() => (isFocused ? featuredHoliday(new Date()) : null), [isFocused]);
   const quotaNotice = freeQuotaNotice(isSignedIn && !historyLoading ? entries.length : 0, tier);
 
   const hero = useMemo(
@@ -87,17 +125,30 @@ export function CreateHomeScreen({ navigation }: Props) {
     [isSignedIn, upcoming],
   );
 
-  const showVaultNudge = useMemo(
-    () => shouldShowVaultNudge(upcoming.length, isSignedIn && vaultLoading),
-    [isSignedIn, upcoming.length, vaultLoading],
-  );
-
   const vaultNudge = useMemo(
     () => getVaultNudgeContent(isSignedIn, people.length),
     [isSignedIn, people.length],
   );
 
-  const showJourney = !historyLoading || !isSignedIn;
+  // What Home shows is decided by who is looking: a new person gets the way in and nothing else, a regular gets the
+  // quick wish first, someone away for a while gets no progress to feel behind on. See `homePlan.ts`.
+  const lastCard = entries.reduce<number | null>((latest, e) => {
+    const made = Date.parse(e.createdAt);
+    return Number.isFinite(made) && (latest === null || made > latest) ? made : latest;
+  }, null);
+  const signals: HomeSignals = {
+    signedIn: isSignedIn,
+    cardsMade: isSignedIn ? entries.length : 0,
+    daysSinceLastCard:
+      isSignedIn && lastCard !== null ? Math.floor((today.getTime() - lastCard) / (24 * 60 * 60 * 1000)) : null,
+    peopleSaved: isSignedIn ? people.length : 0,
+    birthdaysSoon: isSignedIn ? upcoming.filter((o) => o.daysUntil <= BIRTHDAYS_SOON_DAYS).length : 0,
+    wishesReady: balance?.ready ?? null,
+    isPro,
+  };
+  const plan = planHome(signals, { nudge: coach.nudge !== null, prompt: coach.planPrompt !== null });
+  // The history decides the stage, so until it has loaded there is nothing honest to put in order.
+  const planReady = !isSignedIn || !historyLoading;
 
   useEffect(() => {
     trackEvent(AnalyticsEvents.createStarted);
@@ -125,16 +176,32 @@ export function CreateHomeScreen({ navigation }: Props) {
     navigation.navigate('AddPhotos');
   };
 
-  const handleStartFestival = () => {
-    if (!festival) return;
+  /** Starts a festival card, for the first person the coach suggests when it has one. */
+  const startFestival = (holiday: Holiday, opportunity: Opportunity | undefined, source: string) => {
     triggerCardHaptic();
-    startFromHoliday(festival.holiday.id);
-    trackEvent(AnalyticsEvents.holidaySelected, {
-      holiday: festival.holiday.id,
-      group: festival.holiday.group,
-      source: 'create_home',
-    });
+    const first = opportunity?.suggested[0]?.person;
+    startFromHoliday(
+      holiday.id,
+      false,
+      first ? { recipientName: first.name, audience: audienceForRelationship(first.relationship) } : undefined,
+    );
+    trackEvent(AnalyticsEvents.holidaySelected, { holiday: holiday.id, group: holiday.group, source });
     navigation.navigate('AddPhotos');
+  };
+
+  const handleStartFestival = (holiday: Holiday) =>
+    startFestival(holiday, festivals.find((o) => o.holiday.id === holiday.id), 'create_home');
+
+  const handleNudgeStart = () => {
+    if (!coach.nudge) return;
+    trackEvent(AnalyticsEvents.festivalNudgeTapped, { holiday: coach.nudge.opportunity.holiday.id });
+    startFestival(coach.nudge.opportunity.holiday, coach.nudge.opportunity, 'festival_nudge');
+  };
+
+  const handlePlanPromptTap = () => {
+    if (!coach.planPrompt) return;
+    trackEvent(AnalyticsEvents.planPromptTapped, { key: coach.planPrompt.key, kind: coach.planPrompt.kind });
+    void openForced();
   };
 
   const handleSeeFestivals = () => {
@@ -174,6 +241,100 @@ export function CreateHomeScreen({ navigation }: Props) {
     navigation.navigate('VaultTab', { screen: 'AddPerson', params: {} });
   };
 
+  const nudge = coach.nudge;
+  const prompt = coach.planPrompt;
+  const blocks: Record<HomeBlock, ReactNode> = {
+    plan_prompt: prompt ? (
+      <ReminderCard
+        key="plan_prompt"
+        holidayId={prompt.holidayId}
+        title={prompt.title}
+        body={prompt.body}
+        actionLabel={prompt.actionLabel}
+        laterLabel="Not now for this reminder"
+        laterHint="Hides this for a week"
+        onAction={handlePlanPromptTap}
+        onLater={coach.dismissPlanPrompt}
+      />
+    ) : null,
+    nudge: nudge ? (
+      <ReminderCard
+        key="nudge"
+        holidayId={nudge.opportunity.holiday.id}
+        title={nudge.title}
+        body={nudge.body}
+        actionLabel={nudge.actionLabel}
+        laterLabel={`Not now for ${nudge.opportunity.holiday.label}`}
+        laterHint="Stops reminders for this festival until next year"
+        onAction={handleNudgeStart}
+        onLater={coach.snoozeNudge}
+      />
+    ) : null,
+    festivals: (
+      <UpcomingHolidays
+        key="festivals"
+        items={festivals}
+        now={today}
+        hints={festivalHints}
+        onPick={handleStartFestival}
+        onSeeAll={handleSeeFestivals}
+      />
+    ),
+    who: (
+      <View key="who">
+        <Text style={styles.gridTitle}>Who is it for?</Text>
+        <View style={styles.grid}>
+          {AUDIENCE_OPTIONS.map((option, index) => (
+            <AudienceCard
+              key={option.id}
+              audience={option.id}
+              label={option.label}
+              cue={option.cue}
+              index={index}
+              onPress={() => pickAudience(option.id)}
+            />
+          ))}
+        </View>
+      </View>
+    ),
+    create_pill: <CreateWishPill key="create_pill" onPress={handleQuickWish} />,
+    balance: balance ? (
+      <WishBalanceCard
+        key="balance"
+        balance={balance}
+        onPress={() => navigation.navigate('AccountTab')}
+        onGetMore={() => void openForced()}
+      />
+    ) : balanceSettled && quotaNotice ? (
+      <Text key="balance" style={styles.quota}>
+        {quotaNotice}
+      </Text>
+    ) : null,
+    journey: <WishJourneyCard key="journey" journey={journey} onSeeAll={() => navigation.navigate('Badges')} />,
+    upcoming: vaultLoading ? (
+      <UpcomingSectionSkeleton key="upcoming" />
+    ) : upcoming.length > 0 ? (
+      <UpcomingSection
+        key="upcoming"
+        vaultLoading={vaultLoading}
+        peopleCount={people.length}
+        upcoming={upcoming}
+        onViewAll={() => navigation.navigate('VaultTab', { screen: 'VaultList' })}
+        onSendCard={handleSendCard}
+        onOpenVaultPerson={handleOpenVaultPerson}
+      />
+    ) : null,
+    vault_nudge: vaultLoading ? null : (
+      <VaultNudgeCard
+        key="vault_nudge"
+        title={vaultNudge.title}
+        body={vaultNudge.body}
+        actionLabel={vaultNudge.actionLabel}
+        onPress={handleVaultNudge}
+      />
+    ),
+  };
+
   return (
     <Screen title="Create" hideHeader scrollRef={scrollRef}>
       <HomeHeroStage
@@ -182,63 +343,13 @@ export function CreateHomeScreen({ navigation }: Props) {
         line={hero.line}
       />
 
-      <Text style={styles.gridTitle}>Who is it for?</Text>
-      <View style={styles.grid}>
-        {AUDIENCE_OPTIONS.map((option, index) => (
-          <AudienceCard
-            key={option.id}
-            audience={option.id}
-            label={option.label}
-            cue={option.cue}
-            index={index}
-            onPress={() => pickAudience(option.id)}
-          />
-        ))}
-      </View>
-
-      <View style={styles.engagementSection}>
-        <CreateWishPill onPress={handleQuickWish} />
-        <HolidayFeatureCard
-          occurrence={festival}
-          onStart={handleStartFestival}
-          onSeeAll={handleSeeFestivals}
-        />
-        {balance ? (
-          <WishBalanceCard
-            balance={balance}
-            onPress={() => navigation.navigate('AccountTab')}
-            onGetMore={() => void openForced()}
-          />
-        ) : balanceSettled && quotaNotice ? (
-          <Text style={styles.quota}>{quotaNotice}</Text>
-        ) : null}
-
-        {showJourney ? (
-          <WishJourneyCard journey={journey} onSeeAll={() => navigation.navigate('Badges')} />
-        ) : null}
-
-        {isSignedIn && !showVaultNudge ? (
-          <UpcomingSection
-            vaultLoading={vaultLoading}
-            peopleCount={people.length}
-            upcoming={upcoming}
-            onViewAll={() => navigation.navigate('VaultTab', { screen: 'VaultList' })}
-            onSendCard={handleSendCard}
-            onOpenVaultPerson={handleOpenVaultPerson}
-          />
-        ) : isSignedIn && vaultLoading ? (
-          <UpcomingSectionSkeleton />
-        ) : null}
-
-        {showVaultNudge ? (
-          <VaultNudgeCard
-            title={vaultNudge.title}
-            body={vaultNudge.body}
-            actionLabel={vaultNudge.actionLabel}
-            onPress={handleVaultNudge}
-          />
-        ) : null}
-      </View>
+      {planReady ? (
+        <View style={styles.stack}>{plan.map((block) => blocks[block]).filter(Boolean)}</View>
+      ) : (
+        <View style={styles.stack}>
+          <OccasionCardSkeleton />
+        </View>
+      )}
 
       <BadgeCelebration
         badge={celebrating}
@@ -344,8 +455,11 @@ function UpcomingSection({
 }
 
 const styles = StyleSheet.create({
-  gridTitle: {
+  stack: {
     marginTop: spacing.lg,
+    gap: spacing.lg,
+  },
+  gridTitle: {
     fontSize: typography.sizeMd,
     fontWeight: typography.weightSemibold,
     color: colors.ink,
@@ -364,10 +478,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.sizeXs * 1.4,
     color: colors.muted,
     paddingHorizontal: spacing.md,
-  },
-  engagementSection: {
-    marginTop: spacing.lg,
-    gap: spacing.md,
   },
   section: {
     gap: spacing.sm,

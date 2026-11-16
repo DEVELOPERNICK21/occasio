@@ -556,9 +556,16 @@ export function upcomingHolidays(now: Date, options: UpcomingOptions): HolidayOc
   return options.max === undefined ? found : found.slice(0, options.max);
 }
 
-/** The one festival to suggest on Home, or null when nothing worth suggesting is close. */
-export function featuredHoliday(now: Date, withinDays = 30): HolidayOccurrence | null {
-  return upcomingHolidays(now, { withinDays, featuredOnly: true, graceDays: 1, max: 1 })[0] ?? null;
+/** How far ahead "coming up" looks, in days. */
+export const COMING_UP_DAYS = 60;
+
+/**
+ * The festivals put in front of people at the top of Home and of the "What's the moment?" step, so
+ * nobody has to search the list: the widely celebrated ones in the next two months, soonest first.
+ * A festival from yesterday stays, so a late wish is still one tap away.
+ */
+export function comingUpHolidays(now: Date, max = 6): HolidayOccurrence[] {
+  return upcomingHolidays(now, { withinDays: COMING_UP_DAYS, featuredOnly: true, graceDays: 1, max });
 }
 
 export type HolidaySection = {
@@ -596,20 +603,4 @@ export function countdownLabel(daysUntil: number): string {
 /** "Fri 20 Nov", with the year when it is not this one. */
 export function holidayDateLabel(day: CalendarDay, now: Date): string {
   return formatCalendarDay(day, now.getFullYear());
-}
-
-/** "Diwali is today", "Diwali is in 5 days": the line on Home. */
-export function holidayHeadlineLine(occurrence: HolidayOccurrence): string {
-  const { holiday, daysUntil } = occurrence;
-  if (daysUntil === 0) return `${holiday.label} is today`;
-  if (daysUntil === 1) return `${holiday.label} is tomorrow`;
-  if (daysUntil === -1) return `${holiday.label} was yesterday`;
-  return `${holiday.label} is in ${daysUntil} days`;
-}
-
-/** The line under that: an invitation, never pressure. */
-export function holidayPrompt(occurrence: HolidayOccurrence): string {
-  return occurrence.daysUntil < 0
-    ? 'A late wish still lands. Add a photo and a few words.'
-    : 'A photo and a few honest words beat a forwarded message.';
 }

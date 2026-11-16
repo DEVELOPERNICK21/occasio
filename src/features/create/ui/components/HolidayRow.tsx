@@ -1,9 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight } from '../../../../shared/ui/icons/lucide';
 import { Text } from '../../../../shared/ui/Text';
 import { colors, radius, spacing, typography } from '../../../../shared/theme/tokens';
 import type { Holiday } from '../../domain/holidays';
 import { getTemplateTheme } from '../../domain/templateTheme';
+import { FestivalArt } from '../../../../shared/ui/art/FestivalArt';
+import { festivalArtFor } from '../../domain/festivalArt';
 import { TemplateOccasionIcon } from './TemplateOccasionIcon';
 
 type Props = {
@@ -21,6 +23,7 @@ type Props = {
 export function HolidayRow({ holiday, detail, chip, soon = false, onPress }: Props) {
   const theme = getTemplateTheme(holiday.id);
   const label = [holiday.label, detail, chip].filter(Boolean).join('. ');
+  const art = festivalArtFor(holiday.id);
 
   return (
     <Pressable
@@ -37,7 +40,11 @@ export function HolidayRow({ holiday, detail, chip, soon = false, onPress }: Pro
           { backgroundColor: theme.softBackground, borderColor: theme.accentSecondary },
         ]}
       >
-        <TemplateOccasionIcon templateType={holiday.id} size={20} color={theme.accent} />
+        {art ? (
+          <FestivalArt motif={art.hero} size={32} />
+        ) : (
+          <TemplateOccasionIcon templateType={holiday.id} size={20} color={theme.accent} />
+        )}
       </View>
       <View style={styles.copy}>
         <Text style={styles.name} numberOfLines={1}>
@@ -80,8 +87,8 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   icon: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: radius.md,
     borderWidth: 1,
     alignItems: 'center',

@@ -1,12 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { AnalyticsEvents, trackEvent } from '../../../../shared/analytics/events';
 import type { CreateStackParamList } from '../../../../shared/navigation/types';
 import { colors, spacing, typography } from '../../../../shared/theme/tokens';
 import { Screen } from '../../../../shared/ui/Screen';
 import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
+import { comingUpHolidays, type Holiday } from '../../domain/holidays';
 import {
   audienceLabel,
   OCCASION_OPTIONS,
@@ -15,11 +16,14 @@ import { getTemplateTheme } from '../../domain/templateTheme';
 import type { Occasion } from '../../domain/templateSchema';
 import { OccasionCard } from '../components/OccasionCard';
 import { CreateNudge, CreateProgress } from '../components/CreateProgress';
+import { UpcomingHolidays } from '../components/UpcomingHolidays';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Occasion'>;
 
 export function OccasionScreen({ navigation }: Props) {
-  const { draft, setOccasion } = useCreateDraftContext();
+  const { draft, setOccasion, startFromHoliday } = useCreateDraftContext();
+  const today = useMemo(() => new Date(), []);
+  const festivals = useMemo(() => comingUpHolidays(today), [today]);
   const who = audienceLabel(draft.audience);
   const subtitle = who
     ? `A moment that fits ${who}.`
@@ -31,6 +35,17 @@ export function OccasionScreen({ navigation }: Props) {
     navigation.navigate('AddPhotos');
   };
 
+  // A festival coming up is one tap from here, keeping who the card is for.
+  const selectFestival = (holiday: Holiday) => {
+    startFromHoliday(holiday.id, true);
+    trackEvent(AnalyticsEvents.holidaySelected, {
+      holiday: holiday.id,
+      group: holiday.group,
+      source: 'occasion',
+    });
+    navigation.navigate('AddPhotos');
+  };
+
   return (
     <Screen
       title="What’s the moment?"
@@ -39,6 +54,14 @@ export function OccasionScreen({ navigation }: Props) {
       onBack={() => navigation.goBack()}
     >
       <CreateNudge stage="occasion" />
+      <View style={styles.festivals}>
+        <UpcomingHolidays
+          items={festivals}
+          now={today}
+          onPick={selectFestival}
+          onSeeAll={() => navigation.navigate('Holidays', { fromOccasion: true })}
+        />
+      </View>
       <View style={styles.options}>
         {OCCASION_OPTIONS.map((option) => {
           const theme = getTemplateTheme(option.id);
@@ -55,17 +78,6 @@ export function OccasionScreen({ navigation }: Props) {
           );
         })}
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Festivals and holidays"
-        accessibilityHint="Opens the list of festivals and holidays"
-        onPress={() => navigation.navigate('Holidays', { fromOccasion: true })}
-        hitSlop={8}
-        style={styles.festivals}
-      >
-        <Text style={styles.festivalsText}>Making it for a festival or holiday?</Text>
-        <ChevronRight size={16} color={colors.accent} strokeWidth={2} absoluteStrokeWidth />
-      </Pressable>
       <Text style={styles.hint}>
         You will add a photo next — the frame comes after.
       </Text>
@@ -79,20 +91,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   festivals: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 2,
-    minHeight: 32,
     marginTop: spacing.md,
-  },
-  festivalsText: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightMedium,
-    color: colors.accent,
   },
   hint: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     fontSize: typography.sizeSm,
     lineHeight: typography.sizeSm * 1.4,
     color: colors.muted,

@@ -194,19 +194,26 @@ export function useCreateDraft() {
 
   /**
    * A festival or holiday card: its type and stand-in occasion are set, the photo is the first ask.
-   * `keepAudience` carries over who it is for when they already said (from the "What's the moment?"
+   * With `who` it is for that person (name and audience set). `keepAudience` carries over who it is for when they already said (from the "What's the moment?"
    * step); otherwise the festival's usual audience, or a neutral one so the frames can be listed.
    */
-  const startFromHoliday = useCallback((id: HolidayId, keepAudience = false) => {
-    const holiday = holidayById(id);
-    if (!holiday) return;
-    setDraft((d) => ({
-      ...EMPTY_CREATION_DRAFT,
-      audience: keepAudience && d.audience ? d.audience : (holiday.audience ?? 'someone_special'),
-      occasion: holiday.frame,
-      templateType: holiday.id,
-    }));
-  }, []);
+  const startFromHoliday = useCallback(
+    (id: HolidayId, keepAudience = false, who?: { recipientName: string; audience: Audience }) => {
+      const holiday = holidayById(id);
+      if (!holiday) return;
+      setDraft((d) => ({
+        ...EMPTY_CREATION_DRAFT,
+        // Someone chosen by name (a suggestion from the festival coach) sets who it is for.
+        audience: who ? who.audience : keepAudience && d.audience ? d.audience : (holiday.audience ?? 'someone_special'),
+        occasion: holiday.frame,
+        templateType: holiday.id,
+        recipientName: who?.recipientName ?? '',
+        // The sender's own name carries over from the card before, so a second card does not ask again.
+        fromName: who ? d.fromName : '',
+      }));
+    },
+    [],
+  );
 
   const startFromAudience = useCallback((audience: Audience) => {
     setDraft({

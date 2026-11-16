@@ -9,6 +9,7 @@ import { Screen } from '../../../../shared/ui/Screen';
 import { Text } from '../../../../shared/ui/Text';
 import { useCreateDraftContext } from '../../application/CreateDraftContext';
 import {
+  COMING_UP_DAYS,
   countdownLabel,
   holidayDateLabel,
   holidaySections,
@@ -19,8 +20,7 @@ import { HolidayRow } from '../components/HolidayRow';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'Holidays'>;
 
-/** How many days ahead counts as "coming up", and how close counts as soon. */
-const COMING_UP_DAYS = 60;
+/** How close counts as soon. */
 const SOON_DAYS = 14;
 
 /** Every festival and holiday. Pick one and the card starts with its greeting, colours and openers. */

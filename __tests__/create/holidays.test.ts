@@ -11,11 +11,10 @@ import {
 import {
   HOLIDAYS,
   HOLIDAY_GROUPS,
+  COMING_UP_DAYS,
+  comingUpHolidays,
   countdownLabel,
-  featuredHoliday,
   holidayById,
-  holidayHeadlineLine,
-  holidayPrompt,
   holidaySections,
   isHolidayId,
   nextOccurrence,
@@ -192,12 +191,32 @@ describe('what is coming up', () => {
     expect(soon.every((o) => o.daysUntil <= 30)).toBe(true);
   });
 
-  it('suggests only the festivals worth suggesting on Home, one at a time', () => {
-    // Diwali was yesterday: a late wish is still worth suggesting. A day on, Home moves to the next.
-    expect(featuredHoliday(now)?.holiday.id).toBe('diwali');
-    expect(featuredHoliday(on(2026, 11, 10))?.holiday.id).toBe('bhai_dooj');
-    // Thanksgiving is on the list, but not suggested to everyone.
-    expect(upcomingHolidays(now, { withinDays: 30, featuredOnly: true }).map((o) => o.holiday.id)).not.toContain('thanksgiving');
+  it('puts the well-known festivals of the next two months at the top, soonest first', () => {
+    const top = comingUpHolidays(now);
+    // Diwali was yesterday and stays for a late wish; Thanksgiving and Chhath Puja are on the list but not suggested.
+    expect(top.map((o) => o.holiday.id)).toEqual([
+      'diwali',
+      'bhai_dooj',
+      'guru_nanak_jayanti',
+      'christmas',
+      'new_years_eve',
+      'new_year',
+    ]);
+    expect(top.map((o) => o.daysUntil)).toEqual([-1, 2, 15, 46, 52, 53]);
+    expect(top.every((o) => o.daysUntil <= COMING_UP_DAYS)).toBe(true);
+  });
+
+  it('moves on with the days, and can be capped', () => {
+    expect(comingUpHolidays(on(2026, 11, 10))[0]?.holiday.id).toBe('bhai_dooj');
+    expect(comingUpHolidays(now, 2).map((o) => o.holiday.id)).toEqual(['diwali', 'bhai_dooj']);
+  });
+
+  it('suggests nothing it cannot date: past the listed years only festivals worked out by rule remain', () => {
+    const top = comingUpHolidays(on(2031, 4, 20));
+    expect(top.map((o) => o.holiday.id)).toContain('mothers_day');
+    expect(top.some((o) => o.holiday.rule.kind === 'listed')).toBe(false);
+    // With nothing dated and well known close by, the list is empty and the screen shows only the link.
+    expect(comingUpHolidays(on(2031, 3, 1))).toEqual([]);
   });
 
   it('keeps a festival from yesterday for a late wish', () => {
@@ -222,17 +241,6 @@ describe('the words', () => {
     expect(countdownLabel(1)).toBe('Tomorrow');
     expect(countdownLabel(-1)).toBe('Yesterday');
     expect(countdownLabel(12)).toBe('In 12 days');
-  });
-
-  it('says it plainly on Home, without pressure', () => {
-    const diwali = (daysUntil: number) => ({ holiday: id('diwali'), daysUntil, date: { year: 2026, month: 11, day: 8 } });
-    expect(holidayHeadlineLine(diwali(0))).toBe('Diwali is today');
-    expect(holidayHeadlineLine(diwali(5))).toBe('Diwali is in 5 days');
-    expect(holidayHeadlineLine(diwali(-1))).toBe('Diwali was yesterday');
-    expect(holidayPrompt(diwali(-1))).toBe('A late wish still lands. Add a photo and a few words.');
-    for (const o of [diwali(0), diwali(5), diwali(-1)]) {
-      expect(`${holidayHeadlineLine(o)} ${holidayPrompt(o)}`).not.toContain('!');
-    }
   });
 });
 

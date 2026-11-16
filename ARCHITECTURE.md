@@ -30,6 +30,8 @@ Occasio/                          ← you are here (RN app = main)
 │   ├── app/                      ← APP SHELL: navigators, tabs, startup wiring (may know every feature)
 │   ├── features/                 ← product features: age, auth, account, billing, create,
 │   │   │                            history, vault, onboarding, widgets
+│   │   │                            (create also holds the frames, invitations, festivals and badges:
+│   │   │                            the largest feature, see docs/architecture-audit.md)
 │   │   └── create/               ← each feature has the same four layers
 │   │       ├── domain/           ← pure rules & types
 │   │       ├── application/      ← hooks, use-cases
@@ -122,5 +124,7 @@ Deploy docs when you want a public landing — not required to ship the mobile a
 | RevenueCat billing client + paywall UI + tier mirror | Production `goog_` / `appl_` keys |
 | Auto-send engine (cron, review UX, mock dispatch, FCM) | E2E verification (Task 11); real WA/SMS/email providers |
 | Domain unit tests (create, vault, auth, history, billing, functions autosend) | Production dispatch (`OCCASIO_AUTOSEND_DISPATCH=true`) |
+| Invitations, festivals and holidays, wishes left and badges, clear purchase messages | Redeploy docs-site so the recipient pages and previews go live |
+| WhatsApp delivery through Meta's Cloud API (built, off by default) | Meta account, approved template, token, webhook; deploy Functions and rules |
 
 **Next:** Device-verify RC purchase (Account → See Occasio Pro) → production store → Devpost by **30 Sep 2026**. Then Task 11 E2E auto-send on emulator/device. Plan: `docs/superpowers/plans/2026-09-12-shipaton-sprint.md`.
